@@ -1,0 +1,15 @@
+Package: rtools
+Title: Package providing R tools and wrappers
+Version: 0.0.0.9000
+Authors@R: person("Shane", "Kercheval", email = "shane.kercheval@gmail.com", role = c("aut", "cre"))
+Description: This package provides functionality of the most common tasks I do on a day-to-day basis, as well as non-trivial code that I will want to re-use.
+Depends: R (>= 3.4.0)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+imports:
+    migrittr,
+    dplyr,
+    moments
+Suggests: testthat
+RoxygenNote: 6.0.1
