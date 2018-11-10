@@ -6,9 +6,13 @@
 #'
 #' @examples
 #'
+#' library(ggplot2)
+#' explore_numeric_summary(iris)
+#'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr select_if
 #' @importFrom moments skewness kurtosis
+#' @importFrom stats sd quantile
 #' @export
 explore_numeric_summary <- function(dataset) {
 

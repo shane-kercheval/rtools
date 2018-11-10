@@ -14,4 +14,7 @@ Summary
 }
 \examples{
 
+library(ggplot2)
+explore_numeric_summary(iris)
+
 }

@@ -4,12 +4,13 @@ Version: 0.0.0.9000
 Authors@R: person("Shane", "Kercheval", email = "shane.kercheval@gmail.com", role = c("aut", "cre"))
 Description: This package provides functionality of the most common tasks I do on a day-to-day basis, as well as non-trivial code that I will want to re-use.
 Depends: R (>= 3.4.0)
-License: What license is it under?
+License: Apache License
 Encoding: UTF-8
 LazyData: true
-imports:
-    migrittr,
+Imports:
+    ggplot2,
     dplyr,
+    magrittr,
     moments
 Suggests: testthat
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
