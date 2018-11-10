@@ -2,7 +2,12 @@
 
 export(rt_are_dataframes_equal)
 export(rt_are_dataframes_equal_from_file)
+export(rt_explore_categoric_summary)
 export(rt_explore_numeric_summary)
+export(value_counts)
+importFrom(dplyr,arrange)
+importFrom(dplyr,desc)
+importFrom(dplyr,rename)
 importFrom(dplyr,select_if)
 importFrom(magrittr,"%>%")
 importFrom(moments,kurtosis)

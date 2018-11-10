@@ -7,10 +7,10 @@
 rt_explore_numeric_summary(dataset)
 }
 \arguments{
-\item{dataset}{dataframe containing numeic columns}
+\item{dataset}{dataframe containing numeric columns}
 }
 \description{
-Summary
+returns a dataframe containing summary statistics for numeric columns passsed to `dataset`
 }
 \examples{
 
