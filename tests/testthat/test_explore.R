@@ -1,7 +1,7 @@
 context('Exploratory Analysis')
 library(ggplot2)
 
-test_that("str_length is number of characters", {
+test_that("rt_explore_numeric_summary", {
     iris[1, 'Sepal.Width'] <- NA
     iris[2, 'Sepal.Width'] <- NA
     iris[3, 'Sepal.Width'] <- NA
@@ -11,7 +11,8 @@ test_that("str_length is number of characters", {
     iris[3, 'Sepal.Length'] <- 0
     iris[1, 'Petal.Width'] <- 0
 
-    result <- explore_numeric_summary(iris)
-    expect_equal(nrow(result), 4)
-    #expect_true(round(result['Sepal.Width'], 5) == 3.05733)
+    result <- rt_explore_numeric_summary(iris)
+
+    rds_file <- 'data/rt_explore_numeric_summary_iris.RDS'
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
 })

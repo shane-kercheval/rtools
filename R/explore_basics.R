@@ -1,20 +1,20 @@
-#' Title
+#' returns a dataframe containing summary statistics for numeric columns passsed to `dataset`
 #'
 #' Summary
 #'
-#' @param dataset Explanation of 'dataset'
+#' @param dataset dataframe containing numeic columns
 #'
 #' @examples
 #'
 #' library(ggplot2)
-#' explore_numeric_summary(iris)
+#' rt_explore_numeric_summary(iris)
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr select_if
 #' @importFrom moments skewness kurtosis
 #' @importFrom stats sd quantile
 #' @export
-explore_numeric_summary <- function(dataset) {
+rt_explore_numeric_summary <- function(dataset) {
 
     return (data.frame(
         non_nulls=apply(dataset %>% select_if(is.numeric), 2, function(x) sum(!is.na(x))),
