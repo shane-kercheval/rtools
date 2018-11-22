@@ -321,3 +321,59 @@ rt_explore_plot_unique_values <- function(dataset,
                   axis.text.x = element_text(angle = 30, hjust = 1)))
     }
 }
+
+#' returns a histogram of `variable`, potentally grouped by `comparison_variable`
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param variable the variable from which to create a histogram
+#' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2 ggplot aes_string geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
+#' @export
+rt_explore_plot_histogram <- function(dataset,
+                                      variable,
+                                      comparison_variable=NULL,
+                                      y_zoom_min=NULL,
+                                      y_zoom_max=NULL,
+                                      base_size=11) {
+    if(is.null(comparison_variable)) {
+
+        histogram_plot <- ggplot(dataset, aes_string(y=variable, group=1)) +
+            geom_boxplot() +
+            scale_x_discrete(breaks = NULL) +
+            xlab(NULL) +
+            theme_gray(base_size = base_size)
+
+    } else {
+
+        histogram_plot <- ggplot(dataset, aes_string(y=variable, x=comparison_variable, color=comparison_variable)) +
+            geom_boxplot() +
+            theme_gray(base_size = base_size) +
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1))
+    }
+
+    # zoom in on graph is parameters are set
+    if(!is.null(y_zoom_min) || !is.null(y_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(is.null(y_zoom_min)) {
+
+            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+        }
+
+        if(is.null(y_zoom_max)) {
+
+            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+        }
+
+        histogram_plot <- histogram_plot +
+            coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+    }
+
+    return (histogram_plot)
+}

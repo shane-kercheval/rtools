@@ -24,3 +24,17 @@ rt_are_dataframes_equal_from_file <- function(dataframe1, rds_file) {
     other = readRDS(file=rds_file)
     return (rt_are_dataframes_equal(dataframe1=dataframe1, dataframe2=other))
 }
+
+#' deletes the file/plot if it exists, saves the plot, and ensures it exists
+#'
+#' @param file_name path to save plot
+#' @param plot plot to save
+#'
+#' @importFrom ggplot2 ggsave
+#' @export
+test_save_plot <- function(file_name, plot) {
+
+    if (file.exists(file_name)) file.remove(file_name)
+    ggsave(filename=file_name, plot=plot)
+    expect_true(file.exists(file_name))
+}
