@@ -8,9 +8,11 @@ License: Apache License
 Encoding: UTF-8
 LazyData: true
 Imports:
-    ggplot2,
     dplyr,
+    ggplot2,
+    Hmisc,
     magrittr,
-    moments
+    moments,
+    reshape2
 Suggests: testthat
 RoxygenNote: 6.1.1
