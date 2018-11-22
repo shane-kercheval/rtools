@@ -236,7 +236,7 @@ rt_explore_plot_unique_values <- function(dataset,
     
     groups_by_variable <- rt_explore_unique_values(dataset=dataset, variable=variable)
 
-    if(is.null(comparison_variable)) {
+    if(rt_is_null_na_nan(comparison_variable)) {
 
         if(order_by_count) {
 
@@ -340,7 +340,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                       y_zoom_min=NULL,
                                       y_zoom_max=NULL,
                                       base_size=11) {
-    if(is.null(comparison_variable)) {
+    if(rt_is_null_na_nan(comparison_variable)) {
 
         histogram_plot <- ggplot(dataset, aes_string(y=variable, group=1)) +
             geom_boxplot() +
@@ -358,15 +358,15 @@ rt_explore_plot_boxplot <- function(dataset,
     }
 
     # zoom in on graph is parameters are set
-    if(!is.null(y_zoom_min) || !is.null(y_zoom_max)) {
+    if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
         # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
 
-        if(is.null(y_zoom_min)) {
+        if(rt_is_null_na_nan(y_zoom_min)) {
 
             y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
         }
 
-        if(is.null(y_zoom_max)) {
+        if(rt_is_null_na_nan(y_zoom_max)) {
 
             y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
         }

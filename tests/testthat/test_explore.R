@@ -290,14 +290,14 @@ test_that("rt_explore_plot_boxplot", {
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
                                                   y_zoom_min=20,
-                                                  y_zoom_max=NULL,
+                                                  y_zoom_max=NA,  # Check NA
                                                   base_size=15))
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_max.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
-                                                  y_zoom_min=NULL,
+                                                  y_zoom_min=NA,  # Check NA
                                                   y_zoom_max=40,
                                                   base_size=15))
 
