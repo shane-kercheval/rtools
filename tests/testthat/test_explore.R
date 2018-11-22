@@ -245,64 +245,64 @@ test_that("rt_explore_plot_boxplot", {
     variable <- 'months_loan_duration'
     comparison_variable <- 'default'
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_standard.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=NULL,
                                                   y_zoom_min=NULL,
                                                   y_zoom_max=NULL,
                                                   base_size=11))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_min.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard_zoom_min.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=NULL,
                                                   y_zoom_min=20,
                                                   y_zoom_max=NULL,
                                                   base_size=15))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_max.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard_zoom_max.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=NULL,
                                                   y_zoom_min=NULL,
                                                   y_zoom_max=40,
                                                   base_size=15))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_both.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard_zoom_both.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=NULL,
                                                   y_zoom_min=20,
                                                   y_zoom_max=40,
                                                   base_size=15))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_comparison.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
                                                   y_zoom_min=NULL,
                                                   y_zoom_max=NULL,
                                                   base_size=11))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_comparison_zoom_min.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_min.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
                                                   y_zoom_min=20,
                                                   y_zoom_max=NULL,
                                                   base_size=15))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_comparison_zoom_max.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_max.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
                                                   y_zoom_min=NULL,
                                                   y_zoom_max=40,
                                                   base_size=15))
 
-    test_save_plot(file_name='data/rt_explore_plot_histogram_comparison_zoom_both.png',
-                   plot=rt_explore_plot_histogram(dataset=dataset,
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_both.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
                                                   y_zoom_min=20,

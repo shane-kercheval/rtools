@@ -334,7 +334,7 @@ rt_explore_plot_unique_values <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes_string geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
 #' @export
-rt_explore_plot_histogram <- function(dataset,
+rt_explore_plot_boxplot <- function(dataset,
                                       variable,
                                       comparison_variable=NULL,
                                       y_zoom_min=NULL,
