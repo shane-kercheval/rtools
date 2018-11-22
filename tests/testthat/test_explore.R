@@ -180,7 +180,7 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
     variable <- 'checking_balance'
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_defaults.png'
+    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_defaults.png'
     if (file.exists(plot_file)) file.remove(plot_file)
     ggsave(filename=plot_file,
            plot=rt_explore_plot_unique_values(dataset=credit_data,
@@ -193,7 +193,7 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
 
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_not_order_by_count.png'
+    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_not_order_by_count.png'
     if (file.exists(plot_file)) file.remove(plot_file)
     ggsave(filename=plot_file,
            plot=rt_explore_plot_unique_values(dataset=credit_data,
@@ -205,7 +205,7 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
     expect_true(file.exists(plot_file))
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_not_show_group_totals.png'
+    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_not_show_group_totals.png'
     if (file.exists(plot_file)) file.remove(plot_file)
     ggsave(filename=plot_file,
            plot=rt_explore_plot_unique_values(dataset=credit_data,
@@ -217,7 +217,7 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
     expect_true(file.exists(plot_file))
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_not_show_comparison_totals.png'
+    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_not_show_comparison_totals.png'
     if (file.exists(plot_file)) file.remove(plot_file)
     ggsave(filename=plot_file,
            plot=rt_explore_plot_unique_values(dataset=credit_data,
