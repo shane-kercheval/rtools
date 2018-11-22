@@ -143,7 +143,7 @@ rt_explore_correlations <- function(dataset, corr_threshold=0, p_value_threshold
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr filter mutate
 #' @importFrom reshape2 melt
-#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn labs theme element_rect element_text theme_classic element_blank element_line 
+#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn labs theme element_rect element_text theme_classic element_blank element_line
 #' @export
 rt_explore_plot_correlations <- function(dataset,
                                          corr_threshold=0,
@@ -185,4 +185,66 @@ rt_explore_plot_correlations <- function(dataset,
               panel.background = element_rect(fill = 'white', colour = 'white'),
               axis.text.x = element_text(angle = 30, hjust = 1))
 
+}
+
+#' returns a count of the unique values for a given dataset/variable
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param variable the variable (e.g. factor) to get unique values from
+#'
+#' @examples
+#'
+#' library(ggplot2)
+#' rt_explore_unique_values(dataset=iris, variable='Species')
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr count_ mutate rename arrange desc
+#' @export
+rt_explore_unique_values <- function(dataset, variable) {
+
+    return (as.data.frame(
+        dataset %>%
+            count_(variable) %>%
+            rename(count = n) %>%
+            mutate(perc = count / nrow(dataset)) %>%
+            arrange(desc(count))
+        ))
+}
+
+#' returns a barchart of the unique value counts for a given dataset/variable
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param variable the variable (e.g. factor) to get unique values from
+#' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @examples
+#'
+#' library(ggplot2)
+#' rt_explore_plot_unique_values(dataset=iris, variable='Species')
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr filter mutate
+#' @importFrom scales percent_format percent
+#' @importFrom ggplot2 ggplot aes_string aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text
+#' @export
+rt_explore_plot_unique_values <- function(dataset, variable, order_by_count=TRUE, base_size=11) {
+
+    unique_values <- rt_explore_unique_values(dataset=dataset, variable=variable)
+
+    if(order_by_count) {
+        unique_values[, variable] <- factor(unique_values[, variable], levels = unique_values[, variable])
+    }
+
+    unique_values %>%
+        ggplot(aes_string(x=variable, y = 'perc', fill=variable)) +
+            geom_bar(stat = 'identity') +
+            scale_y_continuous(labels = percent_format()) +
+            geom_text(aes(label = percent(perc), y = perc + 0.01), vjust=-1) +
+            geom_text(aes(label = count, y = perc + 0.01)) +
+            labs(title=paste('Unique Values -', variable),
+                 y='Percent of Dataset Containing Value') +
+            theme_gray(base_size = base_size) +
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1))
 }
