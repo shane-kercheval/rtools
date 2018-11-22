@@ -206,45 +206,110 @@ rt_explore_unique_values <- function(dataset, variable) {
         dataset %>%
             count_(variable) %>%
             rename(count = n) %>%
-            mutate(perc = count / nrow(dataset)) %>%
+            mutate(percent = count / nrow(dataset)) %>%
             arrange(desc(count))
         ))
 }
 
-#' returns a barchart of the unique value counts for a given dataset/variable
+#' returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable
 #'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
+#' @param comparison_variable the additional variable to group by; must be a string/factor column
 #' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
+#' @param show_group_totals if TRUE (the default) the graph will display the totals for the variable
+#' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
-#'
-#' @examples
-#'
-#' library(ggplot2)
-#' rt_explore_plot_unique_values(dataset=iris, variable='Species')
-#'
+#'#'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr filter mutate
+#' @importFrom dplyr group_by_ summarise mutate ungroup arrange_
 #' @importFrom scales percent_format percent
-#' @importFrom ggplot2 ggplot aes_string aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text
+#' @importFrom ggplot2 ggplot aes_string aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
 #' @export
-rt_explore_plot_unique_values <- function(dataset, variable, order_by_count=TRUE, base_size=11) {
+rt_explore_plot_unique_values <- function(dataset,
+                                          variable,
+                                          comparison_variable=NULL,
+                                          order_by_count=TRUE,
+                                          show_group_totals=TRUE,
+                                          show_comparison_totals=TRUE,
+                                          base_size=11) {
+    
+    groups_by_variable <- rt_explore_unique_values(dataset=dataset, variable=variable)
 
-    unique_values <- rt_explore_unique_values(dataset=dataset, variable=variable)
+    if(is.null(comparison_variable)) {
 
-    if(order_by_count) {
-        unique_values[, variable] <- factor(unique_values[, variable], levels = unique_values[, variable])
-    }
+        if(order_by_count) {
 
-    unique_values %>%
-        ggplot(aes_string(x=variable, y = 'perc', fill=variable)) +
-            geom_bar(stat = 'identity') +
-            scale_y_continuous(labels = percent_format()) +
-            geom_text(aes(label = percent(perc), y = perc + 0.01), vjust=-1) +
-            geom_text(aes(label = count, y = perc + 0.01)) +
-            labs(title=paste('Unique Values -', variable),
-                 y='Percent of Dataset Containing Value') +
+            groups_by_variable[, variable] <- factor(groups_by_variable[, variable], levels = groups_by_variable[, variable])
+        }
+
+        return (groups_by_variable %>%
+            ggplot(aes_string(x=variable, y = 'percent', fill=variable)) +
+                geom_bar(stat = 'identity') +
+                scale_y_continuous(labels = percent_format()) +
+                geom_text(aes(label = percent(percent), y = percent + 0.01), vjust=-1) +
+                geom_text(aes(label = count, y = percent + 0.01)) +
+                labs(title=paste('Unique Values -', variable),
+                     y='Percent of Dataset Containing Value') +
+                theme_gray(base_size = base_size) +
+                theme(legend.position = 'none',
+                      axis.text.x = element_text(angle = 30, hjust = 1)))
+
+    } else {
+
+        groups_by_both <- as.data.frame(
+            dataset %>%
+                group_by_(variable, comparison_variable) %>%
+                summarise(count = n(), actual_percent=n() / nrow(dataset)) %>%
+                group_by_(variable) %>%
+                mutate(group_percent = count / sum(count)) %>%
+                ungroup() %>%
+                arrange_(variable, comparison_variable))
+
+        if(order_by_count) {
+
+            groups_by_variable[, variable] <- factor(groups_by_variable[, variable], levels = groups_by_variable[, variable])
+            groups_by_both[, variable] <- factor(groups_by_both[, variable], levels = groups_by_variable[, variable])
+        }
+
+        # create the plot
+        unique_values_plot <- ggplot() +
+            geom_bar(data = groups_by_variable,
+                     aes_string(x = variable, y = 'percent'),
+                     stat = 'identity',
+                     position = 'dodge',
+                     alpha = 0.3) +
+            geom_bar(data = groups_by_both,
+                     aes_string(x = variable, y = 'actual_percent', fill=comparison_variable),
+                     stat = 'identity',
+                     position = 'dodge')
+
+        if(show_group_totals) {
+
+            unique_values_plot <- unique_values_plot +
+                geom_text(data = groups_by_variable, aes_string(x=variable, label = 'percent(percent)', y = 'percent + 0.01'), vjust=-1) +
+                geom_text(data = groups_by_variable, aes_string(x=variable, label = 'count', y = 'percent + 0.01'), vjust=0.5)
+        }
+
+        if(show_comparison_totals) {
+
+            unique_values_plot <- unique_values_plot +
+                geom_text(data = groups_by_both,
+                          aes_string(x = variable, y = 'actual_percent', label = 'count', group = comparison_variable),
+                          position = position_dodge(width = 1),
+                          vjust = -0.2) +
+                geom_text(data = groups_by_both,
+                          aes_string(x = variable, y = 'actual_percent', label = 'percent(group_percent)', group = comparison_variable),
+                          position = position_dodge(width = 1),
+                          vjust = -1.5)
+        }
+
+        return (unique_values_plot +
+            labs(title = paste0('Unique Values - `', variable, '` against `', comparison_variable, '`'),
+                 fill = comparison_variable,
+                 x = variable) +
             theme_gray(base_size = base_size) +
-            theme(legend.position = 'none',
-                  axis.text.x = element_text(angle = 30, hjust = 1))
+            theme(#legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1)))
+    }
 }

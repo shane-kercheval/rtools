@@ -107,7 +107,7 @@ test_that("rt_explore_unique_values", {
     expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
     expect_true(is.na(unique_values$checking_balance[5]))
     expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
-    expect_true(all(unique_values$perc == c(0.394, 0.273, 0.269, 0.063, 0.001)))
+    expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 
     # plot without order
     plot_file <- 'data/rt_explore_plot_unique_values_no_order.png'
@@ -142,7 +142,7 @@ test_that("rt_explore_unique_values", {
     expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
     expect_true(is.na(unique_values$checking_balance[5]))
     expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
-    expect_true(all(unique_values$perc == c(0.394, 0.273, 0.269, 0.063, 0.001)))
+    expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 
     # plot without order
     plot_file <- 'data/rt_explore_plot_unique_values_no_factor_no_order.png'
@@ -162,5 +162,69 @@ test_that("rt_explore_unique_values", {
                                               variable=variable,
                                               order_by_count=TRUE,
                                               base_size=11))
+    expect_true(file.exists(plot_file))
+})
+
+test_that("rt_explore_plot_unique_values_against_categorical", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    ##########################################################################################################
+    # test with factor
+    # change the levels to verify that the original levels are retained if order_by_count==FALSE
+    ##########################################################################################################
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    variable <- 'checking_balance'
+
+    # plot with labels
+    plot_file <- 'data/rt_explore_plot_unique_values_defaults.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable='default',
+                                              order_by_count=TRUE,
+                                              show_group_totals=TRUE,
+                                              show_comparison_totals=TRUE))
+    expect_true(file.exists(plot_file))
+
+
+    # plot with labels
+    plot_file <- 'data/rt_explore_plot_unique_values_not_order_by_count.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable='default',
+                                              order_by_count=FALSE,
+                                              show_group_totals=TRUE,
+                                              show_comparison_totals=TRUE))
+    expect_true(file.exists(plot_file))
+
+    # plot with labels
+    plot_file <- 'data/rt_explore_plot_unique_values_not_show_group_totals.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable='default',
+                                              order_by_count=FALSE,
+                                              show_group_totals=FALSE,
+                                              show_comparison_totals=TRUE))
+    expect_true(file.exists(plot_file))
+
+    # plot with labels
+    plot_file <- 'data/rt_explore_plot_unique_values_not_show_comparison_totals.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable='default',
+                                              order_by_count=FALSE,
+                                              show_group_totals=FALSE,
+                                              show_comparison_totals=FALSE))
     expect_true(file.exists(plot_file))
 })

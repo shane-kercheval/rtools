@@ -2,9 +2,11 @@
 % Please edit documentation in R/explore_basics.R
 \name{rt_explore_plot_unique_values}
 \alias{rt_explore_plot_unique_values}
-\title{returns a barchart of the unique value counts for a given dataset/variable}
+\title{returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable}
 \usage{
-rt_explore_plot_unique_values(dataset, variable, order_by_count = TRUE,
+rt_explore_plot_unique_values(dataset, variable,
+  comparison_variable = NULL, order_by_count = TRUE,
+  show_group_totals = TRUE, show_comparison_totals = TRUE,
   base_size = 11)
 }
 \arguments{
@@ -12,16 +14,17 @@ rt_explore_plot_unique_values(dataset, variable, order_by_count = TRUE,
 
 \item{variable}{the variable (e.g. factor) to get unique values from}
 
+\item{comparison_variable}{the additional variable to group by; must be a string/factor column}
+
 \item{order_by_count}{if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable}
 
-\item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
+\item{show_group_totals}{if TRUE (the default) the graph will display the totals for the variable}
+
+\item{show_comparison_totals}{if TRUE (the default) the graph will display the totals for the comparison_variable}
+
+\item{base_size}{uses ggplot's base_size parameter for controling the size of the text
+#'}
 }
 \description{
-returns a barchart of the unique value counts for a given dataset/variable
-}
-\examples{
-
-library(ggplot2)
-rt_explore_plot_unique_values(dataset=iris, variable='Species')
-
+returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable
 }
