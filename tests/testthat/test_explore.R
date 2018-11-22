@@ -119,6 +119,16 @@ test_that("rt_explore_unique_values", {
                                               base_size=11))
     expect_true(file.exists(plot_file))
 
+    # plot without order
+    plot_file <- 'data/rt_explore_plot_unique_values_no_group_totals.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                              variable=variable,
+                                              show_group_totals=FALSE,
+                                              base_size=11))
+    expect_true(file.exists(plot_file))
+
     # plot with order
     plot_file <- 'data/rt_explore_plot_unique_values_with_order.png'
     if (file.exists(plot_file)) file.remove(plot_file)

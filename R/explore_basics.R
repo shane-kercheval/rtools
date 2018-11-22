@@ -243,12 +243,20 @@ rt_explore_plot_unique_values <- function(dataset,
             groups_by_variable[, variable] <- factor(groups_by_variable[, variable], levels = groups_by_variable[, variable])
         }
 
-        return (groups_by_variable %>%
+        unique_values_plot <- groups_by_variable %>%
             ggplot(aes_string(x=variable, y = 'percent', fill=variable)) +
                 geom_bar(stat = 'identity') +
-                scale_y_continuous(labels = percent_format()) +
+                scale_y_continuous(labels = percent_format())
+
+        if(show_group_totals) {
+
+            unique_values_plot <- unique_values_plot +
                 geom_text(aes(label = percent(percent), y = percent + 0.01), vjust=-1) +
-                geom_text(aes(label = count, y = percent + 0.01)) +
+                geom_text(aes(label = count, y = percent + 0.01))
+        }
+
+        return (
+            unique_values_plot +
                 labs(title=paste('Unique Values -', variable),
                      y='Percent of Dataset Containing Value') +
                 theme_gray(base_size = base_size) +
