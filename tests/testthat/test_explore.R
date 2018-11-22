@@ -309,3 +309,57 @@ test_that("rt_explore_plot_boxplot", {
                                                   y_zoom_max=40,
                                                   base_size=15))
 })
+
+test_that("rt_explore_plot_histogram", {
+    dataset <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'months_loan_duration'
+    comparison_variable <- 'default'
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_standard.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+
+        test_save_plot(file_name='data/rt_explore_plot_histogram_num_bins.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  num_bins=15,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_min.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=20,
+                                                  x_zoom_max=NULL,
+                                                  base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_max.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=40,
+                                                  base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_both.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=20,
+                                                  x_zoom_max=40,
+                                                  base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_standard_zoom_both_num_bins.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  num_bins=15,
+                                                  x_zoom_min=20,
+                                                  x_zoom_max=40,
+                                                  base_size=15))
+})

@@ -2,7 +2,7 @@
 % Please edit documentation in R/explore_basics.R
 \name{rt_explore_plot_boxplot}
 \alias{rt_explore_plot_boxplot}
-\title{returns a histogram of `variable`, potentally grouped by `comparison_variable`}
+\title{returns a boxplot of `variable`, potentally grouped by `comparison_variable`}
 \usage{
 rt_explore_plot_boxplot(dataset, variable, comparison_variable = NULL,
   y_zoom_min = NULL, y_zoom_max = NULL, base_size = 11)
@@ -10,7 +10,7 @@ rt_explore_plot_boxplot(dataset, variable, comparison_variable = NULL,
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
 
-\item{variable}{the variable from which to create a histogram}
+\item{variable}{the variable from which to create a boxplot}
 
 \item{comparison_variable}{the additional variable to group by; must be a string/factor column}
 
@@ -18,9 +18,8 @@ rt_explore_plot_boxplot(dataset, variable, comparison_variable = NULL,
 
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
 
-\item{base_size}{uses ggplot's base_size parameter for controling the size of the text
-#'}
+\item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
 \description{
-returns a histogram of `variable`, potentally grouped by `comparison_variable`
+returns a boxplot of `variable`, potentally grouped by `comparison_variable`
 }

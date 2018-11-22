@@ -322,15 +322,15 @@ rt_explore_plot_unique_values <- function(dataset,
     }
 }
 
-#' returns a histogram of `variable`, potentally grouped by `comparison_variable`
+#' returns a boxplot of `variable`, potentally grouped by `comparison_variable`
 #'
 #' @param dataset dataframe containing numberic columns
-#' @param variable the variable from which to create a histogram
+#' @param variable the variable from which to create a boxplot
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
-#'#'
+#'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes_string geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
 #' @export
@@ -342,7 +342,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                       base_size=11) {
     if(rt_is_null_na_nan(comparison_variable)) {
 
-        histogram_plot <- ggplot(dataset, aes_string(y=variable, group=1)) +
+        boxplot_plot <- ggplot(dataset, aes_string(y=variable, group=1)) +
             geom_boxplot() +
             scale_x_discrete(breaks = NULL) +
             xlab(NULL) +
@@ -350,7 +350,7 @@ rt_explore_plot_boxplot <- function(dataset,
 
     } else {
 
-        histogram_plot <- ggplot(dataset, aes_string(y=variable, x=comparison_variable, color=comparison_variable)) +
+        boxplot_plot <- ggplot(dataset, aes_string(y=variable, x=comparison_variable, color=comparison_variable)) +
             geom_boxplot() +
             theme_gray(base_size = base_size) +
             theme(legend.position = 'none',
@@ -371,8 +371,55 @@ rt_explore_plot_boxplot <- function(dataset,
             y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
         }
 
-        histogram_plot <- histogram_plot +
+        boxplot_plot <- boxplot_plot +
             coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+    }
+
+    return (boxplot_plot)
+}
+
+#' returns a histogram of `variable`
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param variable the variable from which to create a histogram
+#' @param num_bins the number of bins that the histogram will use
+#' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
+#' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2 ggplot aes_string aes geom_histogram geom_density labs theme_gray coord_cartesian
+#' @export
+rt_explore_plot_histogram <- function(dataset,
+                                      variable,
+                                      num_bins=30,
+                                      x_zoom_min=NULL,
+                                      x_zoom_max=NULL,
+                                      base_size=11) {
+
+    histogram_plot <- ggplot(dataset, aes_string(x=variable)) +
+        #geom_density(aes_string(x=variable))
+        geom_histogram(bins = num_bins) +
+        geom_density(aes(y = ..count..), col='red') +
+        labs(title=paste0('Histogram & Density Plot of `', variable, '`')) +
+        theme_gray(base_size = base_size)    
+
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(x_zoom_min)) {
+
+            x_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(x_zoom_max)) {
+
+            x_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+        }
+
+        histogram_plot <- histogram_plot +
+            coord_cartesian(xlim = c(x_zoom_min, x_zoom_max))
     }
 
     return (histogram_plot)
