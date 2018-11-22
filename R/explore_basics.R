@@ -133,6 +133,7 @@ rt_explore_correlations <- function(dataset, corr_threshold=0, p_value_threshold
 #' @param corr_threshold any correlations that are <= `corr_threshold` will be set to `NA`. (Default is `0`, so all correlations are shown). Helps to reduce noise.
 #' @param p_value_threshold any correlations that have a p-value greater than `p_value_threshold` will be set to `NA` (Default is `1`, so all correlations are shown)
 #' @param type type of correlation to perform (Default is `pearson`)
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @examples
 #'
@@ -142,9 +143,13 @@ rt_explore_correlations <- function(dataset, corr_threshold=0, p_value_threshold
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr filter mutate
 #' @importFrom reshape2 melt
-#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn labs theme element_rect element_text
+#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn labs theme element_rect element_text theme_classic element_blank element_line 
 #' @export
-rt_explore_plot_correlations <- function(dataset, corr_threshold=0, p_value_threshold=1, type='pearson') {
+rt_explore_plot_correlations <- function(dataset,
+                                         corr_threshold=0,
+                                         p_value_threshold=1,
+                                         type='pearson',
+                                         base_size=11) {
 
     correlations <- rt_explore_correlations(dataset=dataset,
                                             corr_threshold=corr_threshold,
@@ -173,7 +178,11 @@ rt_explore_plot_correlations <- function(dataset, corr_threshold=0, p_value_thre
              x = '',
              y = '',
              fill = 'Colors') +
-        theme(panel.background = element_rect(fill = 'white', colour = 'white'),
+        theme_classic(base_size = base_size) +
+        theme(line = element_blank(),
+              axis.ticks.x = element_line(color="black"),
+              axis.ticks.y = element_line(color="black"),
+              panel.background = element_rect(fill = 'white', colour = 'white'),
               axis.text.x = element_text(angle = 30, hjust = 1))
 
 }

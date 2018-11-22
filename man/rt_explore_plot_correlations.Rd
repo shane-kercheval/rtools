@@ -5,7 +5,7 @@
 \title{returns a heatmap of correlations}
 \usage{
 rt_explore_plot_correlations(dataset, corr_threshold = 0,
-  p_value_threshold = 1, type = "pearson")
+  p_value_threshold = 1, type = "pearson", base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -15,6 +15,8 @@ rt_explore_plot_correlations(dataset, corr_threshold = 0,
 \item{p_value_threshold}{any correlations that have a p-value greater than `p_value_threshold` will be set to `NA` (Default is `1`, so all correlations are shown)}
 
 \item{type}{type of correlation to perform (Default is `pearson`)}
+
+\item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
 \description{
 returns a heatmap of correlations

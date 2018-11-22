@@ -50,6 +50,12 @@ test_that("rt_explore_correlations_credit", {
     ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=credit_data))
     expect_true(file.exists(correlation_plot_file))
 
+    # change base_size
+    correlation_plot_file <- 'data/rt_explore_plot_correlations_base_size.png'
+    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
+    ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                                             base_size=16))
+    expect_true(file.exists(correlation_plot_file))
 
     # lower p_value_threshold
     correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_pvalue.png'
@@ -59,7 +65,6 @@ test_that("rt_explore_correlations_credit", {
                                              #corr_threshold=0,
                                              p_value_threshold=0.3))
     expect_true(file.exists(correlation_plot_file))
-
 
     # lower p_value_threshold
     correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_corr_treshold.png'
@@ -79,9 +84,4 @@ test_that("rt_explore_correlations_credit", {
                                              corr_threshold=0.115,
                                              p_value_threshold=0.3))
     expect_true(file.exists(correlation_plot_file))
-
-
-
-
-
 })
