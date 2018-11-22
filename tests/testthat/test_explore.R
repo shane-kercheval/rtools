@@ -38,27 +38,50 @@ test_that("rt_explore_correlations_credit", {
     # make sure it handles NAs
     credit_data[1, 'months_loan_duration'] <- NA
 
-    correlations <- rt_explore_correlations(dataset=credit_data,
-                                            corr_threshold=0,
-                                            p_value_threshold=1,
-                                            type='pearson')
+    # default parameters
+    correlations <- rt_explore_correlations(dataset=credit_data)
 
     rds_file <- 'data/rt_correlations_credit.RDS'
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=data.frame(correlations), rds_file=rds_file))
 
+    # use correlation parameters from above
     correlation_plot_file <- 'data/rt_explore_plot_correlations_credit.png'
+    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
+    ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=credit_data))
+    expect_true(file.exists(correlation_plot_file))
+
+
+    # lower p_value_threshold
+    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_pvalue.png'
     if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
     ggsave(filename=correlation_plot_file,
            plot=rt_explore_plot_correlations(dataset=credit_data,
-                                             corr_threshold=0,
-                                             p_value_threshold=1,
-                                             type='pearson'))
+                                             #corr_threshold=0,
+                                             p_value_threshold=0.3))
+    expect_true(file.exists(correlation_plot_file))
 
+
+    # lower p_value_threshold
+    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_corr_treshold.png'
+    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
+    ggsave(filename=correlation_plot_file,
+           plot=rt_explore_plot_correlations(dataset=credit_data,
+                                             corr_threshold=0.115
+                                             #p_value_threshold=0.3
+                                             ))
+    expect_true(file.exists(correlation_plot_file))
+
+    # lower p_value_threshold
+    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_both_parameters.png'
+    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
+    ggsave(filename=correlation_plot_file,
+           plot=rt_explore_plot_correlations(dataset=credit_data,
+                                             corr_threshold=0.115,
+                                             p_value_threshold=0.3))
     expect_true(file.exists(correlation_plot_file))
 
 
 
-    # todo: test different parameters
 
 
 })

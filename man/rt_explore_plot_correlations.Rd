@@ -5,7 +5,7 @@
 \title{returns a heatmap of correlations}
 \usage{
 rt_explore_plot_correlations(dataset, corr_threshold = 0,
-  p_value_threshold = 0.1, type = "pearson")
+  p_value_threshold = 1, type = "pearson")
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

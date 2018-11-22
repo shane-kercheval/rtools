@@ -144,7 +144,7 @@ rt_explore_correlations <- function(dataset, corr_threshold=0, p_value_threshold
 #' @importFrom reshape2 melt
 #' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradientn labs theme element_rect element_text
 #' @export
-rt_explore_plot_correlations <- function(dataset, corr_threshold=0, p_value_threshold=0.1, type='pearson') {
+rt_explore_plot_correlations <- function(dataset, corr_threshold=0, p_value_threshold=1, type='pearson') {
 
     correlations <- rt_explore_correlations(dataset=dataset,
                                             corr_threshold=corr_threshold,
