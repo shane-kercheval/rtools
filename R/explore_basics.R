@@ -353,6 +353,7 @@ rt_explore_plot_boxplot <- function(dataset,
     } else {
 
         boxplot_plot <- ggplot(dataset, aes_string(y=variable, x=comparison_variable, color=comparison_variable)) +
+            scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
             theme_gray(base_size = base_size) +
             theme(legend.position = 'none',
