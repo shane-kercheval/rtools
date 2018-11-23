@@ -434,6 +434,7 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param variable the variable from which to create a boxplot
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
 #' @param alpha controls transparency
+#' @param jitter enables/disables jittering
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
@@ -441,23 +442,35 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string geom_point theme_gray coord_cartesian 
+#' @importFrom ggplot2 ggplot aes_string geom_point theme_gray coord_cartesian geom_jitter scale_y_continuous
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_scatter <- function(dataset,
                                     variable,
                                     comparison_variable=NULL,
                                     alpha=0.3,
+                                    jitter=FALSE,
                                     x_zoom_min=NULL,
                                     x_zoom_max=NULL,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
 
-    scatter_plot <- ggplot(dataset, aes_string(x=variable, y=comparison_variable)) +
-        geom_point(alpha=alpha) +
+    scatter_plot <- ggplot(dataset, aes_string(x=variable, y=comparison_variable))
+
+    if(jitter) {
+
+        scatter_plot <- scatter_plot + geom_jitter(alpha=alpha)
+
+    } else {
+
+        scatter_plot <- scatter_plot + geom_point(alpha=alpha)
+    }
+
+    scatter_plot <- scatter_plot +
         scale_y_continuous(labels = comma_format()) +
         theme_gray(base_size = base_size)
+
 
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {

@@ -468,3 +468,17 @@ test_that("rt_explore_plot_scatterplot", {
                                                 y_zoom_max=300000,
                                                 base_size=15))
 })
+
+test_that("rt_explore_plot_scatterplot_jitter", {
+    dataset <- iris
+    variable <- 'Sepal.Length'
+    comparison_variable <- 'Sepal.Length'
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_jitter.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                jitter=TRUE,
+                                                base_size=15))
+})
