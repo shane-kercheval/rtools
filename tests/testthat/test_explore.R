@@ -363,3 +363,108 @@ test_that("rt_explore_plot_histogram", {
                                                   x_zoom_max=40,
                                                   base_size=15))
 })
+
+test_that("rt_explore_plot_scatterplot", {
+    dataset <- read.csv("data/housing.csv", header=TRUE)
+    variable <- 'median_income'
+    comparison_variable <- 'median_house_value'
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter.png',
+                    plot=rt_explore_plot_scatter(dataset=dataset,
+                                                 variable=variable,
+                                                 comparison_variable=comparison_variable,
+                                                 alpha=0.3,
+                                                 x_zoom_min=NULL,
+                                                 x_zoom_max=NULL,
+                                                 y_zoom_min=NULL,
+                                                 y_zoom_max=NULL,
+                                                 base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_alpha.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                x_zoom_min=NULL,
+                                                x_zoom_max=NULL,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_x_zoom_min.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.3,
+                                                x_zoom_min=5,
+                                                x_zoom_max=NULL,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_x_zoom_max.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.3,
+                                                x_zoom_min=NULL,
+                                                x_zoom_max=10,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_x_zoom_both.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.3,
+                                                x_zoom_min=5,
+                                                x_zoom_max=10,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_y_zoom_min.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.3,
+                                                x_zoom_min=NULL,
+                                                x_zoom_max=NULL,
+                                                y_zoom_min=200000,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_y_zoom_max.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.3,
+                                                x_zoom_min=NULL,
+                                                x_zoom_max=NULL,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=300000,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_y_zoom_both.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.3,
+                                                x_zoom_min=NULL,
+                                                x_zoom_max=NULL,
+                                                y_zoom_min=200000,
+                                                y_zoom_max=300000,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_all.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                x_zoom_min=5,
+                                                x_zoom_max=10,
+                                                y_zoom_min=200000,
+                                                y_zoom_max=300000,
+                                                base_size=15))
+})

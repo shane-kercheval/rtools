@@ -333,17 +333,19 @@ rt_explore_plot_unique_values <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes_string geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
+#' @importFrom scales comma_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
-                                      variable,
-                                      comparison_variable=NULL,
-                                      y_zoom_min=NULL,
-                                      y_zoom_max=NULL,
-                                      base_size=11) {
+                                    variable,
+                                    comparison_variable=NULL,
+                                    y_zoom_min=NULL,
+                                    y_zoom_max=NULL,
+                                    base_size=11) {
     if(rt_is_null_na_nan(comparison_variable)) {
 
         boxplot_plot <- ggplot(dataset, aes_string(y=variable, group=1)) +
             geom_boxplot() +
+            scale_y_continuous(labels = comma_format()) +
             scale_x_discrete(breaks = NULL) +
             xlab(NULL) +
             theme_gray(base_size = base_size)
@@ -423,4 +425,74 @@ rt_explore_plot_histogram <- function(dataset,
     }
 
     return (histogram_plot)
+}
+
+#' returns a scatterplot of `variable` (numeric, x-axis) compared against `comparison_variable` (y-axis)
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param variable the variable from which to create a boxplot
+#' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param alpha controls transparency
+#' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
+#' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2 ggplot aes_string geom_point theme_gray coord_cartesian 
+#' @importFrom scales comma_format
+#' @export
+rt_explore_plot_scatter <- function(dataset,
+                                    variable,
+                                    comparison_variable=NULL,
+                                    alpha=0.3,
+                                    x_zoom_min=NULL,
+                                    x_zoom_max=NULL,
+                                    y_zoom_min=NULL,
+                                    y_zoom_max=NULL,
+                                    base_size=11) {
+
+    scatter_plot <- ggplot(dataset, aes_string(x=variable, y=comparison_variable)) +
+        geom_point(alpha=alpha) +
+        scale_y_continuous(labels = comma_format()) +
+        theme_gray(base_size = base_size)
+
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(x_zoom_min)) {
+
+            x_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(x_zoom_max)) {
+
+            x_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+        }
+
+        scatter_plot <- scatter_plot +
+            coord_cartesian(xlim = c(x_zoom_min, x_zoom_max))
+    }
+
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(y_zoom_min)) {
+
+            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(y_zoom_max)) {
+
+            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+        }
+
+        scatter_plot <- scatter_plot +
+            coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+    }
+
+    return (scatter_plot)
 }
