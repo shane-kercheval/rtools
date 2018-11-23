@@ -2,6 +2,18 @@ context('Exploratory Analysis')
 library(testthat)
 library(ggplot2)
 
+test_that("rt_explore_categoric_summary_NAs", {
+
+    temp_iris <- iris
+    # make sure it works with NA
+    temp_iris$Petal.Width <- rep(NA, nrow(temp_iris))
+
+    results <- rt_explore_categoric_summary(dataset=temp_iris)
+
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
+                                                  rds_file='data/rt_explore_numeric_summary_iris_missing.RDS'))
+})
+
 test_that("rt_explore_numeric_summary", {
 
     temp_iris <- iris

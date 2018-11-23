@@ -5,12 +5,17 @@
 #' @examples
 #'
 #' library(ggplot2)
-#' value_counts(iris$Species)
+#' rt_value_counts(iris$Species)
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr rename arrange desc
 #' @export
-value_counts <- function(values) {
+rt_value_counts <- function(values) {
+
+    if(all(is.na(values))) {
+
+        return (NA)
+    }
 
     return (data.frame(table(values)) %>% rename(frequency = Freq) %>% arrange(desc(frequency)))
 }
@@ -79,9 +84,17 @@ rt_explore_categoric_summary <- function(dataset) {
         non_nulls=apply(dataset, 2, function(x) sum(!is.na(x))),
         nulls=apply(dataset, 2, function(x) sum(is.na(x))),
         perc_nulls=apply(dataset, 2, function(x) round(sum(is.na(x)) / nrow(dataset), 4)),
-        top=apply(dataset, 2, function(x) as.character(value_counts(x)[1, 'values'])),
-        unique=apply(dataset, 2, function(x) nrow(value_counts(x))),
-        perc_unique=apply(dataset, 2, function(x) nrow(value_counts(x)) / nrow(dataset)))
+        top=apply(dataset, 2, function(x) {
+
+            value_counts <- rt_value_counts(x)
+            if(is.null(nrow(value_counts)) || is.na(value_counts)) {
+                "NA"
+            } else {
+                as.character(value_counts[1, 'values'])
+            }
+        }),
+        unique=apply(dataset, 2, function(x) length(unique(x)) ),
+        perc_unique=apply(dataset, 2, function(x) length(unique(x)) / nrow(dataset)))
 
 
     rownames(results) <- NULL
@@ -233,7 +246,7 @@ rt_explore_plot_unique_values <- function(dataset,
                                           show_group_totals=TRUE,
                                           show_comparison_totals=TRUE,
                                           base_size=11) {
-    
+
     groups_by_variable <- rt_explore_unique_values(dataset=dataset, variable=variable)
 
     if(rt_is_null_na_nan(comparison_variable)) {
@@ -405,7 +418,7 @@ rt_explore_plot_histogram <- function(dataset,
         geom_histogram(bins = num_bins) +
         geom_density(aes(y = ..count..), col='red') +
         labs(title=paste0('Histogram & Density Plot of `', variable, '`')) +
-        theme_gray(base_size = base_size)    
+        theme_gray(base_size = base_size)
 
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
@@ -442,7 +455,7 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string geom_point theme_gray coord_cartesian geom_jitter scale_y_continuous
+#' @importFrom ggplot2 ggplot aes_string geom_point theme_gray coord_cartesian geom_jitter position_jitter scale_y_continuous
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_scatter <- function(dataset,
@@ -460,7 +473,7 @@ rt_explore_plot_scatter <- function(dataset,
 
     if(jitter) {
 
-        scatter_plot <- scatter_plot + geom_jitter(alpha=alpha)
+        scatter_plot <- scatter_plot + geom_jitter(alpha=alpha, position=position_jitter(seed=42))
 
     } else {
 
