@@ -57,51 +57,32 @@ test_that("rt_explore_correlations_credit", {
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=data.frame(correlations), rds_file=rds_file))
 
     # use correlation parameters from above
-    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit.png'
-    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
-    ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=credit_data))
-    expect_true(file.exists(correlation_plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data))
 
      # pretty
-    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_pretty.png'
-    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
-    ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=rt_pretty_dataset(credit_data)))
-    expect_true(file.exists(correlation_plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_pretty.png',
+                   plot=rt_explore_plot_correlations(dataset=rt_pretty_dataset(credit_data)))
 
     # change base_size
-    correlation_plot_file <- 'data/rt_explore_plot_correlations_base_size.png'
-    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
-    ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=credit_data,
-                                                                             base_size=16))
-    expect_true(file.exists(correlation_plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_correlations_base_size.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data, base_size=16))
 
     # lower p_value_threshold
-    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_pvalue.png'
-    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
-    ggsave(filename=correlation_plot_file,
-           plot=rt_explore_plot_correlations(dataset=credit_data,
-                                             #corr_threshold=0,
-                                             p_value_threshold=0.3))
-    expect_true(file.exists(correlation_plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_pvalue.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                   p_value_threshold=0.3))
 
     # lower p_value_threshold
-    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_corr_treshold.png'
-    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
-    ggsave(filename=correlation_plot_file,
-           plot=rt_explore_plot_correlations(dataset=credit_data,
-                                             corr_threshold=0.115
-                                             #p_value_threshold=0.3
-                                             ))
-    expect_true(file.exists(correlation_plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_corr_treshold.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     corr_threshold=0.115))
 
     # lower p_value_threshold
-    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_both_parameters.png'
-    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
-    ggsave(filename=correlation_plot_file,
-           plot=rt_explore_plot_correlations(dataset=credit_data,
-                                             corr_threshold=0.115,
-                                             p_value_threshold=0.3))
-    expect_true(file.exists(correlation_plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_both_parameters.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     corr_threshold=0.115,
+                                                     p_value_threshold=0.3))
 })
 
 test_that("rt_explore_unique_values", {
@@ -127,46 +108,39 @@ test_that("rt_explore_unique_values", {
     expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
     expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 
-    # plot without order
-    plot_file <- 'data/rt_explore_plot_unique_values_no_order.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              order_by_count=FALSE,
-                                              base_size=11))
-    expect_true(file.exists(plot_file))
+   # lower p_value_threshold
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_both_parameters.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     corr_threshold=0.115,
+                                                     p_value_threshold=0.3))
 
     # plot without order
-    plot_file <- 'data/rt_explore_plot_unique_values_no_group_totals.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              show_group_totals=FALSE,
-                                              base_size=11))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_order.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      order_by_count=FALSE,
+                                                      base_size=11))
+
+    # plot without order
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_group_totals.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      show_group_totals=FALSE,
+                                                      base_size=11))
 
     # plot pretty
-    plot_file <- 'data/rt_explore_plot_unique_values_pretty.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
-                                              variable=rt_pretty_text(variable),
-                                              order_by_count=FALSE,
-                                              base_size=11))
-    expect_true(file.exists(plot_file))
-
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_pretty.png',
+                   plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
+                                                      variable=rt_pretty_text(variable),
+                                                      order_by_count=FALSE,
+                                                      base_size=11))
 
     # plot with order
-    plot_file <- 'data/rt_explore_plot_unique_values_with_order.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              order_by_count=TRUE,
-                                              base_size=11))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_with_order.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      order_by_count=TRUE,
+                                                      base_size=11))
 
     ##########################################################################################################
     # test without factor
@@ -184,24 +158,18 @@ test_that("rt_explore_unique_values", {
     expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 
     # plot without order
-    plot_file <- 'data/rt_explore_plot_unique_values_no_factor_no_order.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              order_by_count=FALSE,
-                                              base_size=11))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_factor_no_order.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      order_by_count=FALSE,
+                                                      base_size=11))
 
     # plot with order
-    plot_file <- 'data/rt_explore_plot_unique_values_no_factor_with_order.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              order_by_count=TRUE,
-                                              base_size=11))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_factor_with_order.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      order_by_count=TRUE,
+                                                      base_size=11))
 })
 
 test_that("rt_explore_plot_unique_values_against_categorical", {
@@ -219,65 +187,50 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
     variable <- 'checking_balance'
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_defaults.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              comparison_variable='default',
-                                              order_by_count=TRUE,
-                                              show_group_totals=TRUE,
-                                              show_comparison_totals=TRUE))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_comparison_variable_defaults.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      comparison_variable='default',
+                                                      order_by_count=TRUE,
+                                                      show_group_totals=TRUE,
+                                                      show_comparison_totals=TRUE))
 
     # plot pretty
-    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_pretty.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
-                                              variable=rt_pretty_text(variable),
-                                              comparison_variable=rt_pretty_text('default'),
-                                              order_by_count=TRUE,
-                                              show_group_totals=TRUE,
-                                              show_comparison_totals=TRUE))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_comparison_variable_pretty.png',
+                   plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
+                                                      variable=rt_pretty_text(variable),
+                                                      comparison_variable=rt_pretty_text('default'),
+                                                      order_by_count=TRUE,
+                                                      show_group_totals=TRUE,
+                                                      show_comparison_totals=TRUE))
 
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_not_order_by_count.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              comparison_variable='default',
-                                              order_by_count=FALSE,
-                                              show_group_totals=TRUE,
-                                              show_comparison_totals=TRUE))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_comparison_variable_not_order_by_count.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      comparison_variable='default',
+                                                      order_by_count=FALSE,
+                                                      show_group_totals=TRUE,
+                                                      show_comparison_totals=TRUE))
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_comp_var_not_show_group_totals.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              comparison_variable='default',
-                                              order_by_count=FALSE,
-                                              show_group_totals=FALSE,
-                                              show_comparison_totals=TRUE))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_comp_var_not_show_group_totals.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      comparison_variable='default',
+                                                      order_by_count=FALSE,
+                                                      show_group_totals=FALSE,
+                                                      show_comparison_totals=TRUE))
 
     # plot with labels
-    plot_file <- 'data/rt_explore_plot_unique_values_comp_var_not_show_comparison_totals.png'
-    if (file.exists(plot_file)) file.remove(plot_file)
-    ggsave(filename=plot_file,
-           plot=rt_explore_plot_unique_values(dataset=credit_data,
-                                              variable=variable,
-                                              comparison_variable='default',
-                                              order_by_count=FALSE,
-                                              show_group_totals=FALSE,
-                                              show_comparison_totals=FALSE))
-    expect_true(file.exists(plot_file))
+    test_save_plot(file_name='data/rt_explore_plot_unique_values_comp_var_not_show_comparison_totals.png',
+                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+                                                      variable=variable,
+                                                      comparison_variable='default',
+                                                      order_by_count=FALSE,
+                                                      show_group_totals=FALSE,
+                                                      show_comparison_totals=FALSE))
 })
 
 test_that("rt_explore_plot_boxplot", {
