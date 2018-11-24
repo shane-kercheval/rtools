@@ -13,7 +13,9 @@ Imports:
     Hmisc,
     magrittr,
     moments,
+    purrr,
     reshape2,
-    scales
+    scales,
+    stringr
 Suggests: testthat
 RoxygenNote: 6.1.1
