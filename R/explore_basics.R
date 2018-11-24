@@ -403,6 +403,7 @@ rt_explore_plot_boxplot <- function(dataset,
             scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
             ylab(variable) +
+            xlab(comparison_variable) +
             theme_gray(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
