@@ -19,7 +19,6 @@ rt_pretty_text <- function(values) {
     } else {
 
         values <- str_replace_all(values, '_', ' ')
-
         values <- str_replace_all(values, '(?<=\\S)(?=\\S)\\/(?=\\S)', ' / ')  # `x/y`` -> `x / y``
         #values <- str_replace_all(values, '(?=\\S)\\/(?!\\s)'    , ' / ')  # `x/y`` -> `x / y``
 

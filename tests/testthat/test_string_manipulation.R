@@ -2,7 +2,7 @@ context('String Manipulation')
 library(testthat)
 library(ggplot2)
 
-test_that("rt_explore_categoric_summary_NAs", {
+test_that('rt_explore_categoric_summary_NAs', {
 
     ##########################################################################################################
     # Test Basic Use Cases
@@ -35,13 +35,12 @@ test_that("rt_explore_categoric_summary_NAs", {
     # ensure if expected is NA then results is NA
     expect_true(all(ifelse(is.na(expected), is.na(results), expected == results)))
 
-
     ##########################################################################################################
     # Test Dataset with various values (and factor variables)
     ##########################################################################################################
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
-
-    values <- colnames(credit_data)
+    values <- c('checking_balance', 'months_loan_duration', 'credit_history', 'purpose', 'amount',
+                'savings_balance', 'employment_duration', 'percent_of_income', 'years_at_residence', 'age',
+                'other_credit', 'housing', 'existing_loans_count', 'job', 'dependents', 'phone', 'default')
     expected <- c('Checking Balance', 'Months Loan Duration', 'Credit History', 'Purpose', 'Amount',
                   'Savings Balance', 'Employment Duration', 'Percent Of Income' , 'Years At Residence', 'Age',
                   'Other Credit', 'Housing', 'Existing Loans Count', 'Job', 'Dependents', 'Phone', 'Default')
@@ -49,29 +48,25 @@ test_that("rt_explore_categoric_summary_NAs", {
     expect_true(all(results == expected))
 
     # factors
-    checking_balance <- sort(unique(credit_data$checking_balance))
-    expected_checking_balance <- c("< 0 DM", "> 200 DM", "1 - 200 DM", "Unknown")
+    checking_balance_vector <- c('< 0 DM', '> 200 DM', '1 - 200 DM', 'unknown')
+    # give factor different order, just to test
+    checking_balance <- factor(checking_balance_vector, levels=c(checking_balance_vector[1],
+                                                                 checking_balance_vector[3],
+                                                                 checking_balance_vector[2],
+                                                                 checking_balance_vector[4]))
+    expected_checking_balance <- c('< 0 DM', '> 200 DM', '1 - 200 DM', 'Unknown')
     expect_true(is.factor(checking_balance))  # make sure we are testing a factor
     results <- rt_pretty_text(checking_balance)
     expect_true(all(results == expected_checking_balance))
 
-    checking_balance_chars <- sort(as.character(unique(credit_data$checking_balance)))  # ensure no difference between character/factor
+    checking_balance_chars <- checking_balance_vector  # ensure no difference between character/factor
     expect_false(is.factor(checking_balance_chars))  # make sure we are NOT testing a factor
     results <- rt_pretty_text(checking_balance_chars)
     expect_true(all(results == expected_checking_balance))  # should still give the same thing as before
 
-    employment_duration <- sort(unique(credit_data$employment_duration))
-    expect_true(is.factor(employment_duration))  # make sure we are testing a factor
-    results <- rt_pretty_text(employment_duration)
-    expect_true(all(results == c("< 1 Year", "> 7 Years", "1 - 4 Years", "4 - 7 Years", "Unemployed")))
-
-    savings_balance <- sort(unique(credit_data$savings_balance))
-    expect_true(is.factor(savings_balance))  # make sure we are testing a factor
-    results <- rt_pretty_text(savings_balance)
-    expect_true(all(results == c("< 100 DM", "> 1000 DM", "100 - 500 DM", "500 - 1000 DM", "Unknown")))
-
-    purpose <- sort(unique(credit_data$purpose))
+    purpose_vector <- c('business', 'car', 'car0', 'education', 'furniture/appliances', 'renovations')
+    purpose <- factor(purpose_vector)
     expect_true(is.factor(purpose))  # make sure we are testing a factor
     results <- rt_pretty_text(purpose)
-    expect_true(all(results == c("Business", "Car", "Car0", "Education", "Furniture / Appliances", "Renovations")))
+    expect_true(all(results == c('Business', 'Car', 'Car0', 'Education', 'Furniture / Appliances', 'Renovations')))
 })
