@@ -36,3 +36,28 @@ rt_pretty_text <- function(values) {
         return (values)
     }
 }
+
+#' Changes string column values and column names to "pretty" strings. Ignores other datatypes else.
+#'
+#' @param dataset a dataframe to make pretty
+#'
+#' @examples
+#'
+#' library(ggplot2)
+#' rt_pretty_text(c('abc', 'ABC', 'abc/xyz'))
+#'
+#' @importFrom stringr str_replace_all str_split
+#' @importFrom purrr map_chr
+#' @export
+rt_pretty_dataset <- function(dataset) {
+
+
+    for(column in colnames(dataset)) {
+
+        dataset[, column] <- rt_pretty_text(dataset[, column])
+    }
+
+    colnames(dataset) <- rt_pretty_text(colnames(dataset))
+
+    return (dataset)
+}

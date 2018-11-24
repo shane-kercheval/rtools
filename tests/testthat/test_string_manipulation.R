@@ -2,7 +2,7 @@ context('String Manipulation')
 library(testthat)
 library(ggplot2)
 
-test_that('rt_explore_categoric_summary_NAs', {
+test_that('rt_pretty_text', {
 
     ##########################################################################################################
     # Test Basic Use Cases
@@ -69,4 +69,11 @@ test_that('rt_explore_categoric_summary_NAs', {
     expect_true(is.factor(purpose))  # make sure we are testing a factor
     results <- rt_pretty_text(purpose)
     expect_true(all(results == c('Business', 'Car', 'Car0', 'Education', 'Furniture / Appliances', 'Renovations')))
+})
+
+test_that('rt_pretty_dataset', {
+
+    ugly_data <- read.csv("data/credit.csv", header=TRUE)
+    pretty_data <- rt_pretty_dataset(ugly_data)
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=pretty_data, rds_file='data/pretty_dataset.RDS'))
 })

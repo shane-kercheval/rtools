@@ -215,9 +215,15 @@ rt_explore_plot_correlations <- function(dataset,
 #' @export
 rt_explore_unique_values <- function(dataset, variable) {
 
+    # R's syntax for variables with spaces (which works with variables without spaces) is
+    # "`My Variable`" which dplyr relies on
+    variable_dplyr_friendly = paste0('`', variable, '`')
+
     return (as.data.frame(
         dataset %>%
-            count_(variable) %>%
+            # R's syntax for variables with spaces (which works with variables without spaces) is
+            # "`My Variable`" which dplyr relies on
+            count_(variable_dplyr_friendly) %>%
             rename(count = n) %>%
             mutate(percent = count / nrow(dataset)) %>%
             arrange(desc(count))
@@ -247,17 +253,23 @@ rt_explore_plot_unique_values <- function(dataset,
                                           show_comparison_totals=TRUE,
                                           base_size=11) {
 
+    # R's syntax for variables with spaces (which works with variables without spaces) is
+    # "`My Variable`" which dplyr relies on
+    variable_dplyr_friendly = paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly = paste0('`', comparison_variable, '`')
+
     groups_by_variable <- rt_explore_unique_values(dataset=dataset, variable=variable)
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
         if(order_by_count) {
 
-            groups_by_variable[, variable] <- factor(groups_by_variable[, variable], levels = groups_by_variable[, variable])
+            groups_by_variable[, variable] <- factor(groups_by_variable[, variable],
+                                                     levels = groups_by_variable[, variable])
         }
 
         unique_values_plot <- groups_by_variable %>%
-            ggplot(aes_string(x=variable, y = 'percent', fill=variable)) +
+            ggplot(aes_string(x=variable_dplyr_friendly, y = 'percent', fill=variable_dplyr_friendly)) +
                 geom_bar(stat = 'identity') +
                 scale_y_continuous(labels = percent_format())
 
@@ -271,7 +283,8 @@ rt_explore_plot_unique_values <- function(dataset,
         return (
             unique_values_plot +
                 labs(title=paste('Unique Values -', variable),
-                     y='Percent of Dataset Containing Value') +
+                     y='Percent of Dataset Containing Value',
+                     x=variable) +
                 theme_gray(base_size = base_size) +
                 theme(legend.position = 'none',
                       axis.text.x = element_text(angle = 30, hjust = 1)))
@@ -280,12 +293,12 @@ rt_explore_plot_unique_values <- function(dataset,
 
         groups_by_both <- as.data.frame(
             dataset %>%
-                group_by_(variable, comparison_variable) %>%
+                group_by_(variable_dplyr_friendly, comparison_variable_dplyr_friendly) %>%
                 summarise(count = n(), actual_percent=n() / nrow(dataset)) %>%
-                group_by_(variable) %>%
+                group_by_(variable_dplyr_friendly) %>%
                 mutate(group_percent = count / sum(count)) %>%
                 ungroup() %>%
-                arrange_(variable, comparison_variable))
+                arrange_(variable_dplyr_friendly, comparison_variable_dplyr_friendly))
 
         if(order_by_count) {
 
@@ -296,31 +309,43 @@ rt_explore_plot_unique_values <- function(dataset,
         # create the plot
         unique_values_plot <- ggplot() +
             geom_bar(data = groups_by_variable,
-                     aes_string(x = variable, y = 'percent'),
+                     aes_string(x = variable_dplyr_friendly, y = 'percent'),
                      stat = 'identity',
                      position = 'dodge',
                      alpha = 0.3) +
             geom_bar(data = groups_by_both,
-                     aes_string(x = variable, y = 'actual_percent', fill=comparison_variable),
+                     aes_string(x = variable_dplyr_friendly,
+                                y = 'actual_percent',
+                                fill=comparison_variable_dplyr_friendly),
                      stat = 'identity',
                      position = 'dodge')
 
         if(show_group_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(data = groups_by_variable, aes_string(x=variable, label = 'percent(percent)', y = 'percent + 0.01'), vjust=-1) +
-                geom_text(data = groups_by_variable, aes_string(x=variable, label = 'count', y = 'percent + 0.01'), vjust=0.5)
+                geom_text(data = groups_by_variable,
+                          aes_string(x=variable_dplyr_friendly, label = 'percent(percent)', y = 'percent + 0.01'),
+                          vjust=-1) +
+                geom_text(data = groups_by_variable,
+                          aes_string(x=variable_dplyr_friendly, label = 'count', y = 'percent + 0.01'),
+                          vjust=0.5)
         }
 
         if(show_comparison_totals) {
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_both,
-                          aes_string(x = variable, y = 'actual_percent', label = 'count', group = comparison_variable),
+                          aes_string(x = variable_dplyr_friendly,
+                                     y = 'actual_percent',
+                                     label = 'count',
+                                     group = comparison_variable_dplyr_friendly),
                           position = position_dodge(width = 1),
                           vjust = -0.2) +
                 geom_text(data = groups_by_both,
-                          aes_string(x = variable, y = 'actual_percent', label = 'percent(group_percent)', group = comparison_variable),
+                          aes_string(x = variable_dplyr_friendly,
+                                     y = 'actual_percent',
+                                     label = 'percent(group_percent)',
+                                     group = comparison_variable_dplyr_friendly),
                           position = position_dodge(width = 1),
                           vjust = -1.5)
         }
@@ -354,20 +379,30 @@ rt_explore_plot_boxplot <- function(dataset,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
+    # R's syntax for variables with spaces (which works with variables without spaces) is
+    # "`My Variable`" which dplyr relies on
+    variable_dplyr_friendly = paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly = paste0('`', comparison_variable, '`')
+
     if(rt_is_null_na_nan(comparison_variable)) {
 
-        boxplot_plot <- ggplot(dataset, aes_string(y=variable, group=1)) +
+        boxplot_plot <- ggplot(dataset, aes_string(y=variable_dplyr_friendly, group=1)) +
             geom_boxplot() +
             scale_y_continuous(labels = comma_format()) +
             scale_x_discrete(breaks = NULL) +
             xlab(NULL) +
+            ylab(variable) +
             theme_gray(base_size = base_size)
 
     } else {
 
-        boxplot_plot <- ggplot(dataset, aes_string(y=variable, x=comparison_variable, color=comparison_variable)) +
+        boxplot_plot <- ggplot(dataset,
+                               aes_string(y=variable_dplyr_friendly,
+                                          x=comparison_variable_dplyr_friendly,
+                                          color=comparison_variable_dplyr_friendly)) +
             scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
+            ylab(variable) +
             theme_gray(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
@@ -413,11 +448,15 @@ rt_explore_plot_histogram <- function(dataset,
                                       x_zoom_max=NULL,
                                       base_size=11) {
 
-    histogram_plot <- ggplot(dataset, aes_string(x=variable)) +
-        #geom_density(aes_string(x=variable))
+    # R's syntax for variables with spaces (which works with variables without spaces) is
+    # "`My Variable`" which dplyr relies on
+    variable_dplyr_friendly = paste0('`', variable, '`')
+
+    histogram_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly)) +
         geom_histogram(bins = num_bins) +
         geom_density(aes(y = ..count..), col='red') +
-        labs(title=paste0('Histogram & Density Plot of `', variable, '`')) +
+        labs(title=paste0('Histogram & Density Plot of `', variable, '`'),
+             x=variable) +
         theme_gray(base_size = base_size)
 
     # zoom in on graph is parameters are set
@@ -469,7 +508,13 @@ rt_explore_plot_scatter <- function(dataset,
                                     y_zoom_max=NULL,
                                     base_size=11) {
 
-    scatter_plot <- ggplot(dataset, aes_string(x=variable, y=comparison_variable))
+    # R's syntax for variables with spaces (which works with variables without spaces) is
+    # "`My Variable`" which dplyr relies on
+    variable_dplyr_friendly = paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly = paste0('`', comparison_variable, '`')
+
+    scatter_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly,
+                                               y=comparison_variable_dplyr_friendly))
 
     if(jitter) {
 
@@ -482,7 +527,9 @@ rt_explore_plot_scatter <- function(dataset,
 
     scatter_plot <- scatter_plot +
         scale_y_continuous(labels = comma_format()) +
-        theme_gray(base_size = base_size)
+        theme_gray(base_size = base_size) +
+        labs(x=variable,
+             y=comparison_variable)
 
 
     # zoom in on graph is parameters are set

@@ -62,6 +62,12 @@ test_that("rt_explore_correlations_credit", {
     ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=credit_data))
     expect_true(file.exists(correlation_plot_file))
 
+     # pretty
+    correlation_plot_file <- 'data/rt_explore_plot_correlations_credit_pretty.png'
+    if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
+    ggsave(filename=correlation_plot_file, plot=rt_explore_plot_correlations(dataset=rt_pretty_dataset(credit_data)))
+    expect_true(file.exists(correlation_plot_file))
+
     # change base_size
     correlation_plot_file <- 'data/rt_explore_plot_correlations_base_size.png'
     if (file.exists(correlation_plot_file)) file.remove(correlation_plot_file)
@@ -141,6 +147,17 @@ test_that("rt_explore_unique_values", {
                                               base_size=11))
     expect_true(file.exists(plot_file))
 
+    # plot pretty
+    plot_file <- 'data/rt_explore_plot_unique_values_pretty.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
+                                              variable=rt_pretty_text(variable),
+                                              order_by_count=FALSE,
+                                              base_size=11))
+    expect_true(file.exists(plot_file))
+
+
     # plot with order
     plot_file <- 'data/rt_explore_plot_unique_values_with_order.png'
     if (file.exists(plot_file)) file.remove(plot_file)
@@ -213,6 +230,18 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
                                               show_comparison_totals=TRUE))
     expect_true(file.exists(plot_file))
 
+    # plot pretty
+    plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_pretty.png'
+    if (file.exists(plot_file)) file.remove(plot_file)
+    ggsave(filename=plot_file,
+           plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
+                                              variable=rt_pretty_text(variable),
+                                              comparison_variable=rt_pretty_text('default'),
+                                              order_by_count=TRUE,
+                                              show_group_totals=TRUE,
+                                              show_comparison_totals=TRUE))
+    expect_true(file.exists(plot_file))
+
 
     # plot with labels
     plot_file <- 'data/rt_explore_plot_unique_values_comparison_variable_not_order_by_count.png'
@@ -250,7 +279,6 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
                                               show_comparison_totals=FALSE))
     expect_true(file.exists(plot_file))
 })
-
 
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
@@ -297,6 +325,14 @@ test_that("rt_explore_plot_boxplot", {
                                                   y_zoom_max=NULL,
                                                   base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_pretty.png',
+                   plot=rt_explore_plot_boxplot(dataset=rt_pretty_dataset(dataset),
+                                                variable=rt_pretty_text(variable),
+                                                comparison_variable=rt_pretty_text(comparison_variable),
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_min.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
@@ -325,7 +361,6 @@ test_that("rt_explore_plot_boxplot", {
 test_that("rt_explore_plot_histogram", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'months_loan_duration'
-    comparison_variable <- 'default'
 
     test_save_plot(file_name='data/rt_explore_plot_histogram_standard.png',
                    plot=rt_explore_plot_histogram(dataset=dataset,
@@ -335,7 +370,15 @@ test_that("rt_explore_plot_histogram", {
                                                   x_zoom_max=NULL,
                                                   base_size=11))
 
-        test_save_plot(file_name='data/rt_explore_plot_histogram_num_bins.png',
+    test_save_plot(file_name='data/rt_explore_plot_histogram_pretty.png',
+                   plot=rt_explore_plot_histogram(dataset=rt_pretty_dataset(dataset),
+                                                  variable=rt_pretty_text(variable),
+                                                  num_bins=30,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_num_bins.png',
                    plot=rt_explore_plot_histogram(dataset=dataset,
                                                   variable=variable,
                                                   num_bins=15,
@@ -391,6 +434,18 @@ test_that("rt_explore_plot_scatterplot", {
                                                  y_zoom_min=NULL,
                                                  y_zoom_max=NULL,
                                                  base_size=11))
+
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_pretty.png',
+                   plot=rt_explore_plot_scatter(dataset=rt_pretty_dataset(dataset),
+                                                variable=rt_pretty_text(variable),
+                                                comparison_variable=rt_pretty_text(comparison_variable),
+                                                alpha=0.3,
+                                                x_zoom_min=NULL,
+                                                x_zoom_max=NULL,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter_alpha.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
