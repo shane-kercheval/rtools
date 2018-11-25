@@ -217,7 +217,7 @@ rt_explore_unique_values <- function(dataset, variable) {
 
     # R's syntax for variables with spaces (which works with variables without spaces) is
     # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly = paste0('`', variable, '`')
+    variable_dplyr_friendly <- paste0('`', variable, '`')
 
     return (as.data.frame(
         dataset %>%
@@ -255,8 +255,8 @@ rt_explore_plot_unique_values <- function(dataset,
 
     # R's syntax for variables with spaces (which works with variables without spaces) is
     # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly = paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly = paste0('`', comparison_variable, '`')
+    variable_dplyr_friendly <- paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
 
     groups_by_variable <- rt_explore_unique_values(dataset=dataset, variable=variable)
 
@@ -381,8 +381,8 @@ rt_explore_plot_boxplot <- function(dataset,
                                     base_size=11) {
     # R's syntax for variables with spaces (which works with variables without spaces) is
     # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly = paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly = paste0('`', comparison_variable, '`')
+    variable_dplyr_friendly <- paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
@@ -434,16 +434,18 @@ rt_explore_plot_boxplot <- function(dataset,
 #'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable from which to create a histogram
+#' @param comparison_variable (optional) the additional variable to group by; must be a string/factor column
 #' @param num_bins the number of bins that the histogram will use
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string aes geom_histogram geom_density labs theme_gray coord_cartesian
+#' @importFrom ggplot2 ggplot aes_string aes geom_histogram geom_freqpoly geom_density labs theme_gray coord_cartesian
 #' @export
 rt_explore_plot_histogram <- function(dataset,
                                       variable,
+                                      comparison_variable=NULL,
                                       num_bins=30,
                                       x_zoom_min=NULL,
                                       x_zoom_max=NULL,
@@ -451,14 +453,29 @@ rt_explore_plot_histogram <- function(dataset,
 
     # R's syntax for variables with spaces (which works with variables without spaces) is
     # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly = paste0('`', variable, '`')
+    variable_dplyr_friendly <- paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
 
-    histogram_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly)) +
-        geom_histogram(bins = num_bins) +
-        geom_density(aes(y = ..count..), col='red') +
-        labs(title=paste0('Histogram & Density Plot of `', variable, '`'),
-             x=variable) +
-        theme_gray(base_size = base_size)
+    # if no comparison_variable, then do histogram with density; otherwise do histogram with group
+    if(is.null(comparison_variable)) {
+
+        histogram_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly)) +
+            geom_histogram(bins = num_bins) +
+            geom_density(aes(y = ..count..), col='red') +
+            labs(title=paste0('Histogram & Density Plot of `', variable, '`'),
+                 x=variable) +
+            theme_gray(base_size = base_size)
+    } else {
+
+
+        histogram_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly,
+                                                     color=comparison_variable_dplyr_friendly)) +
+            geom_freqpoly(binwidth= 100 / num_bins) +
+            labs(title=paste('Distribution of', variable_dplyr_friendly, 'by', comparison_variable_dplyr_friendly),
+                 x=variable,
+                 color=comparison_variable) +
+            theme_gray(base_size = base_size)
+    }
 
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
@@ -511,8 +528,8 @@ rt_explore_plot_scatter <- function(dataset,
 
     # R's syntax for variables with spaces (which works with variables without spaces) is
     # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly = paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly = paste0('`', comparison_variable, '`')
+    variable_dplyr_friendly <- paste0('`', variable, '`')
+    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
 
     scatter_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly,
                                                y=comparison_variable_dplyr_friendly))

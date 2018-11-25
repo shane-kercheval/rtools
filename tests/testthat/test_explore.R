@@ -372,6 +372,77 @@ test_that("rt_explore_plot_histogram", {
                                                   base_size=15))
 })
 
+test_that("rt_explore_plot_histogram_with_categoric_comparison", {
+    dataset <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'months_loan_duration'
+    comparison_variable <- 'checking_balance'
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_standard.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_pretty.png',
+                   plot=rt_explore_plot_histogram(dataset=rt_pretty_dataset(dataset),
+                                                  variable=rt_pretty_text(variable),
+                                                  comparison_variable=rt_pretty_text(comparison_variable),
+                                                  num_bins=30,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_num_bins.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  num_bins=15,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_zoom_min.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=20,
+                                                  x_zoom_max=NULL,
+                                                  base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_zoom_max.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=40,
+                                                  base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_zoom_both.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  num_bins=30,
+                                                  x_zoom_min=20,
+                                                  x_zoom_max=40,
+                                                  base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_zoom_both_num_bins.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  num_bins=15,
+                                                  x_zoom_min=20,
+                                                  x_zoom_max=40,
+                                                  base_size=15))
+
+})
+
+
 test_that("rt_explore_plot_scatterplot", {
     dataset <- read.csv("data/housing.csv", header=TRUE)
     variable <- 'median_income'
