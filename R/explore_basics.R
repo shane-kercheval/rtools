@@ -500,9 +500,11 @@ rt_explore_plot_histogram <- function(dataset,
 
 #' returns a scatterplot of `variable` (numeric, x-axis) compared against `comparison_variable` (y-axis)
 #'
-#' @param dataset dataframe containing numberic columns
-#' @param variable the variable from which to create a boxplot
-#' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param dataset dataframe
+#' @param variable a numeric variable (x-axis)
+#' @param comparison_variable the additional numeric variable (y-axis)
+#' @param color_variable an optional variable (categoric or numeric) that allows points to be colored based on the values of the variable
+#' @param size_variable an optional variable (numeric) that allows points to be sized based on the values of the variable
 #' @param alpha controls transparency
 #' @param jitter enables/disables jittering
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
@@ -517,7 +519,9 @@ rt_explore_plot_histogram <- function(dataset,
 #' @export
 rt_explore_plot_scatter <- function(dataset,
                                     variable,
-                                    comparison_variable=NULL,
+                                    comparison_variable,
+                                    color_variable=NULL,
+                                    size_variable=NULL,
                                     alpha=0.3,
                                     jitter=FALSE,
                                     x_zoom_min=NULL,
@@ -531,8 +535,20 @@ rt_explore_plot_scatter <- function(dataset,
     variable_dplyr_friendly <- paste0('`', variable, '`')
     comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
 
+    dplyr_friendly <- function(x) {
+        if (is.null(x)) {
+            return (NULL)
+        } else {
+            return (paste0('`', x, '`'))
+        }
+    }
+    color_variable_dplyr_friendly <- dplyr_friendly(color_variable)
+    size_variable_dplyr_friendly <- dplyr_friendly(size_variable)
+
     scatter_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly,
-                                               y=comparison_variable_dplyr_friendly))
+                                               y=comparison_variable_dplyr_friendly,
+                                               color=color_variable_dplyr_friendly,
+                                               size=size_variable_dplyr_friendly))
 
     if(jitter) {
 

@@ -4,17 +4,21 @@
 \alias{rt_explore_plot_scatter}
 \title{returns a scatterplot of `variable` (numeric, x-axis) compared against `comparison_variable` (y-axis)}
 \usage{
-rt_explore_plot_scatter(dataset, variable, comparison_variable = NULL,
-  alpha = 0.3, jitter = FALSE, x_zoom_min = NULL,
-  x_zoom_max = NULL, y_zoom_min = NULL, y_zoom_max = NULL,
-  base_size = 11)
+rt_explore_plot_scatter(dataset, variable, comparison_variable,
+  color_variable = NULL, size_variable = NULL, alpha = 0.3,
+  jitter = FALSE, x_zoom_min = NULL, x_zoom_max = NULL,
+  y_zoom_min = NULL, y_zoom_max = NULL, base_size = 11)
 }
 \arguments{
-\item{dataset}{dataframe containing numberic columns}
+\item{dataset}{dataframe}
 
-\item{variable}{the variable from which to create a boxplot}
+\item{variable}{a numeric variable (x-axis)}
 
-\item{comparison_variable}{the additional variable to group by; must be a string/factor column}
+\item{comparison_variable}{the additional numeric variable (y-axis)}
+
+\item{color_variable}{an optional variable (categoric or numeric) that allows points to be colored based on the values of the variable}
+
+\item{size_variable}{an optional variable (numeric) that allows points to be sized based on the values of the variable}
 
 \item{alpha}{controls transparency}
 
