@@ -289,7 +289,7 @@ rt_explore_plot_value_counts <- function(dataset,
 
         return (
             unique_values_plot +
-                labs(title=paste('Unique Values -', variable),
+                labs(title=paste('Value Counts -', variable),
                      y='Percent of Dataset Containing Value',
                      x=variable) +
                 theme_gray(base_size = base_size) +
@@ -390,7 +390,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
-    
+
     symbol_variable <- sym(variable)  # because we are using string variables
 
     if(rt_is_null_na_nan(comparison_variable)) {
