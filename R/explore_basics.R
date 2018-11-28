@@ -217,7 +217,7 @@ rt_explore_plot_correlations <- function(dataset,
 #' @export
 rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
 
-    symbol_variable <- sym(variable)  # becaue we are using string variables
+    symbol_variable <- sym(variable)  # because we are using string variables
 
     if(is.null(sum_by)) {
 
@@ -229,7 +229,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
 
     } else {
 
-        symbol_sum_by <- sym(sum_by)  # becaue we are using string variables
+        symbol_sum_by <- sym(sum_by)  # because we are using string variables
 
         totals <- dataset %>%
             group_by(!!symbol_variable) %>%
@@ -251,9 +251,9 @@ rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'#'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr group_by_ summarise mutate ungroup arrange_
+#' @importFrom dplyr group_by summarise mutate ungroup arrange
 #' @importFrom scales percent_format percent
-#' @importFrom ggplot2 ggplot aes_string aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
+#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
 #' @export
 rt_explore_plot_value_counts <- function(dataset,
                                          variable,
@@ -263,10 +263,7 @@ rt_explore_plot_value_counts <- function(dataset,
                                          show_comparison_totals=TRUE,
                                          base_size=11) {
 
-    # R's syntax for variables with spaces (which works with variables without spaces) is
-    # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly <- paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
+    symbol_variable <- sym(variable)  # because we are using string variables
 
     groups_by_variable <- rt_explore_value_totals(dataset=dataset, variable=variable)
 
@@ -279,7 +276,7 @@ rt_explore_plot_value_counts <- function(dataset,
         }
 
         unique_values_plot <- groups_by_variable %>%
-            ggplot(aes_string(x=variable_dplyr_friendly, y = 'percent', fill=variable_dplyr_friendly)) +
+            ggplot(aes(x=!!symbol_variable, y = percent, fill=!!symbol_variable)) +
                 geom_bar(stat = 'identity') +
                 scale_y_continuous(labels = percent_format())
 
@@ -301,32 +298,36 @@ rt_explore_plot_value_counts <- function(dataset,
 
     } else {
 
+        symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
+
         groups_by_both <- as.data.frame(
             dataset %>%
-                group_by_(variable_dplyr_friendly, comparison_variable_dplyr_friendly) %>%
+                group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
                 summarise(count = n(), actual_percent=n() / nrow(dataset)) %>%
-                group_by_(variable_dplyr_friendly) %>%
+                group_by(!!symbol_variable) %>%
                 mutate(group_percent = count / sum(count)) %>%
                 ungroup() %>%
-                arrange_(variable_dplyr_friendly, comparison_variable_dplyr_friendly))
+                arrange(!!symbol_variable, !!symbol_comparison_variable))
 
         if(order_by_count) {
 
-            groups_by_variable[, variable] <- factor(groups_by_variable[, variable], levels = groups_by_variable[, variable])
-            groups_by_both[, variable] <- factor(groups_by_both[, variable], levels = groups_by_variable[, variable])
+            groups_by_variable[, variable] <- factor(groups_by_variable[, variable],
+                                                     levels = groups_by_variable[, variable])
+            groups_by_both[, variable] <- factor(groups_by_both[, variable],
+                                                     levels = groups_by_variable[, variable])
         }
 
         # create the plot
         unique_values_plot <- ggplot() +
             geom_bar(data = groups_by_variable,
-                     aes_string(x = variable_dplyr_friendly, y = 'percent'),
+                     aes(x = !!symbol_variable, y = percent),
                      stat = 'identity',
                      position = 'dodge',
                      alpha = 0.3) +
             geom_bar(data = groups_by_both,
-                     aes_string(x = variable_dplyr_friendly,
-                                y = 'actual_percent',
-                                fill=comparison_variable_dplyr_friendly),
+                     aes(x = !!symbol_variable,
+                         y = actual_percent,
+                         fill = !!symbol_comparison_variable),
                      stat = 'identity',
                      position = 'dodge')
 
@@ -334,10 +335,10 @@ rt_explore_plot_value_counts <- function(dataset,
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
-                          aes_string(x=variable_dplyr_friendly, label = 'percent(percent)', y = 'percent + 0.01'),
+                          aes(x=!!symbol_variable, label = percent(percent), y = percent + 0.01),
                           vjust=-1) +
                 geom_text(data = groups_by_variable,
-                          aes_string(x=variable_dplyr_friendly, label = 'count', y = 'percent + 0.01'),
+                          aes(x=!!symbol_variable, label = count, y = percent + 0.01),
                           vjust=0.5)
         }
 
@@ -345,17 +346,17 @@ rt_explore_plot_value_counts <- function(dataset,
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_both,
-                          aes_string(x = variable_dplyr_friendly,
-                                     y = 'actual_percent',
-                                     label = 'count',
-                                     group = comparison_variable_dplyr_friendly),
+                          aes(x = !!symbol_variable,
+                              y = actual_percent,
+                              label = count,
+                              group = !!symbol_comparison_variable),
                           position = position_dodge(width = 1),
                           vjust = -0.2) +
                 geom_text(data = groups_by_both,
-                          aes_string(x = variable_dplyr_friendly,
-                                     y = 'actual_percent',
-                                     label = 'percent(group_percent)',
-                                     group = comparison_variable_dplyr_friendly),
+                          aes(x = !!symbol_variable,
+                              y = actual_percent,
+                              label = percent(group_percent),
+                              group = !!symbol_comparison_variable),
                           position = position_dodge(width = 1),
                           vjust = -1.5)
         }
@@ -380,7 +381,7 @@ rt_explore_plot_value_counts <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
@@ -389,14 +390,12 @@ rt_explore_plot_boxplot <- function(dataset,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
-    # R's syntax for variables with spaces (which works with variables without spaces) is
-    # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly <- paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
+    
+    symbol_variable <- sym(variable)  # because we are using string variables
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
-        boxplot_plot <- ggplot(dataset, aes_string(y=variable_dplyr_friendly, group=1)) +
+        boxplot_plot <- ggplot(dataset, aes(y=!!symbol_variable, group=1)) +
             geom_boxplot() +
             scale_y_continuous(labels = comma_format()) +
             scale_x_discrete(breaks = NULL) +
@@ -406,10 +405,11 @@ rt_explore_plot_boxplot <- function(dataset,
 
     } else {
 
+        symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
         boxplot_plot <- ggplot(dataset,
-                               aes_string(y=variable_dplyr_friendly,
-                                          x=comparison_variable_dplyr_friendly,
-                                          color=comparison_variable_dplyr_friendly)) +
+                               aes(y=!!symbol_variable,
+                                   x=!!symbol_comparison_variable,
+                                   color=!!symbol_comparison_variable)) +
             scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
             ylab(variable) +
@@ -451,7 +451,7 @@ rt_explore_plot_boxplot <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string aes geom_histogram geom_freqpoly geom_density labs theme_gray coord_cartesian
+#' @importFrom ggplot2 ggplot aes aes geom_histogram geom_freqpoly geom_density labs theme_gray coord_cartesian
 #' @export
 rt_explore_plot_histogram <- function(dataset,
                                       variable,
@@ -461,15 +461,12 @@ rt_explore_plot_histogram <- function(dataset,
                                       x_zoom_max=NULL,
                                       base_size=11) {
 
-    # R's syntax for variables with spaces (which works with variables without spaces) is
-    # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly <- paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
+    symbol_variable <- sym(variable)  # because we are using string variables
 
     # if no comparison_variable, then do histogram with density; otherwise do histogram with group
     if(is.null(comparison_variable)) {
 
-        histogram_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly)) +
+        histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
             geom_histogram(bins = num_bins) +
             geom_density(aes(y = ..count..), col='red') +
             labs(title=paste0('Histogram & Density Plot of `', variable, '`'),
@@ -477,11 +474,11 @@ rt_explore_plot_histogram <- function(dataset,
             theme_gray(base_size = base_size)
     } else {
 
-
-        histogram_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly,
-                                                     color=comparison_variable_dplyr_friendly)) +
+        symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
+        histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable,
+                                              color=!!symbol_comparison_variable)) +
             geom_freqpoly(binwidth= 100 / num_bins) +
-            labs(title=paste('Distribution of', variable_dplyr_friendly, 'by', comparison_variable_dplyr_friendly),
+            labs(title=paste0('Distribution of `', variable, '` by `', comparison_variable, '`'),
                  x=variable,
                  color=comparison_variable) +
             theme_gray(base_size = base_size)
@@ -524,7 +521,7 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes_string geom_point theme_gray coord_cartesian geom_jitter position_jitter scale_y_continuous
+#' @importFrom ggplot2 ggplot aes geom_point theme_gray coord_cartesian geom_jitter position_jitter scale_y_continuous
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_scatter <- function(dataset,
@@ -540,25 +537,26 @@ rt_explore_plot_scatter <- function(dataset,
                                     y_zoom_max=NULL,
                                     base_size=11) {
 
-    # R's syntax for variables with spaces (which works with variables without spaces) is
-    # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly <- paste0('`', variable, '`')
-    comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
+    symbol_variable <- sym(variable)  # because we are using string variables
+    symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
 
-    dplyr_friendly <- function(x) {
+    symbol_if_not_null <- function(x) {
         if (is.null(x)) {
+
             return (NULL)
+
         } else {
-            return (paste0('`', x, '`'))
+
+            return (sym(x))
         }
     }
-    color_variable_dplyr_friendly <- dplyr_friendly(color_variable)
-    size_variable_dplyr_friendly <- dplyr_friendly(size_variable)
+    symbol_color_variable <- symbol_if_not_null(color_variable)
+    symbol_size_variable <- symbol_if_not_null(size_variable)
 
-    scatter_plot <- ggplot(dataset, aes_string(x=variable_dplyr_friendly,
-                                               y=comparison_variable_dplyr_friendly,
-                                               color=color_variable_dplyr_friendly,
-                                               size=size_variable_dplyr_friendly))
+    scatter_plot <- ggplot(dataset, aes(x=!!symbol_variable,
+                                        y=!!symbol_comparison_variable,
+                                        color=!!symbol_color_variable,
+                                        size=!!symbol_size_variable))
 
     if(jitter) {
 
