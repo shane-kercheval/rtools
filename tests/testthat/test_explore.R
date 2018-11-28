@@ -284,7 +284,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       show_comparison_totals=FALSE))
 })
 
-test_that("...", {
+test_that("rt_explore_plot_value_totals_sums", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
     # make sure it handles NAs
     credit_data[1, 'checking_balance'] <- NA
@@ -292,28 +292,41 @@ test_that("...", {
     sum_by_variable <- 'amount'
     comparison_variable <- 'default'
 
-    #value_sums <- rt_explore_value_totals(credit_data, variable = 'checking_balance', sum_by = 'amount')
-
-    # plot with labels
-    test_save_plot(file_name='data/rt_explore_plot_value_sums1.png',
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_sums_defaults.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     sum_by_variable=sum_by_variable,
+                                                     sum_by_variable=sum_by_variable))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_sums_non_defaults.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
                                                      comparison_variable=NULL,
-                                                     order_by_count=TRUE,
-                                                     show_group_totals=TRUE,
-                                                     show_comparison_totals=FALSE))
+                                                     sum_by_variable=sum_by_variable,
+                                                     order_by_count=FALSE,
+                                                     show_group_totals=FALSE,
+                                                     show_comparison_totals=FALSE,
+                                                     base_size=16))
 
-    test_save_plot(file_name='data/rt_explore_plot_value_sums2.png',
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_sums_comparison_defaults.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     sum_by_variable=sum_by_variable,
                                                      comparison_variable=comparison_variable,
+                                                     sum_by_variable=sum_by_variable,
                                                      order_by_count=TRUE,
                                                      show_group_totals=TRUE,
-                                                     show_comparison_totals=TRUE))
-})
+                                                     show_comparison_totals=TRUE,
+                                                     base_size=14))
 
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_sums_comparison_defaults_no_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     sum_by_variable=sum_by_variable,
+                                                     order_by_count=FALSE,
+                                                     show_group_totals=TRUE,
+                                                     show_comparison_totals=FALSE,
+                                                     base_size=14))
+})
 
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)

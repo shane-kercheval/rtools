@@ -250,7 +250,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
 #' @param show_group_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
-#'#'
+#'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange
 #' @importFrom scales percent_format percent

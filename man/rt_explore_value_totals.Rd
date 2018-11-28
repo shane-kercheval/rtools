@@ -2,21 +2,21 @@
 % Please edit documentation in R/explore_basics.R
 \name{rt_explore_value_totals}
 \alias{rt_explore_value_totals}
-\title{returns either a *count* of the unique values of `variable` if `sum_by` is NULL, otherwise it *sums* the
-variable represented by `sum_by` across (i.e. grouped by) `variable`}
+\title{returns either a *count* of the unique values of `variable` if `sum_by_variable` is NULL, otherwise it *sums* the
+variable represented by `sum_by_variable` across (i.e. grouped by) `variable`}
 \usage{
-rt_explore_value_totals(dataset, variable, sum_by = NULL)
+rt_explore_value_totals(dataset, variable, sum_by_variable = NULL)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
 
 \item{variable}{the variable (e.g. factor) to get unique values from}
 
-\item{sum_by}{the numeric variable to sum}
+\item{sum_by_variable}{the numeric variable to sum}
 }
 \description{
-returns either a *count* of the unique values of `variable` if `sum_by` is NULL, otherwise it *sums* the
-variable represented by `sum_by` across (i.e. grouped by) `variable`
+returns either a *count* of the unique values of `variable` if `sum_by_variable` is NULL, otherwise it *sums* the
+variable represented by `sum_by_variable` across (i.e. grouped by) `variable`
 }
 \examples{
 
