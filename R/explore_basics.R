@@ -246,13 +246,14 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param sum_by_variable the numeric variable to sum
 #' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
 #' @param show_group_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr group_by summarise mutate ungroup arrange
+#' @importFrom dplyr group_by summarise mutate ungroup arrange n
 #' @importFrom scales percent_format percent
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
 #' @export
@@ -412,7 +413,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab theme_gray theme element_text coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_gray theme element_text coord_cartesian
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
@@ -443,8 +444,8 @@ rt_explore_plot_boxplot <- function(dataset,
                                    color=!!symbol_comparison_variable)) +
             scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
-            ylab(variable) +
             xlab(comparison_variable) +
+            ylab(variable) +
             theme_gray(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))

@@ -16,14 +16,15 @@ rt_explore_plot_value_totals(dataset, variable,
 
 \item{comparison_variable}{the additional variable to group by; must be a string/factor column}
 
+\item{sum_by_variable}{the numeric variable to sum}
+
 \item{order_by_count}{if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable}
 
 \item{show_group_totals}{if TRUE (the default) the graph will display the totals for the variable}
 
 \item{show_comparison_totals}{if TRUE (the default) the graph will display the totals for the comparison_variable}
 
-\item{base_size}{uses ggplot's base_size parameter for controling the size of the text
-#'}
+\item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
 \description{
 returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable
