@@ -85,7 +85,8 @@ test_that("rt_explore_correlations_credit", {
                                                      p_value_threshold=0.3))
 })
 
-test_that("rt_explore_plot_value_counts", {
+
+test_that("rt_explore_value_totals_counts", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
     ##########################################################################################################
@@ -99,14 +100,74 @@ test_that("rt_explore_plot_value_counts", {
 
     variable <- 'checking_balance'
 
-    unique_values <- rt_explore_unique_values(dataset=credit_data, variable=variable)
+    unique_values <- rt_explore_value_totals(dataset=credit_data, variable=variable)
 
+    expect_true(all(colnames(unique_values) == c('checking_balance', 'count', 'percent')))
     expect_true(all(levels(unique_values$checking_balance) == custom_levels))
 
     expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
     expect_true(is.na(unique_values$checking_balance[5]))
     expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
     expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
+
+    ##########################################################################################################
+    # test without factor
+    ##########################################################################################################
+    credit_data$checking_balance <- as.character(credit_data$checking_balance)
+    unique_values <- rt_explore_value_totals(dataset=credit_data, variable=variable)
+
+    expect_true(all(colnames(unique_values) == c('checking_balance', 'count', 'percent')))
+
+    # this is the only thing that should change
+    expect_true(is.null(levels(unique_values$checking_balance)))
+
+    # all of these should remain the same
+    expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
+    expect_true(is.na(unique_values$checking_balance[5]))
+    expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
+    expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
+})
+
+test_that("rt_explore_value_totals_sums", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'checking_balance'
+    sum_by <- 'amount'
+
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    credit_data[2, 'amount'] <- NA
+    credit_data[3, 'checking_balance'] <- NA
+    credit_data[3, 'amount'] <- NA
+
+    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by=sum_by)
+
+    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum')))
+    expect_true(all(levels(value_sums$checking_balance) == custom_levels))
+
+    expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
+    expect_true(is.na(value_sums$checking_balance[5]))
+    expect_true(all(value_sums$sum == c(1232346, 1023663, 868841, 137192, 1169)))
+
+    # change to character
+    credit_data$checking_balance <- as.character(credit_data$checking_balance)
+    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by=sum_by)
+
+    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum')))
+    expect_true(all(levels(value_sums$checking_balance) == custom_levels))
+
+    expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
+    expect_true(is.na(value_sums$checking_balance[5]))
+    expect_true(all(value_sums$sum == c(1232346, 1023663, 868841, 137192, 1169)))
+})
+
+test_that("rt_explore_plot_value_counts", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'checking_balance'
+
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order.png',
@@ -140,16 +201,6 @@ test_that("rt_explore_plot_value_counts", {
     # test without factor
     ##########################################################################################################
     credit_data$checking_balance <- as.character(credit_data$checking_balance)
-    unique_values <- rt_explore_unique_values(dataset=credit_data, variable=variable)
-
-    # this is the only thing that should change
-    expect_true(is.null(levels(unique_values$checking_balance)))
-
-    # all of these should remain the same
-    expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
-    expect_true(is.na(unique_values$checking_balance[5]))
-    expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
-    expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_factor_no_order.png',

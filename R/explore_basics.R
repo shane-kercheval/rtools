@@ -200,34 +200,44 @@ rt_explore_plot_correlations <- function(dataset,
 
 }
 
-#' returns a count of the unique values for a given dataset/variable
+#' returns either a *count* of the unique values of `variable` if `sum_by` is NULL, otherwise it *sums* the
+#' variable represented by `sum_by` across (i.e. grouped by) `variable`
 #'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
+#' @param sum_by the numeric variable to sum
 #'
 #' @examples
 #'
 #' library(ggplot2)
-#' rt_explore_unique_values(dataset=iris, variable='Species')
+#' rt_explore_value_totals(dataset=iris, variable='Species')
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr count_ mutate rename arrange desc
+#' @importFrom dplyr sym count mutate group_by summarise rename arrange desc
 #' @export
-rt_explore_unique_values <- function(dataset, variable) {
+rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
 
-    # R's syntax for variables with spaces (which works with variables without spaces) is
-    # "`My Variable`" which dplyr relies on
-    variable_dplyr_friendly <- paste0('`', variable, '`')
+    symbol_variable <- sym(variable)  # becaue we are using string variables
 
-    return (as.data.frame(
-        dataset %>%
-            # R's syntax for variables with spaces (which works with variables without spaces) is
-            # "`My Variable`" which dplyr relies on
-            count_(variable_dplyr_friendly) %>%
+    if(is.null(sum_by)) {
+
+        totals <- dataset %>%
+            count(!!symbol_variable) %>%
             rename(count = n) %>%
             mutate(percent = count / nrow(dataset)) %>%
             arrange(desc(count))
-        ))
+
+    } else {
+
+        symbol_sum_by <- sym(sum_by)  # becaue we are using string variables
+
+        totals <- dataset %>%
+            group_by(!!symbol_variable) %>%
+            summarise(sum = sum(!!symbol_sum_by, na.rm = TRUE)) %>%
+            arrange(desc(sum))
+    }
+
+    return (as.data.frame(totals))
 }
 
 #' returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable
@@ -258,7 +268,7 @@ rt_explore_plot_value_counts <- function(dataset,
     variable_dplyr_friendly <- paste0('`', variable, '`')
     comparison_variable_dplyr_friendly <- paste0('`', comparison_variable, '`')
 
-    groups_by_variable <- rt_explore_unique_values(dataset=dataset, variable=variable)
+    groups_by_variable <- rt_explore_value_totals(dataset=dataset, variable=variable)
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
