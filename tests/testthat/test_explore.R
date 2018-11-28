@@ -141,25 +141,31 @@ test_that("rt_explore_value_totals_sums", {
     credit_data[3, 'checking_balance'] <- NA
     credit_data[3, 'amount'] <- NA
 
-    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by=sum_by)
+    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by_variable=sum_by)
 
-    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum')))
+    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum', 'percent')))
     expect_true(all(levels(value_sums$checking_balance) == custom_levels))
 
     expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
     expect_true(is.na(value_sums$checking_balance[5]))
-    expect_true(all(value_sums$sum == c(1232346, 1023663, 868841, 137192, 1169)))
+
+    expected_sums <- c(1232346, 1023663, 868841, 137192, 1169)
+    expect_true(all(value_sums$sum == expected_sums))
+    expect_true(all(value_sums$percent == expected_sums / sum(expected_sums)))
+    expect_true(sum(value_sums$percent) == 1)
 
     # change to character
     credit_data$checking_balance <- as.character(credit_data$checking_balance)
-    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by=sum_by)
+    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by_variable=sum_by)
 
-    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum')))
+    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum', 'percent')))
     expect_true(all(levels(value_sums$checking_balance) == custom_levels))
 
     expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
     expect_true(is.na(value_sums$checking_balance[5]))
-    expect_true(all(value_sums$sum == c(1232346, 1023663, 868841, 137192, 1169)))
+    expect_true(all(value_sums$sum == expected_sums))
+    expect_true(all(value_sums$percent == expected_sums / sum(expected_sums)))
+    expect_true(sum(value_sums$percent) == 1)
 })
 
 test_that("rt_explore_plot_value_counts", {
@@ -171,28 +177,28 @@ test_that("rt_explore_plot_value_counts", {
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_group_totals.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       show_group_totals=FALSE,
                                                       base_size=11))
 
     # plot pretty
     test_save_plot(file_name='data/rt_explore_plot_value_counts_pretty.png',
-                   plot=rt_explore_plot_value_counts(dataset=rt_pretty_dataset(credit_data),
+                   plot=rt_explore_plot_value_totals(dataset=rt_pretty_dataset(credit_data),
                                                       variable=rt_pretty_text(variable),
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     # plot with order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_with_order.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=TRUE,
                                                       base_size=11))
@@ -204,14 +210,14 @@ test_that("rt_explore_plot_value_counts", {
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_factor_no_order.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     # plot with order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_factor_with_order.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=TRUE,
                                                       base_size=11))
@@ -233,7 +239,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_defaults.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=TRUE,
@@ -242,7 +248,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
 
     # plot pretty
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_pretty.png',
-                   plot=rt_explore_plot_value_counts(dataset=rt_pretty_dataset(credit_data),
+                   plot=rt_explore_plot_value_totals(dataset=rt_pretty_dataset(credit_data),
                                                       variable=rt_pretty_text(variable),
                                                       comparison_variable=rt_pretty_text('default'),
                                                       order_by_count=TRUE,
@@ -252,7 +258,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_not_order_by_count.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
@@ -261,7 +267,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comp_var_not_show_group_totals.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
@@ -270,13 +276,44 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comp_var_not_show_comparison_totals.png',
-                   plot=rt_explore_plot_value_counts(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
                                                       show_group_totals=FALSE,
                                                       show_comparison_totals=FALSE))
 })
+
+test_that("...", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    variable <- 'checking_balance'
+    sum_by_variable <- 'amount'
+    comparison_variable <- 'default'
+
+    #value_sums <- rt_explore_value_totals(credit_data, variable = 'checking_balance', sum_by = 'amount')
+
+    # plot with labels
+    test_save_plot(file_name='data/rt_explore_plot_value_sums1.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     sum_by_variable=sum_by_variable,
+                                                     comparison_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_group_totals=TRUE,
+                                                     show_comparison_totals=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_sums2.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     sum_by_variable=sum_by_variable,
+                                                     comparison_variable=comparison_variable,
+                                                     order_by_count=TRUE,
+                                                     show_group_totals=TRUE,
+                                                     show_comparison_totals=TRUE))
+})
+
 
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)

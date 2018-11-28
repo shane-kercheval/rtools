@@ -200,12 +200,12 @@ rt_explore_plot_correlations <- function(dataset,
 
 }
 
-#' returns either a *count* of the unique values of `variable` if `sum_by` is NULL, otherwise it *sums* the
-#' variable represented by `sum_by` across (i.e. grouped by) `variable`
+#' returns either a *count* of the unique values of `variable` if `sum_by_variable` is NULL, otherwise it *sums* the
+#' variable represented by `sum_by_variable` across (i.e. grouped by) `variable`
 #'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
-#' @param sum_by the numeric variable to sum
+#' @param sum_by_variable the numeric variable to sum
 #'
 #' @examples
 #'
@@ -215,11 +215,11 @@ rt_explore_plot_correlations <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr sym count mutate group_by summarise rename arrange desc
 #' @export
-rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
+rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
-    if(is.null(sum_by)) {
+    if(is.null(sum_by_variable)) {
 
         totals <- dataset %>%
             count(!!symbol_variable) %>%
@@ -229,11 +229,12 @@ rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
 
     } else {
 
-        symbol_sum_by <- sym(sum_by)  # because we are using string variables
+        symbol_sum_by <- sym(sum_by_variable)  # because we are using string variables
 
         totals <- dataset %>%
             group_by(!!symbol_variable) %>%
             summarise(sum = sum(!!symbol_sum_by, na.rm = TRUE)) %>%
+            mutate(percent = sum / sum(sum)) %>%
             arrange(desc(sum))
     }
 
@@ -255,9 +256,10 @@ rt_explore_value_totals <- function(dataset, variable, sum_by=NULL) {
 #' @importFrom scales percent_format percent
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
 #' @export
-rt_explore_plot_value_counts <- function(dataset,
+rt_explore_plot_value_totals <- function(dataset,
                                          variable,
                                          comparison_variable=NULL,
+                                         sum_by_variable=NULL,
                                          order_by_count=TRUE,
                                          show_group_totals=TRUE,
                                          show_comparison_totals=TRUE,
@@ -265,7 +267,22 @@ rt_explore_plot_value_counts <- function(dataset,
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
-    groups_by_variable <- rt_explore_value_totals(dataset=dataset, variable=variable)
+    if(is.null(sum_by_variable)) {
+
+        plot_title <- paste0('Value Counts - `', variable, '`')
+        plot_y_axis_label <- 'Percent of Dataset Containing Value'
+        groups_by_variable <- rt_explore_value_totals(dataset=dataset, variable=variable) %>%
+            rename(total=count)
+
+    } else {
+
+        plot_title <- paste0('Sum of `', sum_by_variable, '` by `', variable, '`')
+        plot_y_axis_label <- 'Percent of Total Amount'
+        groups_by_variable <- rt_explore_value_totals(dataset=dataset,
+                                                      variable=variable,
+                                                      sum_by_variable=sum_by_variable) %>%
+            rename(total=sum)
+    }
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
@@ -284,13 +301,13 @@ rt_explore_plot_value_counts <- function(dataset,
 
             unique_values_plot <- unique_values_plot +
                 geom_text(aes(label = percent(percent), y = percent + 0.01), vjust=-1) +
-                geom_text(aes(label = count, y = percent + 0.01))
+                geom_text(aes(label = total, y = percent + 0.01))
         }
 
         return (
             unique_values_plot +
-                labs(title=paste('Value Counts -', variable),
-                     y='Percent of Dataset Containing Value',
+                labs(title=plot_title,
+                     y=plot_y_axis_label,
                      x=variable) +
                 theme_gray(base_size = base_size) +
                 theme(legend.position = 'none',
@@ -299,22 +316,36 @@ rt_explore_plot_value_counts <- function(dataset,
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
+        plot_title <- paste0(plot_title, ' against `', comparison_variable, '`')
 
-        groups_by_both <- as.data.frame(
-            dataset %>%
-                group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
-                summarise(count = n(), actual_percent=n() / nrow(dataset)) %>%
+        if(is.null(sum_by_variable)) {
+
+            groups_by_both <- dataset %>%
+                    group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
+                    summarise(total = n(), actual_percent=total / nrow(dataset))
+
+        } else {
+
+            symbol_sum_by <- sym(sum_by_variable)  # because we are using string variables
+            groups_by_both <- dataset %>%
+                    group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
+                    summarise(total = sum(!!symbol_sum_by, na.rm=TRUE)) %>%
+                    ungroup() %>%
+                    mutate(actual_percent=total / sum(total, na.rm = TRUE))
+        }
+
+        groups_by_both <- as.data.frame(groups_by_both %>%
                 group_by(!!symbol_variable) %>%
-                mutate(group_percent = count / sum(count)) %>%
+                mutate(group_percent = total / sum(total, na.rm=TRUE)) %>%
                 ungroup() %>%
                 arrange(!!symbol_variable, !!symbol_comparison_variable))
 
         if(order_by_count) {
 
             groups_by_variable[, variable] <- factor(groups_by_variable[, variable],
-                                                     levels = groups_by_variable[, variable])
+                                                     levels = as.character(groups_by_variable[, variable]))
             groups_by_both[, variable] <- factor(groups_by_both[, variable],
-                                                     levels = groups_by_variable[, variable])
+                                                     levels = as.character(groups_by_variable[, variable]))
         }
 
         # create the plot
@@ -338,7 +369,7 @@ rt_explore_plot_value_counts <- function(dataset,
                           aes(x=!!symbol_variable, label = percent(percent), y = percent + 0.01),
                           vjust=-1) +
                 geom_text(data = groups_by_variable,
-                          aes(x=!!symbol_variable, label = count, y = percent + 0.01),
+                          aes(x=!!symbol_variable, label = total, y = percent + 0.01),
                           vjust=0.5)
         }
 
@@ -348,7 +379,7 @@ rt_explore_plot_value_counts <- function(dataset,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = actual_percent,
-                              label = count,
+                              label = total,
                               group = !!symbol_comparison_variable),
                           position = position_dodge(width = 1),
                           vjust = -0.2) +
@@ -362,7 +393,7 @@ rt_explore_plot_value_counts <- function(dataset,
         }
 
         return (unique_values_plot +
-            labs(title = paste0('Unique Values - `', variable, '` against `', comparison_variable, '`'),
+            labs(title = plot_title,
                  fill = comparison_variable,
                  x = variable) +
             theme_gray(base_size = base_size) +
