@@ -115,29 +115,29 @@ test_that("rt_explore_unique_values", {
                                                      p_value_threshold=0.3))
 
     # plot without order
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_order.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_no_order.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     # plot without order
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_group_totals.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_no_group_totals.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       show_group_totals=FALSE,
                                                       base_size=11))
 
     # plot pretty
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_pretty.png',
-                   plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
+    test_save_plot(file_name='data/rt_explore_unique_values_pretty.png',
+                   plot=rt_explore_plot_value_counts(dataset=rt_pretty_dataset(credit_data),
                                                       variable=rt_pretty_text(variable),
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     # plot with order
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_with_order.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_with_order.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=TRUE,
                                                       base_size=11))
@@ -158,21 +158,21 @@ test_that("rt_explore_unique_values", {
     expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 
     # plot without order
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_factor_no_order.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_no_factor_no_order.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     # plot with order
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_no_factor_with_order.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_no_factor_with_order.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       order_by_count=TRUE,
                                                       base_size=11))
 })
 
-test_that("rt_explore_plot_unique_values_against_categorical", {
+test_that("rt_explore_unique_values_against_categorical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
     ##########################################################################################################
@@ -187,8 +187,8 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
     variable <- 'checking_balance'
 
     # plot with labels
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_comparison_variable_defaults.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_comparison_variable_defaults.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=TRUE,
@@ -196,8 +196,8 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
                                                       show_comparison_totals=TRUE))
 
     # plot pretty
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_comparison_variable_pretty.png',
-                   plot=rt_explore_plot_unique_values(dataset=rt_pretty_dataset(credit_data),
+    test_save_plot(file_name='data/rt_explore_unique_values_comparison_variable_pretty.png',
+                   plot=rt_explore_plot_value_counts(dataset=rt_pretty_dataset(credit_data),
                                                       variable=rt_pretty_text(variable),
                                                       comparison_variable=rt_pretty_text('default'),
                                                       order_by_count=TRUE,
@@ -206,8 +206,8 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
 
 
     # plot with labels
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_comparison_variable_not_order_by_count.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_comparison_variable_not_order_by_count.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
@@ -215,8 +215,8 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
                                                       show_comparison_totals=TRUE))
 
     # plot with labels
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_comp_var_not_show_group_totals.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_comp_var_not_show_group_totals.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
@@ -224,8 +224,8 @@ test_that("rt_explore_plot_unique_values_against_categorical", {
                                                       show_comparison_totals=TRUE))
 
     # plot with labels
-    test_save_plot(file_name='data/rt_explore_plot_unique_values_comp_var_not_show_comparison_totals.png',
-                   plot=rt_explore_plot_unique_values(dataset=credit_data,
+    test_save_plot(file_name='data/rt_explore_unique_values_comp_var_not_show_comparison_totals.png',
+                   plot=rt_explore_plot_value_counts(dataset=credit_data,
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,

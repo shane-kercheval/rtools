@@ -245,13 +245,13 @@ rt_explore_unique_values <- function(dataset, variable) {
 #' @importFrom scales percent_format percent
 #' @importFrom ggplot2 ggplot aes_string aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
 #' @export
-rt_explore_plot_unique_values <- function(dataset,
-                                          variable,
-                                          comparison_variable=NULL,
-                                          order_by_count=TRUE,
-                                          show_group_totals=TRUE,
-                                          show_comparison_totals=TRUE,
-                                          base_size=11) {
+rt_explore_plot_value_counts <- function(dataset,
+                                         variable,
+                                         comparison_variable=NULL,
+                                         order_by_count=TRUE,
+                                         show_group_totals=TRUE,
+                                         show_comparison_totals=TRUE,
+                                         base_size=11) {
 
     # R's syntax for variables with spaces (which works with variables without spaces) is
     # "`My Variable`" which dplyr relies on
