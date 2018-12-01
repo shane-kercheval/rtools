@@ -29,6 +29,7 @@ rt_is_null_na_nan <- function(x) {
 #' @export
 rt_get_date_fields <- function(date_vector, reference_date=NULL) {
 
+    date_vector <- as_date(date_vector)
     if(is.null(reference_date)) {
 
         reference_date <- Sys.Date()
