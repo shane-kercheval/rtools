@@ -300,6 +300,17 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE,
                                                       stacked_comparison=TRUE))
+
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack_sum.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='purpose',
+                                                     sum_by_variable='amount',
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE,
+                                                     stacked_comparison=TRUE))
 })
 
 test_that("rt_explore_plot_value_totals_sums", {
