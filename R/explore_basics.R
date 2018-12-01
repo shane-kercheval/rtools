@@ -248,8 +248,9 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
 #' @param sum_by_variable the numeric variable to sum
 #' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
-#' @param show_group_totals if TRUE (the default) the graph will display the totals for the variable
+#' @param show_variable_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
+#' @param stacked_comparison rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -262,8 +263,9 @@ rt_explore_plot_value_totals <- function(dataset,
                                          comparison_variable=NULL,
                                          sum_by_variable=NULL,
                                          order_by_count=TRUE,
-                                         show_group_totals=TRUE,
+                                         show_variable_totals=TRUE,
                                          show_comparison_totals=TRUE,
+                                         stacked_comparison=FALSE,
                                          base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
@@ -298,7 +300,7 @@ rt_explore_plot_value_totals <- function(dataset,
                 geom_bar(stat = 'identity') +
                 scale_y_continuous(labels = percent_format())
 
-        if(show_group_totals) {
+        if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
                 geom_text(aes(label = percent(percent), y = percent + 0.01), vjust=-1) +
@@ -349,6 +351,15 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      levels = as.character(groups_by_variable[, variable]))
         }
 
+        if(stacked_comparison) {
+
+            comparison_position <- 'fill'
+
+        } else {
+
+            comparison_position <- 'dodge'
+        }
+
         # create the plot
         unique_values_plot <- ggplot() +
             geom_bar(data = groups_by_variable,
@@ -361,9 +372,12 @@ rt_explore_plot_value_totals <- function(dataset,
                          y = actual_percent,
                          fill = !!symbol_comparison_variable),
                      stat = 'identity',
-                     position = 'dodge')
+                     position = comparison_position)
 
-        if(show_group_totals) {
+
+        # we will only show variable totals if show_variable_totals and the variable values aren't filled
+        #(i.e. all 100%)
+        if(show_variable_totals && !stacked_comparison) {
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
@@ -374,7 +388,7 @@ rt_explore_plot_value_totals <- function(dataset,
                           vjust=0.5)
         }
 
-        if(show_comparison_totals) {
+        if(show_comparison_totals && !stacked_comparison) {
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_both,
@@ -391,6 +405,16 @@ rt_explore_plot_value_totals <- function(dataset,
                               group = !!symbol_comparison_variable),
                           position = position_dodge(width = 1),
                           vjust = -1.5)
+
+        } else if (show_comparison_totals && stacked_comparison) {
+            #in this case, we don't want to show the totals of the main variable (they are all at 100%)
+            unique_values_plot <- unique_values_plot +
+                geom_text(data = groups_by_both,
+                          aes(x = !!symbol_variable,
+                              y = group_percent,
+                              label = percent(group_percent),
+                              group = !!symbol_comparison_variable),
+                          position = position_stack(vjust = .5))
         }
 
         return (unique_values_plot +

@@ -186,7 +186,7 @@ test_that("rt_explore_plot_value_counts", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_group_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      show_group_totals=FALSE,
+                                                      show_variable_totals=FALSE,
                                                       base_size=11))
 
     # plot pretty
@@ -243,7 +243,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=TRUE,
-                                                      show_group_totals=TRUE,
+                                                      show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
 
     # plot pretty
@@ -252,7 +252,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       variable=rt_pretty_text(variable),
                                                       comparison_variable=rt_pretty_text('default'),
                                                       order_by_count=TRUE,
-                                                      show_group_totals=TRUE,
+                                                      show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
 
 
@@ -262,7 +262,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
-                                                      show_group_totals=TRUE,
+                                                      show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
 
     # plot with labels
@@ -271,7 +271,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
-                                                      show_group_totals=FALSE,
+                                                      show_variable_totals=FALSE,
                                                       show_comparison_totals=TRUE))
 
     # plot with labels
@@ -280,8 +280,26 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       variable=variable,
                                                       comparison_variable='default',
                                                       order_by_count=FALSE,
-                                                      show_group_totals=FALSE,
+                                                      show_variable_totals=FALSE,
                                                       show_comparison_totals=FALSE))
+})
+
+test_that("rt_explore_plot_value_counts_against_categorical_fill", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    variable <- 'checking_balance'
+
+    # plot with labels
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                      variable=variable,
+                                                      comparison_variable='purpose',
+                                                      order_by_count=TRUE,
+                                                      show_variable_totals=TRUE,
+                                                      show_comparison_totals=TRUE,
+                                                      stacked_comparison=TRUE))
 })
 
 test_that("rt_explore_plot_value_totals_sums", {
@@ -303,7 +321,7 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      comparison_variable=NULL,
                                                      sum_by_variable=sum_by_variable,
                                                      order_by_count=FALSE,
-                                                     show_group_totals=FALSE,
+                                                     show_variable_totals=FALSE,
                                                      show_comparison_totals=FALSE,
                                                      base_size=16))
 
@@ -313,7 +331,7 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      comparison_variable=comparison_variable,
                                                      sum_by_variable=sum_by_variable,
                                                      order_by_count=TRUE,
-                                                     show_group_totals=TRUE,
+                                                     show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
                                                      base_size=14))
 
@@ -323,7 +341,7 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      comparison_variable=comparison_variable,
                                                      sum_by_variable=sum_by_variable,
                                                      order_by_count=FALSE,
-                                                     show_group_totals=TRUE,
+                                                     show_variable_totals=TRUE,
                                                      show_comparison_totals=FALSE,
                                                      base_size=14))
 })

@@ -6,8 +6,9 @@
 \usage{
 rt_explore_plot_value_totals(dataset, variable,
   comparison_variable = NULL, sum_by_variable = NULL,
-  order_by_count = TRUE, show_group_totals = TRUE,
-  show_comparison_totals = TRUE, base_size = 11)
+  order_by_count = TRUE, show_variable_totals = TRUE,
+  show_comparison_totals = TRUE, stacked_comparison = FALSE,
+  base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -20,9 +21,11 @@ rt_explore_plot_value_totals(dataset, variable,
 
 \item{order_by_count}{if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable}
 
-\item{show_group_totals}{if TRUE (the default) the graph will display the totals for the variable}
+\item{show_variable_totals}{if TRUE (the default) the graph will display the totals for the variable}
 
 \item{show_comparison_totals}{if TRUE (the default) the graph will display the totals for the comparison_variable}
+
+\item{stacked_comparison}{rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
