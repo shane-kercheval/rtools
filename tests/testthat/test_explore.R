@@ -301,7 +301,6 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
                                                       show_comparison_totals=TRUE,
                                                       stacked_comparison=TRUE))
 
-
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
@@ -565,7 +564,6 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
                                                   base_size=15))
 
 })
-
 
 test_that("rt_explore_plot_scatterplot", {
     dataset <- read.csv("data/housing.csv", header=TRUE)

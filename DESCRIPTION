@@ -11,11 +11,13 @@ Imports:
     dplyr,
     ggplot2,
     Hmisc,
+    lubridate,
     magrittr,
     moments,
     purrr,
     reshape2,
     scales,
-    stringr
+    stringr,
+    timeDate
 Suggests: testthat
 RoxygenNote: 6.1.1
