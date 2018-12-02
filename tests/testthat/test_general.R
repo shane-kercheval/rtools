@@ -22,6 +22,19 @@ test_that("rt_get_date_fields_lubridate", {
 	results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
 	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
 												  rds_file='data/rt_get_date_fields_lubridate.RDS'))
+
+	# same thing but with string reference date and date vector
+	reference_date <- '2018-12-01'
+
+	date_vector <- as.character(lubridate::as_date('2018-01-01') + seq(0, 400))
+	# make sure NAs are handled
+	date_vector[2] <- NA
+	date_vector[30] <- NA
+	date_vector[31] <- NA
+
+	results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
+	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
+	                                              rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })
 
 test_that("rt_get_date_fields_POSIXlt", {

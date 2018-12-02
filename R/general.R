@@ -33,6 +33,10 @@ rt_get_date_fields <- function(date_vector, reference_date=NULL) {
     if(is.null(reference_date)) {
 
         reference_date <- Sys.Date()
+
+    } else {
+
+        reference_date <- lubridate::as_date(reference_date)
     }
 
     min_year <- min(year(date_vector), na.rm = TRUE)
