@@ -675,15 +675,14 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param variable a variable (x-axis) that is a date type
 #' @param comparison_variable the additional numeric variable (y-axis)
 #' @param comparison_function if a comparison variable is supplied, a function must be given so the plot knows how to graph it (e.g. sum, mean, median)
+#' @param comparison_function_name name of the function so that it can be plotted on the Y-axis label
 #' @param color_variable an optional variable (categoric) that seperates the time series
-#' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
-#' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2
+#' @importFrom ggplot2 ggplot
 #' @importFrom scales
 #' @export
 rt_explore_plot_time_series <- function(dataset,
@@ -699,7 +698,7 @@ rt_explore_plot_time_series <- function(dataset,
     # if using a comparison variable, we must also have a function and function name
     stopifnot(!(!is.null(comparison_variable) && (is.null(comparison_function) || is.null(comparison_function_name))))
 
-    symbol_variable <- sym(variable)  # because we are using string variables
+    sym_variable <- sym(variable)  # because we are using string variables
 
     symbol_if_not_null <- function(x) {
         if (is.null(x)) {
@@ -716,9 +715,9 @@ rt_explore_plot_time_series <- function(dataset,
 
     if(is.null(sym_comparison_variable)) {
 
-        dataset <- dataset %>% count(!!sym_varaible)
+        dataset <- dataset %>% count(!!sym_variable)
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_varaible, y=n)) +
+            ggplot(aes(x=!!sym_variable, y=n)) +
             labs(title='Count of Records',
                  x=variable,
                  y='Count')
@@ -726,10 +725,10 @@ rt_explore_plot_time_series <- function(dataset,
     } else {
 
         dataset <- dataset %>%
-            group_by(!!sym_varaible) %>%
+            group_by(!!sym_variable) %>%
             summarise(dep_delay=comparison_function(dep_delay))
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_varaible, y=!!sym_comparison_variable)) +
+            ggplot(aes(x=!!sym_variable, y=!!sym_comparison_variable)) +
             labs(title=paste(comparison_function_name, 'of', comparison_variable, 'by', variable),
                  x=variable,
                  y=paste(comparison_function_name, comparison_variable))
@@ -747,17 +746,23 @@ rt_explore_plot_time_series <- function(dataset,
     if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
         # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
 
+        if(is.null(sym_comparison_variable)) {
+
+            y_axis_variable <- 'n'
+
+        } else {
+
+            y_axis_variable <- comparison_variable
+        }
+
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            if(is.null(sym_comparison_variable)) {
-                variable <- 'n'
-            }
-            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+            y_zoom_min <- min(dataset[, y_axis_variable], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+            y_zoom_max <- max(dataset[, y_axis_variable], na.rm = TRUE)
         }
 
         ggplot_object <- ggplot_object +

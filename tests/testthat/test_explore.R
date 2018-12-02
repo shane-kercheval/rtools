@@ -807,6 +807,28 @@ test_that('rt_explore_plot_time_series', {
                                                     comparison_function=comp_func_median,
                                                     comparison_function_name='Median'))
 
+    test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_median_zoom_min.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    y_zoom_min=0))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_median_zoom_minmax.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    y_zoom_min=0,
+                                                    y_zoom_max=10,
+                                                    base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_zoom_min.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    y_zoom_min=750,
+                                                    base_size=15))
 })
 
-cbind(dataset, rt_get_date_fields(dataset$date) %>% select(is_weekend))
