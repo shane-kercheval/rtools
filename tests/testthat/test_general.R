@@ -20,8 +20,11 @@ test_that("rt_get_date_fields_lubridate", {
 	date_vector[31] <- NA
 
 	results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
-	expect_true(all(levels(results$day_of_week) ==
-	                    c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
+	expect_true(all(levels(results$month_name) == c('January', 'February', 'March', 'April', 'May', 'June',
+													'July', 'August', 'September', 'October', 'November',
+													'December')))
+	expect_true(all(levels(results$day_name) == c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+												  'Saturday', 'Sunday')))
 	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
 												  rds_file='data/rt_get_date_fields_lubridate.RDS'))
 
@@ -36,8 +39,11 @@ test_that("rt_get_date_fields_lubridate", {
 
 	results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
 
-	expect_true(all(levels(results$day_of_week) ==
-	                    c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
+	expect_true(all(levels(results$month_name) == c('January', 'February', 'March', 'April', 'May', 'June',
+													'July', 'August', 'September', 'October', 'November',
+													'December')))
+	expect_true(all(levels(results$day_name) == c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+												  'Saturday', 'Sunday')))
 	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
 	                                              rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })
@@ -58,9 +64,12 @@ test_that("rt_get_date_fields_POSIXlt", {
     date_vector[31] <- NA
 
     results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
-    expect_true(all(levels(results$day_of_week) ==
-                        c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
-    expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
+    expect_true(all(levels(results$month_name) == c('January', 'February', 'March', 'April', 'May', 'June',
+													'July', 'August', 'September', 'October', 'November',
+													'December')))
+	expect_true(all(levels(results$day_name) == c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+												  'Saturday', 'Sunday')))
+	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
                                                   rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })
 
@@ -80,8 +89,11 @@ test_that("rt_get_date_fields_POSIXlt", {
     date_vector[31] <- NA
 
     results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
-    expect_true(all(levels(results$day_of_week) ==
-                        c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')))
-    expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
+    expect_true(all(levels(results$month_name) == c('January', 'February', 'March', 'April', 'May', 'June',
+													'July', 'August', 'September', 'October', 'November',
+													'December')))
+	expect_true(all(levels(results$day_name) == c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+												  'Saturday', 'Sunday')))
+	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
                                                   rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })
