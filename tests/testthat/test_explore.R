@@ -753,3 +753,60 @@ test_that("rt_explore_plot_scatterplot_jitter", {
                                                 jitter=TRUE,
                                                 base_size=15))
 })
+
+test_that('rt_explore_plot_time_series', {
+    dataset <-
+        data.frame(nycflights13::flights %>%
+                       mutate(date = make_date(year, month, day)) %>%
+                       select(-year, -month, -day) %>%
+                       select(date, everything()))
+    variable <- 'date'
+    comparison_variable <- 'dep_delay'
+
+    comp_func_sum <- function(x) {
+        return (sum(x, na.rm=TRUE))
+    }
+    comp_func_mean <- function(x) {
+        return (mean(x, na.rm=TRUE))
+    }
+    comp_func_median <- function(x) {
+        return (median(x, na.rm=TRUE))
+    }
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_default.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset, variable=variable))
+
+    # rquires both comparison_function and comparison_function_name
+    expect_error(rt_explore_plot_time_series(dataset=dataset, variable=variable,
+                                             comparison_variable=comparison_variable))
+    expect_error(rt_explore_plot_time_series(dataset=dataset, variable=variable,
+                                             comparison_variable=comparison_variable,
+                                             comparison_function=comp_func_sum))
+    expect_error(rt_explore_plot_time_series(dataset=dataset, variable=variable,
+                                             comparison_variable=comparison_variable,
+                                             comparison_function_name='Sum'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_sum,
+                                                    comparison_function_name='Sum of'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_mean.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_mean,
+                                                    comparison_function_name='Average'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_median.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median'))
+
+})
+
+cbind(dataset, rt_get_date_fields(dataset$date) %>% select(is_weekend))

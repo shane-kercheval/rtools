@@ -668,3 +668,101 @@ rt_explore_plot_scatter <- function(dataset,
 
     return (scatter_plot)
 }
+
+#' returns a time-series plot
+#'
+#' @param dataset dataframe
+#' @param variable a variable (x-axis) that is a date type
+#' @param comparison_variable the additional numeric variable (y-axis)
+#' @param comparison_function if a comparison variable is supplied, a function must be given so the plot knows how to graph it (e.g. sum, mean, median)
+#' @param color_variable an optional variable (categoric) that seperates the time series
+#' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
+#' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2
+#' @importFrom scales
+#' @export
+rt_explore_plot_time_series <- function(dataset,
+                                    variable,
+                                    comparison_variable=NULL,
+                                    comparison_function=NULL,
+                                    comparison_function_name=NULL,
+                                    color_variable=NULL,
+                                    y_zoom_min=NULL,
+                                    y_zoom_max=NULL,
+                                    base_size=11) {
+
+    # if using a comparison variable, we must also have a function and function name
+    stopifnot(!(!is.null(comparison_variable) && (is.null(comparison_function) || is.null(comparison_function_name))))
+
+    symbol_variable <- sym(variable)  # because we are using string variables
+
+    symbol_if_not_null <- function(x) {
+        if (is.null(x)) {
+
+            return (NULL)
+
+        } else {
+
+            return (sym(x))
+        }
+    }
+    sym_comparison_variable <- symbol_if_not_null(comparison_variable)
+    sym_color_variable <- symbol_if_not_null(color_variable)
+
+    if(is.null(sym_comparison_variable)) {
+
+        dataset <- dataset %>% count(!!sym_varaible)
+        ggplot_object <- dataset %>%
+            ggplot(aes(x=!!sym_varaible, y=n)) +
+            labs(title='Count of Records',
+                 x=variable,
+                 y='Count')
+
+    } else {
+
+        dataset <- dataset %>%
+            group_by(!!sym_varaible) %>%
+            summarise(dep_delay=comparison_function(dep_delay))
+        ggplot_object <- dataset %>%
+            ggplot(aes(x=!!sym_varaible, y=!!sym_comparison_variable)) +
+            labs(title=paste(comparison_function_name, 'of', comparison_variable, 'by', variable),
+                 x=variable,
+                 y=paste(comparison_function_name, comparison_variable))
+    }
+    ggplot_object <- ggplot_object +
+        geom_line(aes(color=)) +
+        #geom_boxplot(aes(group=cut_width(date, 7))) +
+        #geom_boxplot(aes(group=(paste(year(date), ceiling(day(date) / 7))))) +
+        expand_limits(y=0) +
+        geom_smooth(method='loess') +
+        theme_gray(base_size = base_size) +
+        theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(y_zoom_min)) {
+
+            if(is.null(sym_comparison_variable)) {
+                variable <- 'n'
+            }
+            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(y_zoom_max)) {
+
+            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+        }
+
+        ggplot_object <- ggplot_object +
+            coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+    }
+
+    return (ggplot_object)
+}
