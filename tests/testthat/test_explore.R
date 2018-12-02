@@ -1,6 +1,7 @@
 context('Exploratory Analysis')
 library(testthat)
 library(ggplot2)
+library(dplyr)
 
 test_that("rt_explore_categoric_summary_NAs", {
 
@@ -755,11 +756,9 @@ test_that("rt_explore_plot_scatterplot_jitter", {
 })
 
 test_that('rt_explore_plot_time_series', {
-    dataset <-
-        data.frame(nycflights13::flights %>%
-                       mutate(date = make_date(year, month, day)) %>%
-                       select(-year, -month, -day) %>%
-                       select(date, everything()))
+    dataset <- data.frame(nycflights13::flights %>%
+       mutate(date = lubridate::make_date(year, month, day)) %>%
+       select(date, dep_delay))
     variable <- 'date'
     comparison_variable <- 'dep_delay'
 

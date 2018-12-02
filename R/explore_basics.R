@@ -682,8 +682,8 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot
-#' @importFrom scales
+#' @importFrom dplyr count group_by summarise
+#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_gray theme element_text coord_cartesian
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                     variable,
@@ -696,7 +696,8 @@ rt_explore_plot_time_series <- function(dataset,
                                     base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
-    stopifnot(!(!is.null(comparison_variable) && (is.null(comparison_function) || is.null(comparison_function_name))))
+    stopifnot(!(!is.null(comparison_variable) &&
+        (is.null(comparison_function) || is.null(comparison_function_name))))
 
     sym_variable <- sym(variable)  # because we are using string variables
 
@@ -738,7 +739,6 @@ rt_explore_plot_time_series <- function(dataset,
         #geom_boxplot(aes(group=cut_width(date, 7))) +
         #geom_boxplot(aes(group=(paste(year(date), ceiling(day(date) / 7))))) +
         expand_limits(y=0) +
-        geom_smooth(method='loess') +
         theme_gray(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
