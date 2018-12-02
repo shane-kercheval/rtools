@@ -24,7 +24,8 @@ rt_is_null_na_nan <- function(x) {
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr mutate select
 #' @importFrom lubridate year quarter month week day yday as_date
-#' @importFrom purrr map_int
+#' @importFrom purrr map_int map
+#' @importFrom stringr str_pad
 #' @importFrom timeDate holiday USNewYearsDay USMLKingsBirthday USWashingtonsBirthday USMemorialDay USIndependenceDay USLaborDay USColumbusDay USElectionDay USVeteransDay USThanksgivingDay USChristmasDay
 #' @export
 rt_get_date_fields <- function(date_vector, reference_date=NULL) {
@@ -89,11 +90,17 @@ rt_get_date_fields <- function(date_vector, reference_date=NULL) {
                                           month(date_vector) == 1 & day(date_vector) == 1),
                    is_year_end = ifelse(is.na(month(date_vector)) | is.na(day(date_vector)),
                                           NA,
-                                          month(date_vector) == 12 & day(date_vector) == 31)
+                                          month(date_vector) == 12 & day(date_vector) == 31),
+                   cohort_week = factor(paste0(year, '-W', str_pad(week_of_year, width= 2, side='left', pad='0'))),
+                   cohort_month = factor(paste0(year, '-', substr(month_name, start = 1, stop = 3)),
+                                         levels=unlist(map(min_year:max_year,
+                                                           ~ paste0(., '-', substr(month_names, 1, 3))))),
+                   cohort_quarter = factor(paste0(year, '-Q', quarter))
                    ) %>%
             select(year, quarter, month, day_of_month, week_day_number, day_of_year, week_of_year,
                    week_of_month, month_name, day_name, is_current_year, is_current_quarter, is_current_month,
                    is_weekend, is_holiday, is_month_quarter_start, is_month_quarter_end, is_first_of_month,
-                   is_end_of_month, is_end_of_quarter, is_year_start, is_year_end)
+                   is_end_of_month, is_end_of_quarter, is_year_start, is_year_end, cohort_week, cohort_month,
+                   cohort_quarter)
     )
 }

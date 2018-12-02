@@ -8,6 +8,7 @@ test_that("rt_get_date_fields_lubridate", {
     #library(timeDate)
     #library(purrr)
     #library(dplyr)
+    #library(stringr)
     reference_date <- lubridate::as_date('2018-12-01')
 	expect_true(year(reference_date) == 2018)
 	expect_true(month(reference_date) == 12)
