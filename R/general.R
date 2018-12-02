@@ -23,7 +23,7 @@ rt_is_null_na_nan <- function(x) {
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr mutate select
-#' @importFrom lubridate year quarter month months week day yday as_date
+#' @importFrom lubridate year quarter month week day yday as_date
 #' @importFrom purrr map_int
 #' @importFrom timeDate holiday USNewYearsDay USMLKingsBirthday USWashingtonsBirthday USMemorialDay USIndependenceDay USLaborDay USColumbusDay USElectionDay USVeteransDay USThanksgivingDay USChristmasDay
 #' @export
