@@ -43,7 +43,8 @@ rt_get_date_fields <- function(date_vector, reference_date=NULL) {
     max_year <- max(year(date_vector), na.rm = TRUE)
 
     weekday_lookup <- c(1, 2, 3, 4, 5, 6, 7)
-    names(weekday_lookup) <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
+    names_days_of_the_week <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
+    names(weekday_lookup) <- names_days_of_the_week
 
     #library(timeDate)
     us_federal_holiday_names <- c('USNewYearsDay', 'USMLKingsBirthday', 'USWashingtonsBirthday', 'USMemorialDay',
@@ -58,7 +59,7 @@ rt_get_date_fields <- function(date_vector, reference_date=NULL) {
         month = month(date_vector),
         week_of_year = week(date_vector),
         day_of_month = day(date_vector),
-        day_of_week = weekdays(date_vector),
+        day_of_week = factor(weekdays(date_vector), levels=names_days_of_the_week),
         day_of_year = yday(date_vector)) %>%
             mutate(week_of_month = ceiling(day_of_month / 7),
                    is_current_year = year == year(reference_date),
