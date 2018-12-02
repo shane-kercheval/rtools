@@ -682,7 +682,7 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr count group_by summarise
+#' @importFrom dplyr count group_by summarise rename
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_gray theme element_text coord_cartesian
 #' @export
 rt_explore_plot_time_series <- function(dataset,
@@ -716,9 +716,9 @@ rt_explore_plot_time_series <- function(dataset,
 
     if(is.null(sym_comparison_variable)) {
 
-        dataset <- dataset %>% count(!!sym_variable)
+        dataset <- dataset %>% count(!!sym_variable) %>% rename(total=n)
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_variable, y=n)) +
+            ggplot(aes(x=!!sym_variable, y=total)) +
             labs(title='Count of Records',
                  x=variable,
                  y='Count')
@@ -727,9 +727,9 @@ rt_explore_plot_time_series <- function(dataset,
 
         dataset <- dataset %>%
             group_by(!!sym_variable) %>%
-            summarise(dep_delay=comparison_function(dep_delay))
+            summarise(total=comparison_function(!!sym_comparison_variable))
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_variable, y=!!sym_comparison_variable)) +
+            ggplot(aes(x=!!sym_variable, y=total)) +
             labs(title=paste(comparison_function_name, 'of', comparison_variable, 'by', variable),
                  x=variable,
                  y=paste(comparison_function_name, comparison_variable))
@@ -746,23 +746,14 @@ rt_explore_plot_time_series <- function(dataset,
     if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
         # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
 
-        if(is.null(sym_comparison_variable)) {
-
-            y_axis_variable <- 'n'
-
-        } else {
-
-            y_axis_variable <- comparison_variable
-        }
-
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            y_zoom_min <- min(dataset[, y_axis_variable], na.rm = TRUE)
+            y_zoom_min <- min(dataset[, 'total'], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, y_axis_variable], na.rm = TRUE)
+            y_zoom_max <- max(dataset[, 'total'], na.rm = TRUE)
         }
 
         ggplot_object <- ggplot_object +
