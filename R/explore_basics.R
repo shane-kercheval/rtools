@@ -716,9 +716,16 @@ rt_explore_plot_time_series <- function(dataset,
 
     if(is.null(sym_comparison_variable)) {
 
-        dataset <- dataset %>% count(!!sym_variable) %>% rename(total=n)
+        if(is.null(sym_color_variable)) {
+
+            dataset <- dataset %>% count(!!sym_variable) %>% rename(total=n)
+
+        } else {
+
+            dataset <- dataset %>% count(!!sym_variable, !!sym_color_variable) %>% rename(total=n)
+        }
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_variable, y=total)) +
+            ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
             labs(title='Count of Records',
                  x=variable,
                  y='Count')

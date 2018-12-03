@@ -854,4 +854,9 @@ test_that('rt_explore_plot_time_series', {
                                                     # y_zoom_min=0,
                                                     y_zoom_max=25,
                                                     base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_count_color.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    color_variable=color_variable))
 })
