@@ -686,14 +686,14 @@ rt_explore_plot_scatter <- function(dataset,
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_gray theme element_text coord_cartesian
 #' @export
 rt_explore_plot_time_series <- function(dataset,
-                                    variable,
-                                    comparison_variable=NULL,
-                                    comparison_function=NULL,
-                                    comparison_function_name=NULL,
-                                    color_variable=NULL,
-                                    y_zoom_min=NULL,
-                                    y_zoom_max=NULL,
-                                    base_size=11) {
+                                        variable,
+                                        comparison_variable=NULL,
+                                        comparison_function=NULL,
+                                        comparison_function_name=NULL,
+                                        color_variable=NULL,
+                                        y_zoom_min=NULL,
+                                        y_zoom_max=NULL,
+                                        base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
     stopifnot(!(!is.null(comparison_variable) &&
@@ -724,20 +724,25 @@ rt_explore_plot_time_series <- function(dataset,
                  y='Count')
 
     } else {
+        if(is.null(sym_color_variable)) {
+            dataset <- dataset %>%
+                group_by(!!sym_variable) %>%
+                summarise(total=comparison_function(!!sym_comparison_variable))
 
-        dataset <- dataset %>%
-            group_by(!!sym_variable) %>%
-            summarise(total=comparison_function(!!sym_comparison_variable))
+        } else {
+
+            dataset <- dataset %>%
+                group_by(!!sym_variable, !!sym_color_variable) %>%
+                summarise(total=comparison_function(!!sym_comparison_variable))
+        }
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_variable, y=total)) +
+            ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
             labs(title=paste(comparison_function_name, 'of', comparison_variable, 'by', variable),
                  x=variable,
                  y=paste(comparison_function_name, comparison_variable))
     }
     ggplot_object <- ggplot_object +
-        geom_line(aes(color=)) +
-        #geom_boxplot(aes(group=cut_width(date, 7))) +
-        #geom_boxplot(aes(group=(paste(year(date), ceiling(day(date) / 7))))) +
+        geom_line() +
         expand_limits(y=0) +
         theme_gray(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))

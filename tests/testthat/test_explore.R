@@ -760,7 +760,7 @@ test_that('rt_explore_plot_time_series', {
                               mutate(date = lubridate::make_date(year, month, day),
                                      cohort = paste0(year, '-',
                                                      lubridate::week(date)))) %>%
-       select(date, dep_delay, dep_time, cohort)
+       select(date, dep_delay, dep_time, origin, cohort)
 
     variable <- 'date'
     comparison_variable <- 'dep_delay'
@@ -842,5 +842,16 @@ test_that('rt_explore_plot_time_series', {
                                                     y_zoom_min=1000,
                                                     y_zoom_max=NULL,
                                                     base_size=15))
-})
 
+    color_variable <- 'origin'
+    test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_median_color.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    color_variable = color_variable,
+                                                    # y_zoom_min=0,
+                                                    y_zoom_max=25,
+                                                    base_size=15))
+})
