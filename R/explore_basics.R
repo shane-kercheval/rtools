@@ -654,12 +654,12 @@ rt_explore_plot_scatter <- function(dataset,
 
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+            y_zoom_min <- min(dataset[, comparison_variable], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+            y_zoom_max <- max(dataset[, comparison_variable], na.rm = TRUE)
         }
 
         scatter_plot <- scatter_plot +
