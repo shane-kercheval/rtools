@@ -28,6 +28,7 @@ test_that("rt_get_date_fields_lubridate", {
 												  'Saturday', 'Sunday')))
 	expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
 												  rds_file='data/rt_get_date_fields_lubridate.RDS'))
+    expect_true(all(levels(results$cohort_quarter) == c("2018-Q1", "2018-Q2", "2018-Q3", "2018-Q4", "2019-Q1")))
 
 	# same thing but with string reference date and date vector
 	reference_date <- '2018-12-01'
