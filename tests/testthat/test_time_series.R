@@ -103,3 +103,31 @@ test_that('rt_ts_lm_build_formula', {
     expect_equal(reg_formula, 'NSWMetro ~ NSWNthCo_lag_2')
 
 })
+
+test_that('rt_ts_create_lagged_dataset', {
+
+    # single-var time-series
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=rt_ts_create_lagged_dataset(a10, num_lags=3),
+                                                  rds_file='data/rt_ts_create_lagged_dataset_a10.RDS'))
+
+    # multi-var time-series
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=rt_ts_create_lagged_dataset(visnights,
+                                                                                         lag_variables = c('NSWNthCo', 'SAUMetro'),
+                                                                                         num_lags=3),
+                                                  rds_file='data/rt_ts_create_lagged_dataset_visnights_1.RDS'))
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=rt_ts_create_lagged_dataset(visnights,
+                                                                                         lag_variables = c('NSWNthCo', 'SAUMetro'),
+                                                                                         keep_variables=c('NSWMetro'),
+                                                                                         num_lags=3),
+                                                  rds_file='data/rt_ts_create_lagged_dataset_visnights_2.RDS'))
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=rt_ts_create_lagged_dataset(visnights,
+                                                                                         lag_variables = c('NSWNthCo', 'SAUMetro'),
+                                                                                         keep_variables=c('NSWMetro', 'QLDMetro'),
+                                                                                         num_lags=3),
+                                                  rds_file='data/rt_ts_create_lagged_dataset_visnights._3RDS'))
+    # lag all columns
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=rt_ts_create_lagged_dataset(visnights,
+                                                                                         lag_variables = NULL,
+                                                                                         num_lags=3),
+                                                  rds_file='data/rt_ts_create_lagged_dataset_visnights_all_columns.RDS'))
+})

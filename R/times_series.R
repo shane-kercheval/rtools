@@ -104,3 +104,68 @@ rt_ts_lm_build_formula <- function(dependent_variable,
 
     return (paste(dependent_variable, '~', independent_variables_formula))
 }
+
+#' returns a new dataset containing the lagged values for specified variables
+#'
+#' @param dataset a time-series dataset (single- or multi-variable)
+#' @param num_lags the number of lags to include (e.g. `3` will include 3 lagged variables for each applicable variable, `x_lag_1`, `x_lag_2`, `x_lag_3`)
+#' @param lag_variables the variables (i.e. columns) to include lagged values for (the original column will be retained). A value of `NULL` is used for single-variable datasets (i.e. ts datasets that have no columns) or, for multi-variable datasets, will create lagged variables for *all* variables in the dataset.
+#'
+#' All variables that are not specified in `lag_variables` are removed.
+#'
+#' @param keep_variables the variables to retain in the dataset which are not specified in `lag_variables`. A value of `NULL` is used for single-variable datasets.
+#'
+#' @importFrom stats lag
+#' @export
+rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL, keep_variables=NULL) {
+
+    lagged_dataset <- NULL
+    new_columns <- NULL
+
+    if(rt_ts_is_single_variable(dataset)) {
+
+        lagged_dataset <- dataset
+        new_columns <- 'original_data'
+
+        for(lag_index in 1:num_lags) {
+
+            lagged_dataset <- cbind(lagged_dataset, stats::lag(dataset, lag_index * -1))
+            new_columns <- c(new_columns, paste0('data_lag_', lag_index))
+        }
+
+    } else {
+        if(is.null(lag_variables)) {
+            lag_variables <- colnames(dataset)
+        }
+
+        new_columns <- NULL
+
+        if(!is.null(keep_variables)) {
+
+            # add variables/columns we want to keep
+            for(column in keep_variables) {
+
+                lagged_dataset <- cbind(lagged_dataset, dataset[, column])
+                new_columns <- c(new_columns, column)
+            }
+        }
+
+        for(column in lag_variables) {
+
+            # add original column
+            lagged_dataset <- cbind(lagged_dataset, dataset[, column])
+            new_columns <- c(new_columns, column)
+
+            # add lags
+            for(lag_index in 1:num_lags) {
+
+                lagged_dataset <- cbind(lagged_dataset, stats::lag(dataset[, column], lag_index * -1))
+                new_columns <- c(new_columns, paste0(column, '_lag_', lag_index))
+            }
+        }
+    }
+
+    colnames(lagged_dataset) <- new_columns
+
+    return (lagged_dataset)
+}
