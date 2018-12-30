@@ -383,6 +383,7 @@ rt_ts_auto_regression <- function(dataset,
 
     ggplot_fit <- NULL
     ggplot_actual_vs_fit <- NULL
+    ggplot_residual_vs_fit <- NULL
     if(build_graphs) {
 
         ######################################################################################################
@@ -472,12 +473,37 @@ rt_ts_auto_regression <- function(dataset,
                  x='Fitted',
                  y='Actual Values',
                  caption='\nBlack line shows perfect alignment between `fitted` and `actual` values.\nRed line shows smoothed trend between `fitted` and `actual`.\nData points with large residuals are labed.')
+
+
+        ######################################################################################################
+        # Residuals vs Fitted
+        ######################################################################################################
+        data_freq <- frequency(dependent_values)
+        if(data_freq == 1 || data_freq > 12) {
+
+            ggplot_residual_vs_fit <- ggplot(df_fit_data, aes(x=Fitted, y=Residuals))
+
+        } else {
+
+            ggplot_residual_vs_fit <- ggplot(df_fit_data, aes(x=Fitted, y=Residuals, color=Season))
+        }
+
+        label_threshold <- as.numeric(quantile(abs(residual_values), .97))  # get value at 97th percentile of data
+
+        ggplot_residual_vs_fit <- ggplot_residual_vs_fit +
+            geom_point() +
+            geom_abline(intercept=0, slope=0) +
+            geom_text(aes(label=ifelse(abs(Residuals) > label_threshold, Time, '')),  # show extreme values
+                      size=3,
+                      vjust=-0.2,
+                      hjust=-0.2) +
+            geom_smooth(method='loess', group=1, se=FALSE, size=0.5, colour='red') +
+            labs(title='Residuals vs. Fitted Values',
+                 x='Fitted',
+                 y='Residuals Values',
+                 caption='\nBlack line is reference for 0 residual/error.\nRed line shows smoothed trend between `residuals` and `fitted` values.\nData points with large residuals are labed.')
     }
 
-
-    ######################################################################################################
-    # Actual vs Fitted
-    ######################################################################################################
 
 
 
@@ -491,6 +517,7 @@ rt_ts_auto_regression <- function(dataset,
                  model=ts_model,
                  forecast=ts_forecast,
                  plot_fit=ggplot_fit,
-                 plot_actual_vs_fitted=ggplot_actual_vs_fit))
+                 plot_actual_vs_fitted=ggplot_actual_vs_fit,
+                 plot_residuals_vs_fitted=ggplot_residual_vs_fit))
 
 }
