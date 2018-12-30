@@ -17,7 +17,7 @@ rt_ts_auto_regression(dataset, dependent_variable = NULL,
 \item{independent_variables}{the independent variables;
 
 `independent_variables` can be null for single-var datasets; for multi-variable datasets, a value of `NULL` will include all variables
- 
+
 single-variable & multi-variable datasets can also include `trend` and/or `season` values}
 
 \item{num_lags}{if specified, adds lag variables for all the independent_variables}

@@ -174,18 +174,18 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #' @param dataset a time-series dataset (single- or multi-variable)
 #' @param dependent_variable the dependent variable; can be null for single-var datasets
 #' @param independent_variables the independent variables;
-#' 
+#'
 #' `independent_variables` can be null for single-var datasets; for multi-variable datasets, a value of `NULL` will include all variables
-#'  
+#'
 #' single-variable & multi-variable datasets can also include `trend` and/or `season` values
-#' 
+#'
 #' @param num_lags if specified, adds lag variables for all the independent_variables
 #' @param ex_ante_forecast_horizon if specified, indicates how far into the future we should forecast. All original variables (except for `trend`/`season`) and all lag values that have a lag less than `ex_ante_forecast_horizon` will be removed.
 #' @param show_dataset_labels whether or not to show the values of the original dataaset
 #' @param show_forecast_labels whether or not to show the forecast values
 #'
-#' @importFrom forecast tslm autoplot autolayer
 #' @importFrom stringr str_split
+#' @importFrom ggplot2 aes geom_point geom_text labs
 #' @export
 rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
