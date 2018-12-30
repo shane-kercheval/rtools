@@ -181,6 +181,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #'
 #' @param num_lags if specified, adds lag variables for all the independent_variables
 #' @param ex_ante_forecast_horizon if specified, indicates how far into the future we should forecast. All original variables (except for `trend`/`season`) and all lag values that have a lag less than `ex_ante_forecast_horizon` will be removed.
+#' @param build_graphs if TRUE, will build various graphs and return those ggplot objects in the returned list
 #' @param show_dataset_labels whether or not to show the values of the original dataaset
 #' @param show_forecast_labels whether or not to show the forecast values
 #'
@@ -192,6 +193,7 @@ rt_ts_auto_regression <- function(dataset,
                                   independent_variables=NULL,
                                   num_lags=NULL,
                                   ex_ante_forecast_horizon=NULL,
+                                  build_graphs=TRUE,
                                   show_dataset_labels=FALSE,
                                   show_forecast_labels=TRUE) {
 
@@ -273,20 +275,6 @@ rt_ts_auto_regression <- function(dataset,
     training_data <- na.omit(dataset)
     ts_model <- tslm(formula=reg_formula, data=training_data)
 
-    # build plot; use data before it was striped of NAs so when we plot the regression points, we can see what the model used or did not use
-    if(rt_ts_is_single_variable(dataset)) {
-
-        ggplot_object <- autoplot(dataset)
-
-    } else {
-
-        ggplot_object <- autoplot(dataset[, dependent_variable])
-    }
-
-    ggplot_object <- ggplot_object +
-        autolayer(fitted(ts_model), series='Regression')
-
-
     ts_forecast <- NULL
     # we can only forecast for ex_ante regressions, otherwise we don't have the required data
     if(!is.null(ex_ante_forecast_horizon)) {
@@ -364,37 +352,62 @@ rt_ts_auto_regression <- function(dataset,
 
             ts_forecast <- forecast(ts_model, newdata=new_data)
         }
-
-        ggplot_object <- ggplot_object +
-            autolayer(ts_forecast, series = 'Regression')
-
-        if(show_forecast_labels) {
-
-            forecast_start <- start(ts_forecast$mean)
-            forecast_end <- end(ts_forecast$mean)
-            forecast_freq <- frequency(ts_forecast$mean)
-
-            ts_forecast_data <- ts(as.data.frame(ts_forecast)$`Point Forecast`,
-                                   start = forecast_start,
-                                   end=forecast_end,
-                                   frequency = forecast_freq)
-            ggplot_object <- ggplot_object +
-                geom_point(data=ts_forecast_data) +
-                geom_text(data=ts_forecast_data,
-                          aes(label=rt_pretty_numerics(as.numeric(ts_forecast_data))),
-                          size=3.1,
-                          check_overlap=TRUE,
-                          vjust=-0.2,
-                          hjust=-0.2)
-        }
     }
 
-    ggplot_object <- ggplot_object +
-        labs(y=dependent_variable)
+    ggplot_fit <- NULL
+    if(build_graphs) {
+
+        ######################################################################################################
+        # BUILD FIT GRAPH (AND FORECAST IF APPLICABLE)
+        ######################################################################################################
+        # build plot; use data before it was striped of NAs (`dataset`) so when we plot the regression points,
+        # we can see what the model used or did not use
+        if(rt_ts_is_single_variable(dataset)) {
+
+            ggplot_fit <- autoplot(dataset)
+
+        } else {
+
+            ggplot_fit <- autoplot(dataset[, dependent_variable])
+        }
+
+        ggplot_fit <- ggplot_fit +
+            autolayer(fitted(ts_model), series='Regression')
+
+        if(!is.null(ex_ante_forecast_horizon)) {
+
+            ggplot_fit <- ggplot_fit +
+                autolayer(ts_forecast, series = 'Regression')
+
+            if(show_forecast_labels) {
+
+                forecast_start <- start(ts_forecast$mean)
+                forecast_end <- end(ts_forecast$mean)
+                forecast_freq <- frequency(ts_forecast$mean)
+
+                ts_forecast_data <- ts(as.data.frame(ts_forecast)$`Point Forecast`,
+                                       start = forecast_start,
+                                       end=forecast_end,
+                                       frequency = forecast_freq)
+                ggplot_fit <- ggplot_fit +
+                    geom_point(data=ts_forecast_data) +
+                    geom_text(data=ts_forecast_data,
+                              aes(label=rt_pretty_numerics(as.numeric(ts_forecast_data))),
+                              size=3.1,
+                              check_overlap=TRUE,
+                              vjust=-0.2,
+                              hjust=-0.2)
+            }
+        }
+
+        ggplot_fit <- ggplot_fit +
+            labs(y=dependent_variable)
+    }
+
 
     return (list(formula=reg_formula,
                  model=ts_model,
                  forecast=ts_forecast,
-                 plot=ggplot_object))
+                 plot_fit=ggplot_fit))
 
 }

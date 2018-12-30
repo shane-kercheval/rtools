@@ -6,8 +6,8 @@
 \usage{
 rt_ts_auto_regression(dataset, dependent_variable = NULL,
   independent_variables = NULL, num_lags = NULL,
-  ex_ante_forecast_horizon = NULL, show_dataset_labels = FALSE,
-  show_forecast_labels = TRUE)
+  ex_ante_forecast_horizon = NULL, build_graphs = TRUE,
+  show_dataset_labels = FALSE, show_forecast_labels = TRUE)
 }
 \arguments{
 \item{dataset}{a time-series dataset (single- or multi-variable)}
