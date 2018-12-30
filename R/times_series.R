@@ -234,6 +234,20 @@ rt_ts_auto_regression <- function(dataset,
                                           independent_variables=independent_variables,
                                           ex_ante_forecast_horizon=ex_ante_forecast_horizon)
 
+
+    # extract all variables used in the regression formula (and thus the regression model)
+    independent_vars_used <- str_split(str_split(reg_formula, pattern=' ~ ', simplify=TRUE )[2], ' \\+ ')[[1]]
+    # now figure out which vars were used in the regression model, aside from trend/season (i.e. which variables we need to subset)
+    independent_vars_used_from_dataset <- independent_vars_used[! independent_vars_used %in% c('trend', 'season')]
+
+    # if any variables are used beside trend/season, we want the dataset containing only those values
+    # because, for example, if we do an na.omit on variables that have a lot of missing data but aren't even
+    # used in the model, we'll be needlessly restricting the data avaialable to the model
+    if(length(independent_vars_used_from_dataset) > 0) {
+        # we just want the dataset that is actually used by the regression model
+        dataset <- dataset[, c(dependent_variable, independent_vars_used_from_dataset)]
+    }
+
     # for LAGGED DATA na.omit will remove the NAs at the beginning of the dataset (because a column that lags x
     # periods doesn't have values for the first x periods)
     # but will also remove the NAs at the end of the dataset which is needed to we restrict the training to the
@@ -241,7 +255,7 @@ rt_ts_auto_regression <- function(dataset,
     training_data <- na.omit(dataset)
     ts_model <- tslm(formula=reg_formula, data=training_data)
 
-    # build plot
+    # build plot; use data before it was striped of NAs so when we plot the regression points, we can see what the model used or did not use
     if(rt_ts_is_single_variable(dataset)) {
 
         ggplot_object <- autoplot(dataset)
@@ -255,44 +269,69 @@ rt_ts_auto_regression <- function(dataset,
         autolayer(fitted(ts_model), series='Regression')
 
 
-    # NOTE IN SHINY
-    # Ex-Ante means we should remove all of the independent variables, except for the lags i.e. they are true forecasts
-    # we can run regression if not EX-ANTE but we cannot forecast, because we don't have the future non-lag values available to us
-    #prediction_type <- 'predict from lag x'  # think of better name; point is that if we want to predict 4 periods ahead, we need to lag at least 4 periods back, prediction intervals are accurate
-
     ts_forecast <- NULL
     # we can only forecast for ex_ante regressions, otherwise we don't have the required data
     if(!is.null(ex_ante_forecast_horizon)) {
 
-        # extract all variables used in the regression formula (and thus the regression model)
-        independent_vars_used <- str_split(str_split(reg_formula, pattern=' ~ ', simplify=TRUE )[2], ' \\+ ')[[1]]
-
-        # if we only forecast trend and/or season, we don't need to extract other data, just forecast however many periods
-        if(all(independent_vars_used %in% c('trend', 'season'))) {
+        # if we only forecast trend and/or season (i.e. 0 variables from the original dataset)
+        # then we don't need to extract other data, just forecast however many periods
+        if(length(independent_vars_used_from_dataset) == 0) {
 
             ts_forecast <- forecast(ts_model, h=ex_ante_forecast_horizon)
 
-        } else {
+        } else {  # `dataset` has 1 or more variables (including the dependent_variable)
 
-            # now figure out which vars were used in the regression model, aside from trend/season (i.e. which variables we need to subset)
-            independent_vars_used <- independent_vars_used[! independent_vars_used %in% c('trend', 'season')]
-
-            # the last `ex_ante_forecast_horizon` number of periods after this dataset will be the first
-            # `ex_ante_forecast_horizon` number of periods after the last available period in the original dataset
+            # now we want the dataset of just the independent variables with the NAs removed, because the last
+            # `ex_ante_forecast_horizon` number of periods of this dataset will be the first
+            # `ex_ante_forecast_horizon` number of periods after the last available period in the original training set
             # i.e. will be the `ex_ante_forecast_horizon` periods we can predict
-            temp <- na.omit(dataset[, independent_vars_used])
 
             # it is possible that we stripped out all but one variable i.e. it is now single-var dataset
+            temp <- na.omit(dataset[, independent_vars_used_from_dataset])
+
+
+            # i want to verify that the end() of temp is exactly `ex_ante_forecast_horizon` periods after the
+            # last period we trained on
+            period_add_duration <- function(period, data_frequency, periods_to_add) {
+
+                years_to_add <- floor((period[2] + periods_to_add - 1) / data_frequency)
+                ending_period <- (period[2] + periods_to_add) %% data_frequency
+
+                if(ending_period == 0) {
+                    ending_period <- data_frequency
+                }
+
+                period[1] <- period[1] + years_to_add
+                period[2] <- ending_period
+
+                return (period)
+            }
+
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=5)
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=6)
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=7)
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24)
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 5)
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 6)
+            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 7)
+
+            # need to "add" a period plus a "duration"
+            expected_end <- period_add_duration(period=end(training_data),
+                                                data_frequency=frequency(training_data),
+                                                periods_to_add=ex_ante_forecast_horizon)
+            stopifnot(all(expected_end == end(temp)))
+
             if(rt_ts_is_single_variable(temp)) {
+
+                # rt_ts_is_single_variable == TRUE should mean that we only have one independent variable, confirm logic
+                stopifnot(length(independent_vars_used_from_dataset) == 1)
 
                 num_periods <- length(temp)
                 new_data <- subset(temp, start=num_periods - ex_ante_forecast_horizon + 1)
 
-                # if the original data used to train the model was a data.frame, we have to convert this to a dataframe
-                if(rt_ts_is_multi_variable(training_data)) {
-                    new_data <- as.data.frame(new_data)
-                    colnames(new_data) <- independent_vars_used
-                }
+                # even though it is a single-var dataset, the tmls was given a data.frame, with a particular column
+                new_data <- as.data.frame(new_data)
+                colnames(new_data) <- independent_vars_used_from_dataset
 
             } else {
 
@@ -301,6 +340,9 @@ rt_ts_auto_regression <- function(dataset,
                 # values necessary to predict them
                 new_data <- as.data.frame(subset(temp, start=num_periods - ex_ante_forecast_horizon + 1))
             }
+
+            # the number of rows in new_data should match the number of periods we are forecasting
+            stopifnot(nrow(new_data) == ex_ante_forecast_horizon)
 
             ts_forecast <- forecast(ts_model, newdata=new_data)
         }

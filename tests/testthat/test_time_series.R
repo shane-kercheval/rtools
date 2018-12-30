@@ -189,7 +189,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # save plot
     test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_10.png', plot = results$plot)
 
-    results <- rt_ts_auto_regression(a10,
+    results <- rt_ts_auto_regression(dataset=a10,
                                      num_lags=10,
                                      ex_ante_forecast_horizon=5)
     expected_formula <- 'original_data ~ data_lag_5 + data_lag_6 + data_lag_7 + data_lag_8 + data_lag_9 + data_lag_10'
