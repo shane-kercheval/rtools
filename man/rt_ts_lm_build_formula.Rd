@@ -5,7 +5,7 @@
 \title{returns a forumla string to pass `tslm()``}
 \usage{
 rt_ts_lm_build_formula(dependent_variable, independent_variables = NULL,
-  interaction_variables = NULL, ex_ante_horizon = NULL)
+  interaction_variables = NULL, ex_ante_forecast_horizon = NULL)
 }
 \arguments{
 \item{dependent_variable}{name of the depedent variable in the dataset}
@@ -14,16 +14,16 @@ rt_ts_lm_build_formula(dependent_variable, independent_variables = NULL,
 
 \item{interaction_variables}{not supported yet}
 
-\item{ex_ante_horizon}{is used when the regression model will be used to forecast future values, `ex_ante_horizon` specifies the number periods (i.e. horizon) that will be forecasted.
+\item{ex_ante_forecast_horizon}{is used when the regression model will be used to forecast future values, `ex_ante_forecast_horizon` specifies the number periods (i.e. horizon) that will be forecasted.
 
 Ex ante means the forecast will be a "true" forecast and, in this case, will only use lagged values that are lagged far enough back, that we can use them to predict into the future. (and/or trend/season variables)
 For example, if we want to lag 4 periods (e.g. quarters) ahead, we must use values that are lagged 4 periods behind.
 
 Lagged variables must be in the for of `x_lag_y`, where `x` is the original variable name and `y` is the lag number.
 
-If `ex_ante_horizon` is set, only variables that are in the form of `x_lag_y` will be included, and additionally, only lagged variables where `y` >= `ex_ante_horizon` will be included.
+If `ex_ante_forecast_horizon` is set, only variables that are in the form of `x_lag_y` will be included, and additionally, only lagged variables where `y` >= `ex_ante_forecast_horizon` will be included.
 
-All independent variables are included of `ex_ante_horizon` is `NULL`}
+All independent variables are included of `ex_ante_forecast_horizon` is `NULL`}
 }
 \description{
 returns a forumla string to pass `tslm()``
