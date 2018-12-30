@@ -451,11 +451,11 @@ rt_ts_auto_regression <- function(dataset,
         data_freq <- frequency(dependent_values)
         if(data_freq == 1 || data_freq > 12) {
 
-            ggplot_actual_vs_fit <- ggplot(df_fit_data, aes(x=Actual, y=Fitted))
+            ggplot_actual_vs_fit <- ggplot(df_fit_data, aes(x=Fitted, y=Actual))
 
         } else {
 
-            ggplot_actual_vs_fit <- ggplot(df_fit_data, aes(x=Actual, y=Fitted, color=Season))
+            ggplot_actual_vs_fit <- ggplot(df_fit_data, aes(x=Fitted, y=Actual, color=Season))
         }
 
         label_threshold <- as.numeric(quantile(abs(residual_values), .97))  # get value at 97th percentile of data
@@ -469,10 +469,16 @@ rt_ts_auto_regression <- function(dataset,
                       hjust=-0.2) +
             geom_smooth(method='loess', group=1, se=FALSE, size=0.5, colour='red') +
             labs(title='Actual vs. Fitted Values',
-                 x='Actual Values',
-                 y='Fitted',
+                 x='Fitted',
+                 y='Actual Values',
                  caption='\nBlack line shows perfect alignment between `fitted` and `actual` values.\nRed line shows smoothed trend between `fitted` and `actual`.\nData points with large residuals are labed.')
     }
+
+
+    ######################################################################################################
+    # Actual vs Fitted
+    ######################################################################################################
+
 
 
     ###### Sandbox
