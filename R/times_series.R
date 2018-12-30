@@ -382,6 +382,7 @@ rt_ts_auto_regression <- function(dataset,
                 geom_point(data=ts_forecast_data) +
                 geom_text(data=ts_forecast_data,
                           aes(label=rt_pretty_numerics(as.numeric(ts_forecast_data))),
+                          size=3.1,
                           check_overlap=TRUE,
                           vjust=-0.2,
                           hjust=-0.2)
