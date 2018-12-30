@@ -31,16 +31,16 @@ rt_ts_is_multi_variable <- function(x) {
 #' @param dependent_variable name of the depedent variable in the dataset
 #' @param independent_variables name of the indepedent variables in the dataset (including "trend" & "season" if applicable)
 #' @param interaction_variables not supported yet
-#' @param ex_ante_horizon is used when the regression model will be used to forecast future values, `ex_ante_horizon` specifies the number periods (i.e. horizon) that will be forecasted.
+#' @param ex_ante_forecast_horizon is used when the regression model will be used to forecast future values, `ex_ante_forecast_horizon` specifies the number periods (i.e. horizon) that will be forecasted.
 #'
 #' Ex ante means the forecast will be a "true" forecast and, in this case, will only use lagged values that are lagged far enough back, that we can use them to predict into the future. (and/or trend/season variables)
 #' For example, if we want to lag 4 periods (e.g. quarters) ahead, we must use values that are lagged 4 periods behind.
 #'
 #' Lagged variables must be in the for of `x_lag_y`, where `x` is the original variable name and `y` is the lag number.
 #'
-#' If `ex_ante_horizon` is set, only variables that are in the form of `x_lag_y` will be included, and additionally, only lagged variables where `y` >= `ex_ante_horizon` will be included.
+#' If `ex_ante_forecast_horizon` is set, only variables that are in the form of `x_lag_y` will be included, and additionally, only lagged variables where `y` >= `ex_ante_forecast_horizon` will be included.
 #'
-#' All independent variables are included of `ex_ante_horizon` is `NULL`
+#' All independent variables are included of `ex_ante_forecast_horizon` is `NULL`
 #' @examples
 #'
 #' rt_ts_lm_build_formula(dependent_variable = 'dataset',
@@ -52,15 +52,14 @@ rt_ts_is_multi_variable <- function(x) {
 rt_ts_lm_build_formula <- function(dependent_variable,
                                    independent_variables=NULL,
                                    interaction_variables=NULL,
-                                   ex_ante_horizon=NULL) {
-    # ex_ante_horizon specifies the number periods (i.e. horizon) we will be forecasting
+                                   ex_ante_forecast_horizon=NULL) {
+    # ex_ante_forecast_horizon specifies the number periods (i.e. horizon) we will be forecasting
     # this ex_ante (i.e. true forecast) implementation requires the lags included in the regression model
-    # to be >= the ex_ante_horizon.... e.g. cannot have lag 5 included if we are predicting 10 periods ahead, or lag 9
-    # all independent variables are included of ex_ante_horizon is NULL
+    # to be >= the ex_ante_forecast_horizon.... e.g. cannot have lag 5 included if we are predicting 10 periods ahead, or lag 9
+    # all independent variables are included of ex_ante_forecast_horizon is NULL
 
-    if(!is.null(ex_ante_horizon)) {
+    if(!is.null(ex_ante_forecast_horizon)) {
 
-        #independent_variables <- c('trend', 'season', 'x_lag_1', 'x_lag_2', 'x_lag_3', 'x_lag_4', 'x_lag_5')
         splits <- str_split(independent_variables, '_lag_', simplify=TRUE)
         if(ncol(splits) == 1) { # no matches/lags found
 
@@ -70,7 +69,7 @@ rt_ts_lm_build_formula <- function(dependent_variable,
 
             lag_number <- as.numeric(splits[, 2])
             lag_number[is.na(lag_number)] <- 0  # NA means not a lag
-            valid_lags <- lag_number >= ex_ante_horizon
+            valid_lags <- lag_number >= ex_ante_forecast_horizon
         }
 
         keep_vars <- independent_variables %in% c('trend', 'season') | valid_lags
@@ -168,4 +167,173 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
     colnames(lagged_dataset) <- new_columns
 
     return (lagged_dataset)
+}
+
+rt_ts_auto_regression <- function(dataset,
+                                  dependent_variable=NULL,  # can be null for single-var datasets
+                                  independent_variables=NULL,  # can be null for single-var datasets (single-var & multi-var can also include trend/season)
+                                  num_lags=NULL,
+                                  ex_ante_forecast_horizon=NULL,
+                                  show_dataset_labels=FALSE,
+                                  show_forecast_labels=TRUE) {
+
+    if(rt_ts_is_single_variable(dataset)) {
+        # single variable dataset has to have independent variables to regress on,
+        # meaning that it has to have either lags-vars or trend/season vars
+        stopifnot(!is.null(num_lags) ||
+                    (!is.null(independent_variables) && all(independent_variables %in% c('trend', 'season'))))
+    } else {
+        # dependent_variable cannot be null for multi-variable dataset
+        # if independent_variables is null for multi-variable dataset, set it to all columns except dependent_variable
+        stopifnot(!is.null(dependent_variable))
+
+        if(is.null(independent_variables)) {
+
+            column_names <- colnames(dataset)
+            independent_variables <- column_names[! column_names %in% dependent_variable]
+        }
+    }
+
+    # ex_ante_forecast_horizon means we are going to do a *true* forecast, and
+    # *either* we need lags (at least enough lags for the corresponding horizon), or we need `trend` and/or `season`
+    if(!is.null(ex_ante_forecast_horizon) && !any(independent_variables %in% c('trend', 'season'))) {
+
+        stopifnot(num_lags >= ex_ante_forecast_horizon)
+    }
+
+    original_dependent_variable <- dependent_variable
+    if(is.null(dependent_variable)) {
+
+        dependent_variable <- 'dataset'
+    }
+
+
+    # add lags to dataset
+    if(!is.null(num_lags)) {
+
+        # if the *original* dataset is single-var, then we'll need to rename the dependent_variable to the name that rt_ts_create_lagged_dataset gives
+        if(rt_ts_is_single_variable(dataset)) {
+
+            dependent_variable = 'original_data'  # this is what rt_ts_create_lagged_dataset names the column for single-var
+        }
+
+        dataset <- rt_ts_create_lagged_dataset(dataset,
+                                               num_lags=num_lags,
+                                               lag_variables=independent_variables[! independent_variables %in% c('trend', 'season')],
+                                               keep_variables=original_dependent_variable)  # for single-var we will have changed it from NULL
+
+        # now, the column names of the new dataset (other than the dependent_variable) contains all of the
+        # original and new independent_variables
+        # but, it won't have trend/season, so if that was in the independent variables, we need to add it back
+        trend_season <- independent_variables[independent_variables %in% c('trend', 'season')]  # get trend and/or season if they are in the list of independent variables
+        column_names <- colnames(dataset)
+        independent_variables <- c(trend_season, column_names[! column_names %in% dependent_variable])
+    }
+
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable=dependent_variable,
+                                          independent_variables=independent_variables,
+                                          ex_ante_forecast_horizon=ex_ante_forecast_horizon)
+
+    # for LAGGED DATA na.omit will remove the NAs at the beginning of the dataset (because a column that lags x
+    # periods doesn't have values for the first x periods)
+    # but will also remove the NAs at the end of the dataset which is needed to we restrict the training to the
+    # original time horizon i.e. ending period
+    training_data <- na.omit(dataset)
+    ts_model <- tslm(formula=reg_formula, data=training_data)
+
+    # build plot
+    if(rt_ts_is_single_variable(dataset)) {
+
+        ggplot_object <- autoplot(dataset)
+
+    } else {
+
+        ggplot_object <- autoplot(dataset[, dependent_variable])
+    }
+
+    ggplot_object <- ggplot_object +
+        autolayer(fitted(ts_model), series='Regression')
+
+
+    # NOTE IN SHINY
+    # Ex-Ante means we should remove all of the independent variables, except for the lags i.e. they are true forecasts
+    # we can run regression if not EX-ANTE but we cannot forecast, because we don't have the future non-lag values available to us
+    #prediction_type <- 'predict from lag x'  # think of better name; point is that if we want to predict 4 periods ahead, we need to lag at least 4 periods back, prediction intervals are accurate
+
+    ts_forecast <- NULL
+    # we can only forecast for ex_ante regressions, otherwise we don't have the required data
+    if(!is.null(ex_ante_forecast_horizon)) {
+
+        # extract all variables used in the regression formula (and thus the regression model)
+        independent_vars_used <- str_split(str_split(reg_formula, pattern=' ~ ', simplify=TRUE )[2], ' \\+ ')[[1]]
+
+        # if we only forecast trend and/or season, we don't need to extract other data, just forecast however many periods
+        if(all(independent_vars_used %in% c('trend', 'season'))) {
+
+            ts_forecast <- forecast(ts_model, h=ex_ante_forecast_horizon)
+
+        } else {
+
+            # now figure out which vars were used in the regression model, aside from trend/season (i.e. which variables we need to subset)
+            independent_vars_used <- independent_vars_used[! independent_vars_used %in% c('trend', 'season')]
+
+            # the last `ex_ante_forecast_horizon` number of periods after this dataset will be the first
+            # `ex_ante_forecast_horizon` number of periods after the last available period in the original dataset
+            # i.e. will be the `ex_ante_forecast_horizon` periods we can predict
+            temp <- na.omit(dataset[, independent_vars_used])
+
+            # it is possible that we stripped out all but one variable i.e. it is now single-var dataset
+            if(rt_ts_is_single_variable(temp)) {
+
+                num_periods <- length(temp)
+                new_data <- subset(temp, start=num_periods - ex_ante_forecast_horizon + 1)
+
+                # if the original data used to train the model was a data.frame, we have to convert this to a dataframe
+                if(rt_ts_is_multi_variable(training_data)) {
+                    new_data <- as.data.frame(new_data)
+                    colnames(new_data) <- independent_vars_used
+                }
+
+            } else {
+
+                num_periods <- nrow(temp)
+                # new_data should now contain a ts dataset of the periods we want to predict and the (lagged)
+                # values necessary to predict them
+                new_data <- as.data.frame(subset(temp, start=num_periods - ex_ante_forecast_horizon + 1))
+            }
+
+            ts_forecast <- forecast(ts_model, newdata=new_data)
+        }
+
+        ggplot_object <- ggplot_object +
+            autolayer(ts_forecast, series = 'Regression')
+
+        if(show_forecast_labels) {
+
+            forecast_start <- start(ts_forecast$mean)
+            forecast_end <- end(ts_forecast$mean)
+            forecast_freq <- frequency(ts_forecast$mean)
+
+            ts_forecast_data <- ts(as.data.frame(ts_forecast)$`Point Forecast`,
+                                   start = forecast_start,
+                                   end=forecast_end,
+                                   frequency = forecast_freq)
+            ggplot_object <- ggplot_object +
+                geom_point(data=ts_forecast_data) +
+                geom_text(data=ts_forecast_data,
+                          aes(label=rt_pretty_numerics(as.numeric(ts_forecast_data))),
+                          check_overlap=TRUE,
+                          vjust=-0.2,
+                          hjust=-0.2)
+        }
+    }
+
+    ggplot_object <- ggplot_object +
+        labs(y=dependent_variable)
+
+    return (list(formula=reg_formula,
+                 model=ts_model,
+                 forecast=ts_forecast,
+                 plot=ggplot_object))
+
 }
