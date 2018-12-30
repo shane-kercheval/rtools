@@ -333,8 +333,31 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962", "1992.981")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/xxxxx.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_trend_season_lag_3.png', plot = results$plot)
 
+
+    ##############
+    # Now, we are not using Business.Class, which has many NAs, so the regression should use most of the dataset, confirm with plot
+    ##############
+    # We do have to subset melysd, because now that we aren't removing all NAs from Business.Class,
+    # it actually creates a problem because the resulting dataset has NAs in the middle of the dataset, which is not allowed
+    # i.e. na.omit only removes NAs at the beginning/end of a dataset
+    dataset <- window(melsyd, start=1988)
+    results <- rt_ts_auto_regression(dataset=dataset,
+                                     dependent_variable = 'First.Class',
+                                     independent_variables = c('trend', 'season', 'Economy.Class'),
+                                     num_lags=3,
+                                     ex_ante_forecast_horizon=3)
+    expected_formula <- 'First.Class ~ trend + season + Economy.Class_lag_3'
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectations
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$r.squared, 0.6437302, tolerance=1e-7)
+    # check that we corecasted the correct periods
+    expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962")))
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_Economyclass.png', plot = results$plot)
 
 
     # no ex-ante
@@ -352,7 +375,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/xxxxx.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_forecast.png', plot = results$plot)
 
 })
 
