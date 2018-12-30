@@ -26,6 +26,32 @@ rt_ts_is_multi_variable <- function(x) {
     return (any(classes == 'mts') || any(classes == 'msts'))
 }
 
+#' rather than e.g. 2007.333 for May of 2007 that `time()` returns, this returns `2007.01`
+
+#'
+#' @param ts_values a time series dataset
+#'
+#' library(fpp2)
+#' get_time_period(a10)
+#'
+#' @export
+rt_ts_get_time_period <- function(ts_values) {
+
+    values <- time(ts_values) %>% as.character()
+    splits <- str_split(values, pattern='\\.', simplify = TRUE)
+
+    if(ncol(splits) == 2) {
+        value_periods <- as.numeric(as.factor(splits[,2]))
+        max_freq_width <- max(nchar(as.character(value_periods)))
+
+        values <- paste0(splits[, 1],
+                         '.',
+                         str_pad(string=as.numeric(as.factor(splits[,2])), width=max_freq_width, side='left', pad='0'))
+    }
+
+    return (as.numeric(values))
+}
+
 #' returns a forumla string to pass `tslm()``
 #'
 #' @param dependent_variable name of the depedent variable in the dataset
@@ -187,6 +213,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #'
 #' @importFrom stringr str_split
 #' @importFrom ggplot2 aes geom_point geom_text labs
+#' @importFrom dplyr mutate
 #' @export
 rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
@@ -355,23 +382,38 @@ rt_ts_auto_regression <- function(dataset,
     }
 
     ggplot_fit <- NULL
+    ggplot_actual_vs_fit <- NULL
     if(build_graphs) {
 
         ######################################################################################################
-        # BUILD FIT GRAPH (AND FORECAST IF APPLICABLE)
+        # datasets the graphs will share
         ######################################################################################################
-        # build plot; use data before it was striped of NAs (`dataset`) so when we plot the regression points,
-        # we can see what the model used or did not use
         if(rt_ts_is_single_variable(dataset)) {
 
-            ggplot_fit <- autoplot(dataset)
+            dependent_values <- dataset
 
         } else {
 
-            ggplot_fit <- autoplot(dataset[, dependent_variable])
+            dependent_values <- dataset[, dependent_variable]
         }
+        fitted_values <- fitted(ts_model)
+        residual_values <- residuals(ts_model)
 
-        ggplot_fit <- ggplot_fit +
+        df_fit_data <- cbind(Actual=dependent_values,
+              Fitted=fitted_values,
+              Season=cycle(dependent_values),
+              Time=rt_ts_get_time_period(dependent_values),
+              Residuals=residual_values) %>%
+            na.omit() %>%
+            as.data.frame() %>%
+            mutate(Season=as.factor(Season))
+
+        ######################################################################################################
+        # FIT GRAPH (AND FORECAST IF APPLICABLE)
+        ######################################################################################################
+        # build plot; use data before it was striped of NAs (`dataset`) so when we plot the regression points,
+        # we can see what the model used or did not use
+        ggplot_fit <- autoplot(dependent_values) +
             autolayer(fitted(ts_model), series='Regression')
 
         if(!is.null(ex_ante_forecast_horizon)) {
@@ -402,12 +444,47 @@ rt_ts_auto_regression <- function(dataset,
 
         ggplot_fit <- ggplot_fit +
             labs(y=dependent_variable)
+
+        ######################################################################################################
+        # Actual vs Fitted
+        ######################################################################################################
+        data_freq <- frequency(dependent_values)
+        if(data_freq == 1 || data_freq > 12) {
+
+            ggplot_actual_vs_fit <- ggplot(df_fit_data, aes(x=Actual, y=Fitted))
+
+        } else {
+
+            ggplot_actual_vs_fit <- ggplot(df_fit_data, aes(x=Actual, y=Fitted, color=Season))
+        }
+
+        label_threshold <- as.numeric(quantile(abs(residual_values), .97))  # get value at 97th percentile of data
+
+        ggplot_actual_vs_fit <- ggplot_actual_vs_fit +
+            geom_point() +
+            geom_abline(intercept=0, slope=1) +
+            geom_text(aes(label=ifelse(abs(Residuals) > label_threshold, Time, '')),  # show extreme values
+                      size=3,
+                      vjust=-0.2,
+                      hjust=-0.2) +
+            geom_smooth(method='loess', group=1, se=FALSE, size=0.5, colour='red') +
+            labs(title='Actual vs. Fitted Values',
+                 x='Actual Values',
+                 y='Fitted',
+                 caption='\nBlack line shows perfect alignment between `fitted` and `actual` values.\nRed line shows smoothed trend between `fitted` and `actual`.\nData points with large residuals are labed.')
     }
+
+
+    ###### Sandbox
+
+
+    ###############################################
 
 
     return (list(formula=reg_formula,
                  model=ts_model,
                  forecast=ts_forecast,
-                 plot_fit=ggplot_fit))
+                 plot_fit=ggplot_fit,
+                 plot_actual_vs_fitted=ggplot_actual_vs_fit))
 
 }

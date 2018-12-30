@@ -19,6 +19,27 @@ test_that('rt_ts_is_multi_variable', {
     expect_true(rt_ts_is_multi_variable(elecdemand))   # classes: msts ts
 })
 
+
+test_that('rt_ts_get_time_period', {
+
+    # monthly
+    expect_true(rt_are_dataframes_equal_from_file(rds_file='data/test_get_time_period_monthly.RDS',
+                                                  dataframe1=data.frame(old=time(a10),
+                                                                        new=rt_ts_get_time_period(a10))))
+
+    # quarterly
+    expect_true(rt_are_dataframes_equal_from_file(rds_file='data/test_get_time_period_quarterly.RDS',
+                                                  dataframe1=data.frame(old=time(visnights),
+                                                                        new=rt_ts_get_time_period(visnights))))
+    # weekly
+    expect_true(rt_are_dataframes_equal_from_file(rds_file='data/test_get_time_period_weekly.RDS',
+                                                  dataframe1=data.frame(old=time(melsyd),
+                                                                        new=rt_ts_get_time_period(melsyd))))
+    # frequency of 1
+    expect_true(all(rt_ts_get_time_period(goog) == time(goog)))
+    expect_true(all(rt_ts_get_time_period(eggs) == time(eggs)))
+
+})
 test_that('rt_ts_lm_build_formula', {
 
     reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
@@ -155,7 +176,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # check that we forecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend.png', plot = results$plot_actual_vs_fitted)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = c('trend', 'season'),
@@ -170,7 +192,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_season.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_season.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend_season.png', plot = results$plot_actual_vs_fitted)
 
     ##########################################################################################################
     # WITH LAG
@@ -187,7 +210,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008", "Dec 2008", "Jan 2009", "Feb 2009", "Mar 2009", "Apr 2009")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_10.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_10.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_10.png', plot = results$plot_actual_vs_fitted)
 
     results <- rt_ts_auto_regression(dataset=a10,
                                      num_lags=10,
@@ -201,7 +225,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_lag_5.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_lag_5.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_lag_5.png', plot = results$plot_actual_vs_fitted)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = 'trend',
@@ -216,9 +241,10 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_trend_lag_5.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_trend_lag_5.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_trend_lag_5.png', plot = results$plot_actual_vs_fitted)
 
-    results <- rt_ts_auto_regression(a10,
+    results <- rt_ts_auto_regression(dataset=a10,
                                      independent_variables = c('trend', 'season'),
                                      num_lags=10,
                                      ex_ante_forecast_horizon=5)
@@ -231,7 +257,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_trend_season_lag_5.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_trend_season_lag_5.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_trend_season_lag_5.png', plot = results$plot_actual_vs_fitted)
 
     # lag, but no ex-ante (so can keep all regressors)
     results <- rt_ts_auto_regression(a10,
@@ -245,7 +272,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     expect_equal(summary(results$model)$r.squared, 0.8945594, tolerance=1e-7)
     expect_null(results$forecast)
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_lag_10.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_lag_10.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_lag_10.png', plot = results$plot_actual_vs_fitted)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = 'trend',
@@ -259,7 +287,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     expect_equal(summary(results$model)$r.squared, 0.8975611, tolerance=1e-7)
     expect_null(results$forecast)
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_lag_10.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_lag_10.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend_lag_10.png', plot = results$plot_actual_vs_fitted)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = c('trend', 'season'),
@@ -273,7 +302,8 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     expect_equal(summary(results$model)$r.squared, 0.9680469, tolerance=1e-7)
     expect_null(results$forecast)
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_season_lag_10.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_season_lag_10.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend_season_lag_10.png', plot = results$plot_actual_vs_fitted)
 
 })
 
@@ -295,7 +325,8 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     expect_equal(summary(results$model)$r.squared, 0.5809303, tolerance=1e-7)
     expect_null(results$forecast)
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_lag_3.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_lag_3.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_lag_3.png', plot = results$plot_actual_vs_fitted)
 
     results <- rt_ts_auto_regression(melsyd,
                                      dependent_variable = 'First.Class',
@@ -310,7 +341,8 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_lag_3.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_lag_3.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_forecast_lag_3.png', plot = results$plot_actual_vs_fitted)
 
 
     # error, removes all regressors
@@ -333,7 +365,8 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962", "1992.981")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_trend_season_lag_3.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_actual_vs_fitted)
 
 
     ##############
@@ -357,7 +390,8 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_Economyclass.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_Economyclass.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_forecast_Economyclass.png', plot = results$plot_actual_vs_fitted)
 
 
     # no ex-ante
@@ -375,7 +409,8 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962")))
     # save plot
-    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_forecast.png', plot = results$plot)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_forecast.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_no_forecast.png', plot = results$plot_actual_vs_fitted)
 
 })
 

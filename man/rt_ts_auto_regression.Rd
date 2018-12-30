@@ -24,6 +24,8 @@ single-variable & multi-variable datasets can also include `trend` and/or `seaso
 
 \item{ex_ante_forecast_horizon}{if specified, indicates how far into the future we should forecast. All original variables (except for `trend`/`season`) and all lag values that have a lag less than `ex_ante_forecast_horizon` will be removed.}
 
+\item{build_graphs}{if TRUE, will build various graphs and return those ggplot objects in the returned list}
+
 \item{show_dataset_labels}{whether or not to show the values of the original dataaset}
 
 \item{show_forecast_labels}{whether or not to show the forecast values}
