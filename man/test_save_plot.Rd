@@ -4,12 +4,14 @@
 \alias{test_save_plot}
 \title{deletes the file/plot if it exists, saves the plot, and ensures it exists}
 \usage{
-test_save_plot(file_name, plot)
+test_save_plot(file_name, plot, size_inches = c(5, 8))
 }
 \arguments{
 \item{file_name}{path to save plot}
 
 \item{plot}{plot to save}
+
+\item{size_inches}{c(height, width) in inches}
 }
 \description{
 deletes the file/plot if it exists, saves the plot, and ensures it exists
