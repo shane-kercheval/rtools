@@ -212,7 +212,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #' @param show_forecast_labels whether or not to show the forecast values
 #'
 #' @importFrom stringr str_split
-#' @importFrom ggplot2 aes geom_point geom_text labs
+#' @importFrom ggplot2 aes geom_point geom_text labs geom_boxplot
 #' @importFrom dplyr mutate
 #' @export
 rt_ts_auto_regression <- function(dataset,
@@ -385,6 +385,8 @@ rt_ts_auto_regression <- function(dataset,
     ggplot_actual_vs_fit <- NULL
     ggplot_residual_vs_fit <- NULL
     ggplot_residual_vs_predictors <- NULL
+    ggplot_residual_vs_season <- NULL
+    ggplot_residual_vs_period <- NULL
     if(build_graphs) {
 
         ######################################################################################################
@@ -494,7 +496,6 @@ rt_ts_auto_regression <- function(dataset,
                  y='Actual Values',
                  caption='\nBlack line shows perfect alignment between `fitted` and `actual` values.\nRed line shows smoothed trend between `fitted` and `actual`.\nData points with large residuals are labed.')
 
-
         ######################################################################################################
         # Residuals vs Fitted
         ######################################################################################################
@@ -523,6 +524,9 @@ rt_ts_auto_regression <- function(dataset,
                  y='Residuals Values',
                  caption='\nBlack line is reference for 0 residual/error.\nRed line shows smoothed trend between `residuals` and `fitted` values.\nData points with large residuals are labed.')
 
+        ######################################################################################################
+        # Residuals vs Predictors
+        ######################################################################################################
         if(length(independent_vars_used_from_dataset) > 0) {
 
             plot_list <- list()
@@ -536,16 +540,30 @@ rt_ts_auto_regression <- function(dataset,
             ggplot_residual_vs_predictors <- gridExtra::grid.arrange(grobs = plot_list,
                                                                      ncol = min(2, length(independent_vars_used_from_dataset)))
         }
+
+        ######################################################################################################
+        # Residuals vs Period
+        ######################################################################################################
+        floor_times <- floor(df_fit_data$Time)
+        if(length(unique(floor_times)) <= 50) {
+
+            ggplot_residual_vs_period <- ggplot(df_fit_data %>% mutate(Floor_Times=as.factor(floor_times)),
+                                                aes(x=Floor_Times, y=Residuals)) +
+                geom_boxplot() +
+                labs(title = 'Residuals vs. Period',
+                     x='Period')
+        }
+
+        ######################################################################################################
+        # Residuals vs Season
+        ######################################################################################################
+        if(frequency(dataset) > 1 && frequency(dataset) <= 52) {
+
+            ggplot_residual_vs_season <- ggplot(df_fit_data, aes(x=Season, y=Residuals)) +
+                geom_boxplot() +
+                labs(title = 'Residuals vs. Season')
+        }
     }
-
-
-
-
-    ###### Sandbox
-
-
-    ###############################################
-
 
     return (list(formula=reg_formula,
                  model=ts_model,
@@ -553,6 +571,7 @@ rt_ts_auto_regression <- function(dataset,
                  plot_fit=ggplot_fit,
                  plot_actual_vs_fitted=ggplot_actual_vs_fit,
                  plot_residuals_vs_fitted=ggplot_residual_vs_fit,
-                 plot_residuals_vs_predictors=ggplot_residual_vs_predictors))
-
+                 plot_residuals_vs_predictors=ggplot_residual_vs_predictors,
+                 plot_residuals_vs_period=ggplot_residual_vs_period,
+                 plot_residuals_vs_season=ggplot_residual_vs_season))
 }
