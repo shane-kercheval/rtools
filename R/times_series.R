@@ -214,6 +214,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #' @importFrom stringr str_split
 #' @importFrom ggplot2 aes geom_point geom_text labs geom_boxplot
 #' @importFrom dplyr mutate
+#' @importFrom gridExtra grid.arrange
 #' @export
 rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
@@ -537,8 +538,8 @@ rt_ts_auto_regression <- function(dataset,
                                         geom_point() +
                                         geom_smooth(method='loess')))
             }
-            ggplot_residual_vs_predictors <- gridExtra::grid.arrange(grobs = plot_list,
-                                                                     ncol = min(2, length(independent_vars_used_from_dataset)))
+            ggplot_residual_vs_predictors <- grid.arrange(grobs = plot_list,
+                                                          ncol = min(2, length(independent_vars_used_from_dataset)))
         }
 
         ######################################################################################################
