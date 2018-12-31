@@ -35,7 +35,10 @@ rt_are_dataframes_equal_from_file <- function(dataframe1, rds_file) {
 #' @export
 test_save_plot <- function(file_name, plot, size_inches=c(5, 8)) {
 
+    stopifnot(!is.null(plot))
+
     if (file.exists(file_name)) file.remove(file_name)
+
     ggsave(filename=file_name, plot=plot, height=size_inches[1], width=size_inches[2], units='in')
     expect_true(file.exists(file_name))
 }

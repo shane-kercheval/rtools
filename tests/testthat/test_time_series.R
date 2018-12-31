@@ -179,6 +179,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_trend.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_trend.png', plot = results$plot_residuals_vs_fitted)
+    expect_null(results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = c('trend', 'season'),
@@ -196,6 +197,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_season.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend_season.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_trend_season.png', plot = results$plot_residuals_vs_fitted)
+    expect_null(results$plot_residuals_vs_predictors)
 
     ##########################################################################################################
     # WITH LAG
@@ -215,6 +217,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_10.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_10.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_forecast_10.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_forecast_10.png', plot = results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(dataset=a10,
                                      num_lags=10,
@@ -231,6 +234,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_lag_5.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_lag_5.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_forecast_lag_5.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_forecast_lag_5.png', plot = results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = 'trend',
@@ -248,6 +252,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_trend_lag_5.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_trend_lag_5.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_forecast_trend_lag_5.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_forecast_trend_lag_5.png', plot = results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(dataset=a10,
                                      independent_variables = c('trend', 'season'),
@@ -265,6 +270,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_forecast_trend_season_lag_5.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_forecast_trend_season_lag_5.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_forecast_trend_season_lag_5.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_forecast_trend_season_lag_5.png', plot = results$plot_residuals_vs_predictors)
 
     # lag, but no ex-ante (so can keep all regressors)
     results <- rt_ts_auto_regression(a10,
@@ -281,6 +287,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_lag_10.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_lag_10.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_lag_10.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_lag_10.png', plot = results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = 'trend',
@@ -297,6 +304,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_lag_10.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend_lag_10.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_trend_lag_10.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_trend_lag_10.png', plot = results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(a10,
                                      independent_variables = c('trend', 'season'),
@@ -313,6 +321,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_a10_trend_season_lag_10.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_a10_trend_season_lag_10.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_a10_trend_season_lag_10.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_a10_trend_season_lag_10.png', plot = results$plot_residuals_vs_predictors)
 
 })
 
@@ -337,6 +346,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_melsyd_lag_3.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_lag_3.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_lag_3.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_lag_3.png', plot = results$plot_residuals_vs_predictors)
 
     results <- rt_ts_auto_regression(melsyd,
                                      dependent_variable = 'First.Class',
@@ -354,6 +364,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_lag_3.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_forecast_lag_3.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_forecast_lag_3.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_forecast_lag_3.png', plot = results$plot_residuals_vs_predictors)
 
 
     # error, removes all regressors
@@ -379,6 +390,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_residuals_vs_fitted)
+    expect_null(results$plot_residuals_vs_predictors)
 
 
     ##############
@@ -405,6 +417,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_melsyd_forecast_Economyclass.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_forecast_Economyclass.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_forecast_Economyclass.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_forecast_Economyclass.png', plot = results$plot_residuals_vs_predictors)
 
 
     # no ex-ante
@@ -425,65 +438,5 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_forecast.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_no_forecast.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_no_forecast.png', plot = results$plot_residuals_vs_fitted)
-
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_no_forecast.png', plot = results$plot_residuals_vs_predictors)
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

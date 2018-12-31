@@ -384,6 +384,7 @@ rt_ts_auto_regression <- function(dataset,
     ggplot_fit <- NULL
     ggplot_actual_vs_fit <- NULL
     ggplot_residual_vs_fit <- NULL
+    ggplot_residual_vs_predictors <- NULL
     if(build_graphs) {
 
         ######################################################################################################
@@ -400,14 +401,34 @@ rt_ts_auto_regression <- function(dataset,
         fitted_values <- fitted(ts_model)
         residual_values <- residuals(ts_model)
 
-        df_fit_data <- cbind(Actual=dependent_values,
-              Fitted=fitted_values,
-              Season=cycle(dependent_values),
-              Time=rt_ts_get_time_period(dependent_values),
-              Residuals=residual_values) %>%
-            na.omit() %>%
-            as.data.frame() %>%
-            mutate(Season=as.factor(Season))
+        # df_fit_data contains original dataset with fitted/residuals/etc.
+        df_fit_data <- NULL
+        if(length(independent_vars_used_from_dataset) > 0) {
+
+            df_fit_data <- cbind(dataset[, independent_vars_used_from_dataset],
+                                 Actual=dependent_values,
+                                 Fitted=fitted_values,
+                                 Season=cycle(dependent_values),
+                                 Time=rt_ts_get_time_period(dependent_values),
+                                 Residuals=residual_values) %>%
+                na.omit() %>%
+                as.data.frame() %>%
+                mutate(Season=as.factor(Season))
+            colnames(df_fit_data) <- c(independent_vars_used_from_dataset,
+                                       'Actual', 'Fitted', 'Season', 'Time', 'Residuals')
+
+        } else {
+
+            df_fit_data <- cbind(Actual=dependent_values,
+                                 Fitted=fitted_values,
+                                 Season=cycle(dependent_values),
+                                 Time=rt_ts_get_time_period(dependent_values),
+                                 Residuals=residual_values) %>%
+                na.omit() %>%
+                as.data.frame() %>%
+                mutate(Season=as.factor(Season))
+
+        }
 
         ######################################################################################################
         # FIT GRAPH (AND FORECAST IF APPLICABLE)
@@ -443,8 +464,7 @@ rt_ts_auto_regression <- function(dataset,
             }
         }
 
-        ggplot_fit <- ggplot_fit +
-            labs(y=dependent_variable)
+        ggplot_fit <- ggplot_fit + labs(y=dependent_variable)
 
         ######################################################################################################
         # Actual vs Fitted
@@ -502,6 +522,19 @@ rt_ts_auto_regression <- function(dataset,
                  x='Fitted',
                  y='Residuals Values',
                  caption='\nBlack line is reference for 0 residual/error.\nRed line shows smoothed trend between `residuals` and `fitted` values.\nData points with large residuals are labed.')
+
+        if(length(independent_vars_used_from_dataset) > 0) {
+
+            plot_list <- list()
+            for(var_used in independent_vars_used_from_dataset) {
+
+                plot_list <- c(plot_list,
+                               list(ggplot(df_fit_data, aes(x=!!sym(var_used), y=Residuals)) +
+                                        geom_point() +
+                                        geom_smooth(method='loess')))
+            }
+            ggplot_residual_vs_predictors <- gridExtra::grid.arrange(grobs = plot_list, ncol = 2) ## display plot
+        }
     }
 
 
@@ -518,6 +551,7 @@ rt_ts_auto_regression <- function(dataset,
                  forecast=ts_forecast,
                  plot_fit=ggplot_fit,
                  plot_actual_vs_fitted=ggplot_actual_vs_fit,
-                 plot_residuals_vs_fitted=ggplot_residual_vs_fit))
+                 plot_residuals_vs_fitted=ggplot_residual_vs_fit,
+                 plot_residuals_vs_predictors=ggplot_residual_vs_predictors))
 
 }
