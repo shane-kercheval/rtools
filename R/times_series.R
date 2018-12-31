@@ -533,7 +533,8 @@ rt_ts_auto_regression <- function(dataset,
                                         geom_point() +
                                         geom_smooth(method='loess')))
             }
-            ggplot_residual_vs_predictors <- gridExtra::grid.arrange(grobs = plot_list, ncol = 2) ## display plot
+            ggplot_residual_vs_predictors <- gridExtra::grid.arrange(grobs = plot_list,
+                                                                     ncol = min(2, length(independent_vars_used_from_dataset)))
         }
     }
 
