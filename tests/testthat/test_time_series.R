@@ -556,7 +556,6 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_no_lag_forecast.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_no_lag_forecast.png', plot = results$plot_residuals_vs_season)
 
-
     # lag; no forecast
     results <- rt_ts_auto_regression(dataset=dataset,
                                      dependent_variable = 'First.Class',
