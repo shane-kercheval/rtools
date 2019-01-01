@@ -214,7 +214,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #' @importFrom stringr str_split
 #' @importFrom ggplot2 aes geom_point geom_text labs geom_boxplot
 #' @importFrom dplyr mutate
-#' @importFrom gridExtra grid.arrange
+#' @importFrom tidyr gather
 #' @export
 rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
@@ -224,6 +224,9 @@ rt_ts_auto_regression <- function(dataset,
                                   build_graphs=TRUE,
                                   show_dataset_labels=FALSE,
                                   show_forecast_labels=TRUE) {
+
+    # if independent_variables is not null but is empty, then treat it as null
+    #if(!is.null(independent_variables) && length(independent_variables))
 
     if(rt_ts_is_single_variable(dataset)) {
         # single variable dataset has to have independent variables to regress on,
@@ -530,16 +533,17 @@ rt_ts_auto_regression <- function(dataset,
         ######################################################################################################
         if(length(independent_vars_used_from_dataset) > 0) {
 
-            plot_list <- list()
-            for(var_used in independent_vars_used_from_dataset) {
-
-                plot_list <- c(plot_list,
-                               list(ggplot(df_fit_data, aes(x=!!sym(var_used), y=Residuals)) +
-                                        geom_point() +
-                                        geom_smooth(method='loess')))
-            }
-            ggplot_residual_vs_predictors <- grid.arrange(grobs = plot_list,
-                                                          ncol = min(2, length(independent_vars_used_from_dataset)))
+            ggplot_residual_vs_predictors <- df_fit_data[, c('Residuals', independent_vars_used_from_dataset)] %>%
+                gather(key, value, -Residuals) %>%
+                mutate(key=factor(key, levels = independent_vars_used_from_dataset)) %>%
+            ggplot(aes(x=value, y=Residuals, group=key)) +
+                geom_point() +
+                geom_smooth(method='loess') +
+                facet_wrap( ~ key,
+                            scales='free_x',
+                            ncol=min(2, length(independent_vars_used_from_dataset))) +
+                labs(title='Residuals vs. Predictors',
+                     x='Predictor Values')
         }
 
         ######################################################################################################

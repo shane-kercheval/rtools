@@ -349,7 +349,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     # multi-var has to have dependent variable
     expect_error(rt_ts_auto_regression(melsyd))
 
-    results <- rt_ts_auto_regression(melsyd,
+    results <- rt_ts_auto_regression(dataset=melsyd,
                                      dependent_variable = 'First.Class',
                                      num_lags=3,
                                      ex_ante_forecast_horizon=NULL)
@@ -370,6 +370,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
 
     results <- rt_ts_auto_regression(melsyd,
                                      dependent_variable = 'First.Class',
+                                     independent_variables = c(),  # empty rather than NULL
                                      num_lags=3,
                                      ex_ante_forecast_horizon=3)
     expected_formula <- 'First.Class ~ Business.Class_lag_3 + Economy.Class_lag_3'
