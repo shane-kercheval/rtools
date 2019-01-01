@@ -225,9 +225,6 @@ rt_ts_auto_regression <- function(dataset,
                                   show_dataset_labels=FALSE,
                                   show_forecast_labels=TRUE) {
 
-    # if independent_variables is not null but is empty, then treat it as null
-    #if(!is.null(independent_variables) && length(independent_variables))
-
     if(rt_ts_is_single_variable(dataset)) {
         # single variable dataset has to have independent variables to regress on,
         # meaning that it has to have either lags-vars or trend/season vars
