@@ -343,7 +343,6 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
 
 })
 
-
 test_that('rt_ts_create_lagged_dataset - multi variable', {
 
     # multi-var has to have dependent variable
@@ -351,7 +350,38 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
 
     results <- rt_ts_auto_regression(dataset=melsyd,
                                      dependent_variable = 'First.Class',
+                                     independent_variables=c(),  # should be the same as NULL
+                                     num_lags=NULL,
+                                     include_dependent_variable_lag=FALSE,
+                                     ex_ante_forecast_horizon=NULL)
+    expected_formula <- 'First.Class ~ Business.Class + Economy.Class'
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectations
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$r.squared, 0.5430182, tolerance=1e-7)
+    expect_null(results$forecast)
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_lag.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_no_lag.png', plot = results$plot_actual_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_no_lag.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_no_lag.png', plot = results$plot_residuals_vs_predictors)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_no_lag.png', plot = results$plot_residuals_vs_period)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_no_lag.png', plot = results$plot_residuals_vs_season)
+
+
+    # shouldn't work because ex_ante_forecast_horizon=3 will remove all non-lagged vars and no independent vars will be left
+    expect_error(rt_ts_auto_regression(dataset=melsyd,
+                                       dependent_variable = 'First.Class',
+                                       independent_variables=c(),  # should be the same as NULL
+                                       num_lags=NULL,
+                                       include_dependent_variable_lag=FALSE,
+                                       ex_ante_forecast_horizon=3))
+
+    results <- rt_ts_auto_regression(dataset=melsyd,
+                                     dependent_variable = 'First.Class',
                                      num_lags=3,
+                                     include_dependent_variable_lag=FALSE,
                                      ex_ante_forecast_horizon=NULL)
     expected_formula <- 'First.Class ~ Business.Class + Business.Class_lag_1 + Business.Class_lag_2 + Business.Class_lag_3 + Economy.Class + Economy.Class_lag_1 + Economy.Class_lag_2 + Economy.Class_lag_3'
     expect_equal(results$formula, expected_formula)
@@ -372,6 +402,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
                                      dependent_variable = 'First.Class',
                                      independent_variables = c(),  # empty rather than NULL
                                      num_lags=3,
+                                     include_dependent_variable_lag=FALSE,
                                      ex_ante_forecast_horizon=3)
     expected_formula <- 'First.Class ~ Business.Class_lag_3 + Economy.Class_lag_3'
     expect_equal(results$formula, expected_formula)
@@ -394,12 +425,14 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     expect_error(rt_ts_auto_regression(melsyd,
                                        dependent_variable = 'First.Class',
                                        num_lags=3,
+                                       include_dependent_variable_lag=FALSE,
                                        ex_ante_forecast_horizon=4))
 
     results <- rt_ts_auto_regression(dataset=melsyd,
                                      dependent_variable = 'First.Class',
                                      independent_variables = c('trend', 'season', 'Business.Class', 'Economy.Class'),
                                      num_lags=3,
+                                     include_dependent_variable_lag=FALSE,
                                      ex_ante_forecast_horizon=4)  # removes all lags, but works because it retains trend/season
     expected_formula <- 'First.Class ~ trend + season'
     expect_equal(results$formula, expected_formula)
@@ -429,6 +462,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
                                      dependent_variable = 'First.Class',
                                      independent_variables = c('trend', 'season', 'Economy.Class'),
                                      num_lags=3,
+                                     include_dependent_variable_lag=FALSE,
                                      ex_ante_forecast_horizon=3)
     expected_formula <- 'First.Class ~ trend + season + Economy.Class_lag_3'
     expect_equal(results$formula, expected_formula)
@@ -452,6 +486,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
                                      dependent_variable = 'First.Class',
                                      independent_variables = c('trend', 'season', 'Business.Class', 'Economy.Class'),
                                      num_lags=3,
+                                     include_dependent_variable_lag=FALSE,
                                      ex_ante_forecast_horizon=NULL)  # removes all lags, but works because it retains trend/season
     expected_formula <- 'First.Class ~ trend + season + Business.Class + Business.Class_lag_1 + Business.Class_lag_2 + Business.Class_lag_3 + Economy.Class + Economy.Class_lag_1 + Economy.Class_lag_2 + Economy.Class_lag_3'
     expect_equal(results$formula, expected_formula)

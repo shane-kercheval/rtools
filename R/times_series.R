@@ -206,6 +206,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #' single-variable & multi-variable datasets can also include `trend` and/or `season` values
 #'
 #' @param num_lags if specified, adds lag variables for all the independent_variables
+#' @param include_dependent_variable_lag if num_lags >= 1 *and* a multi-variable dataset, then this indicates whether or not we should lag the dependent_variable and include it in the model (if the data is single-variable, then this is ignored, because the only thing to lag is the dependent_variable)
 #' @param ex_ante_forecast_horizon if specified, indicates how far into the future we should forecast. All original variables (except for `trend`/`season`) and all lag values that have a lag less than `ex_ante_forecast_horizon` will be removed.
 #' @param build_graphs if TRUE, will build various graphs and return those ggplot objects in the returned list
 #' @param show_dataset_labels whether or not to show the values of the original dataaset
@@ -220,10 +221,16 @@ rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
                                   independent_variables=NULL,
                                   num_lags=NULL,
+                                  include_dependent_variable_lag=TRUE,
                                   ex_ante_forecast_horizon=NULL,
                                   build_graphs=TRUE,
                                   show_dataset_labels=FALSE,
                                   show_forecast_labels=TRUE) {
+
+    if(!is.null(num_lags)) {
+
+        stopifnot(num_lags >= 1)
+    }
 
     if(rt_ts_is_single_variable(dataset)) {
         # single variable dataset has to have independent variables to regress on,
@@ -265,10 +272,22 @@ rt_ts_auto_regression <- function(dataset,
             dependent_variable = 'original_data'  # this is what rt_ts_create_lagged_dataset names the column for single-var
         }
 
+        keep_variables <- original_dependent_variable
+        lag_variables <- independent_variables[! independent_variables %in% c('trend', 'season')]
+
+        if(include_dependent_variable_lag && rt_ts_is_multi_variable(dataset)) {
+
+            # if we are going to lag on the dependent vairable as well, then we have to include that in
+            # lag_variables and remove it from keep_variables (keep_variables keeps the specified variables
+            # but doesn't lag them)
+            lag_variables <- c(dependent_variable, lag_variables)
+            keep_variables <- NULL
+        }
+
         dataset <- rt_ts_create_lagged_dataset(dataset,
                                                num_lags=num_lags,
-                                               lag_variables=independent_variables[! independent_variables %in% c('trend', 'season')],
-                                               keep_variables=original_dependent_variable)  # for single-var we will have changed it from NULL
+                                               lag_variables=lag_variables,
+                                               keep_variables=keep_variables)  # for single-var we will have changed it from NULL
 
         # now, the column names of the new dataset (other than the dependent_variable) contains all of the
         # original and new independent_variables
@@ -285,6 +304,7 @@ rt_ts_auto_regression <- function(dataset,
 
     # extract all variables used in the regression formula (and thus the regression model)
     independent_vars_used <- str_split(str_split(reg_formula, pattern=' ~ ', simplify=TRUE )[2], ' \\+ ')[[1]]
+    stopifnot(!is.null(independent_vars_used) && length(independent_vars_used) != 0 && !any(independent_vars_used == ""))
     # now figure out which vars were used in the regression model, aside from trend/season (i.e. which variables we need to subset)
     independent_vars_used_from_dataset <- independent_vars_used[! independent_vars_used %in% c('trend', 'season')]
 

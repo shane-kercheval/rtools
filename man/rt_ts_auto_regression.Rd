@@ -6,6 +6,7 @@
 \usage{
 rt_ts_auto_regression(dataset, dependent_variable = NULL,
   independent_variables = NULL, num_lags = NULL,
+  include_dependent_variable_lag = TRUE,
   ex_ante_forecast_horizon = NULL, build_graphs = TRUE,
   show_dataset_labels = FALSE, show_forecast_labels = TRUE)
 }
@@ -21,6 +22,8 @@ rt_ts_auto_regression(dataset, dependent_variable = NULL,
 single-variable & multi-variable datasets can also include `trend` and/or `season` values}
 
 \item{num_lags}{if specified, adds lag variables for all the independent_variables}
+
+\item{include_dependent_variable_lag}{if num_lags >= 1 *and* a multi-variable dataset, then this indicates whether or not we should lag the dependent_variable and include it in the model (if the data is single-variable, then this is ignored, because the only thing to lag is the dependent_variable)}
 
 \item{ex_ante_forecast_horizon}{if specified, indicates how far into the future we should forecast. All original variables (except for `trend`/`season`) and all lag values that have a lag less than `ex_ante_forecast_horizon` will be removed.}
 
