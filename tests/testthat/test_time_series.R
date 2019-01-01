@@ -605,31 +605,11 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_lag_forecast.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_lag_forecast.png', plot = results$plot_residuals_vs_season)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    ##########################################################################################################
     # BUG: if ex_ante_forecast_horizon is 1 (i.e. we're only subsetting one period), then subsetting the
     # data when there are multiple variables and then turning that data into a data.frame results
     # in a data frame that has the columns as rows...
+    ##########################################################################################################
     dataset <- window(melsyd, start=1990)
     results <- rt_ts_auto_regression(dataset=dataset,
                                      dependent_variable = 'First.Class',
@@ -678,4 +658,8 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_predictors)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_season)
+
+    ##########################################################################################################
+    # END BUG FIX
+    ##########################################################################################################
 })
