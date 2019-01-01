@@ -392,7 +392,16 @@ rt_ts_auto_regression <- function(dataset,
                 num_periods <- nrow(temp)
                 # new_data should now contain a ts dataset of the periods we want to predict and the (lagged)
                 # values necessary to predict them
-                new_data <- as.data.frame(subset(temp, start=num_periods - ex_ante_forecast_horizon + 1))
+                start_index <- num_periods - ex_ante_forecast_horizon + 1
+                new_data <- as.data.frame(subset(temp, start=start_index))
+
+                # if ex_ante_forecast_horizon is 1 (i.e. we're only subsetting one period), then subsetting the
+                # data when there are multiple variables and then turning that data into a data.frame results
+                # in a data frame that has the columns as rows...
+                if(ex_ante_forecast_horizon == 1 && length(independent_vars_used_from_dataset) > 1) {
+
+                    new_data <- as.data.frame(t(new_data))
+                }
             }
 
             # the number of rows in new_data should match the number of periods we are forecasting

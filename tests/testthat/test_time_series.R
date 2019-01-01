@@ -604,4 +604,78 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_lag_forecast.png', plot = results$plot_residuals_vs_predictors)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_lag_forecast.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_lag_forecast.png', plot = results$plot_residuals_vs_season)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # BUG: if ex_ante_forecast_horizon is 1 (i.e. we're only subsetting one period), then subsetting the
+    # data when there are multiple variables and then turning that data into a data.frame results
+    # in a data frame that has the columns as rows...
+    dataset <- window(melsyd, start=1990)
+    results <- rt_ts_auto_regression(dataset=dataset,
+                                     dependent_variable = 'First.Class',
+                                     independent_variables = c('trend', 'season', 'Economy.Class'),
+                                     num_lags=1,
+                                     include_dependent_variable_lag=TRUE,
+                                     ex_ante_forecast_horizon=1)
+    expected_formula <- 'First.Class ~ trend + season + First.Class_lag_1 + Economy.Class_lag_1'
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectations
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$adj.r.squared, 0.80393, tolerance=1e-7)
+    # check that we corecasted the correct periods
+    expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923")))
+
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_lag_bug_forecast_1_multivar.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_lag_bug_forecast_1_multivar.png', plot = results$plot_actual_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_lag_bug_forecast_1_multivar.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_lag_bug_forecast_1_multivar.png', plot = results$plot_residuals_vs_predictors)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_lag_bug_forecast_1_multivar.png', plot = results$plot_residuals_vs_period)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_lag_bug_forecast_1_multivar.png', plot = results$plot_residuals_vs_season)
+
+    # verify same thing works when subsetting a single variable (i.e. dependent lag i.e. First.Class_lag_1)
+    dataset <- window(melsyd, start=1990)
+    results <- rt_ts_auto_regression(dataset=dataset,
+                                     dependent_variable = 'First.Class',
+                                     independent_variables = c('trend', 'season'),
+                                     num_lags=1,
+                                     include_dependent_variable_lag=TRUE,
+                                     ex_ante_forecast_horizon=1)
+    expected_formula <- 'First.Class ~ trend + season + First.Class_lag_1'
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectations
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$adj.r.squared, 0.8048928, tolerance=1e-7)
+    # check that we corecasted the correct periods
+    expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923")))
+
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_actual_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_predictors)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_period)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_lag_bug_forecast_1_singlevar.png', plot = results$plot_residuals_vs_season)
 })
