@@ -18,6 +18,7 @@ Imports:
     reshape2,
     scales,
     stringr,
-    timeDate
+    timeDate,
+    tidyr
 Suggests: testthat
 RoxygenNote: 6.1.1
