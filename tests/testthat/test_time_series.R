@@ -552,7 +552,7 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_lag_forecast.png', plot = results$plot_fit)
     test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_no_lag_forecast.png', plot = results$plot_actual_vs_fitted)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_no_lag_forecast.png', plot = results$plot_residuals_vs_fitted)
-    test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_no_lag_forecast.png', plot = results$plot_residuals_vs_predictors)
+    expect_null(results$plot_residuals_vs_predictors)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_no_lag_forecast.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_no_lag_forecast.png', plot = results$plot_residuals_vs_season)
 
