@@ -5,7 +5,7 @@
 \title{adds lag variables, performs regrssion & forecasting, produces a plot}
 \usage{
 rt_ts_auto_regression(dataset, dependent_variable = NULL,
-  independent_variables = NULL, num_lags = NULL,
+  independent_variables = NULL, lambda = NULL, num_lags = NULL,
   include_dependent_variable_lag = TRUE,
   ex_ante_forecast_horizon = NULL, build_graphs = TRUE,
   show_dataset_labels = FALSE, show_forecast_labels = TRUE)
@@ -20,6 +20,8 @@ rt_ts_auto_regression(dataset, dependent_variable = NULL,
 `independent_variables` can be null for single-var datasets; for multi-variable datasets, a value of `NULL` will include all variables
 
 single-variable & multi-variable datasets can also include `trend` and/or `season` values}
+
+\item{lambda}{(simply passes value to `tslm`); according to their docs: "Box-Cox transformation parameter. If lambda="auto", then a transformation is automatically selected using BoxCox.lambda. The transformation is ignored if NULL. Otherwise, data transformed before model is estimated."}
 
 \item{num_lags}{if specified, adds lag variables for all the independent_variables}
 
