@@ -205,6 +205,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #'
 #' single-variable & multi-variable datasets can also include `trend` and/or `season` values
 #'
+#' @param lambda (simply passes value to `tslm`); according to their docs: "Box-Cox transformation parameter. If lambda="auto", then a transformation is automatically selected using BoxCox.lambda. The transformation is ignored if NULL. Otherwise, data transformed before model is estimated."
 #' @param num_lags if specified, adds lag variables for all the independent_variables
 #' @param include_dependent_variable_lag if num_lags >= 1 *and* a multi-variable dataset, then this indicates whether or not we should lag the dependent_variable and include it in the model (if the data is single-variable, then this is ignored, because the only thing to lag is the dependent_variable)
 #' @param ex_ante_forecast_horizon if specified, indicates how far into the future we should forecast. All original variables (except for `trend`/`season`) and all lag values that have a lag less than `ex_ante_forecast_horizon` will be removed.
@@ -220,6 +221,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
                                   independent_variables=NULL,
+                                  lambda=NULL,
                                   num_lags=NULL,
                                   include_dependent_variable_lag=TRUE,
                                   ex_ante_forecast_horizon=NULL,
@@ -321,7 +323,7 @@ rt_ts_auto_regression <- function(dataset,
     # but will also remove the NAs at the end of the dataset which is needed to we restrict the training to the
     # original time horizon i.e. ending period
     training_data <- na.omit(dataset)
-    ts_model <- tslm(formula=reg_formula, data=training_data)
+    ts_model <- tslm(formula=reg_formula, data=training_data, lambda=lambda)
 
     ts_forecast <- NULL
     # we can only forecast for ex_ante regressions, otherwise we don't have the required data
