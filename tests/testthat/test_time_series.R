@@ -42,35 +42,35 @@ test_that('rt_ts_get_time_period', {
 })
 test_that('rt_ts_lm_build_formula', {
 
-    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
                                           independent_variables = c('trend', 'season'),
                                           ex_ante_forecast_horizon=NULL)
-    expect_equal(reg_formula, 'dataset ~ trend + season')
+    expect_equal(reg_formula, 'data ~ trend + season')
 
-    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
                                           independent_variables = c('trend', 'season'),
                                           ex_ante_forecast_horizon=3)
-    expect_equal(reg_formula, 'dataset ~ trend + season')
+    expect_equal(reg_formula, 'data ~ trend + season')
 
-    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
                                           independent_variables = c('trend'),
                                           ex_ante_forecast_horizon=NULL)
-    expect_equal(reg_formula, 'dataset ~ trend')
+    expect_equal(reg_formula, 'data ~ trend')
 
-    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
                                           independent_variables = c('trend'),
                                           ex_ante_forecast_horizon=3)
-    expect_equal(reg_formula, 'dataset ~ trend')
+    expect_equal(reg_formula, 'data ~ trend')
 
-    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
                                           independent_variables = c('season'),
                                           ex_ante_forecast_horizon=NULL)
-    expect_equal(reg_formula, 'dataset ~ season')
+    expect_equal(reg_formula, 'data ~ season')
 
-    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'dataset',
+    reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
                                           independent_variables = c('season'),
                                           ex_ante_forecast_horizon=3)
-    expect_equal(reg_formula, 'dataset ~ season')
+    expect_equal(reg_formula, 'data ~ season')
 
     reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'NSWMetro',
                                           independent_variables = c('trend', 'season', 'NSWNthCo'))
@@ -153,7 +153,7 @@ test_that('rt_ts_create_lagged_dataset', {
                                                   rds_file='data/rt_ts_create_lagged_dataset_visnights_all_columns.RDS'))
 })
 
-test_that('rt_ts_create_lagged_dataset - single variable', {
+test_that('rt_ts_auto_regression - single variable', {
 
     ##########################################################################################################
     # WITHOUT LAG
@@ -167,7 +167,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
                                      independent_variables = 'trend',
                                      num_lags=NULL,
                                      ex_ante_forecast_horizon=5)
-    expected_formula <- 'dataset ~ trend'
+    expected_formula <- 'data ~ trend'
     expect_equal(results$formula, expected_formula)
     # ensure the formula used matches our expectation
     expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ',  simplify = TRUE)[, 2])
@@ -187,7 +187,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
                                      independent_variables = c('trend', 'season'),
                                      num_lags=NULL,
                                      ex_ante_forecast_horizon=5)
-    expected_formula <- 'dataset ~ trend + season'
+    expected_formula <- 'data ~ trend + season'
     expect_equal(results$formula, expected_formula)
     # ensure the formula used matches our expectations
     expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
@@ -343,7 +343,7 @@ test_that('rt_ts_create_lagged_dataset - single variable', {
 
 })
 
-test_that('rt_ts_create_lagged_dataset - multi variable', {
+test_that('rt_ts_auto_regression - multi variable', {
 
     # multi-var has to have dependent variable
     expect_error(rt_ts_auto_regression(melsyd))
@@ -662,4 +662,30 @@ test_that('rt_ts_create_lagged_dataset - multi variable', {
     ##########################################################################################################
     # END BUG FIX
     ##########################################################################################################
+})
+
+
+test_that('rt_ts_auto_regression - lambda', {
+
+    results <- rt_ts_auto_regression(dataset=a10,
+                                     independent_variables = c('trend', 'season'),
+                                     lambda = 'auto',
+                                     num_lags=NULL,
+                                     ex_ante_forecast_horizon=5)
+    expected_formula <- 'data ~ trend + season'
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectation
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ',  simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$r.squared, 0.9998053, tolerance=1e-7)
+    # check that we forecasted the correct periods
+    expect_true(all(rownames(as.data.frame(results$forecast)) == c("Jul 2008", "Aug 2008", "Sep 2008", "Oct 2008", "Nov 2008")))
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_lambda_trend.png', plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_lambda_trend.png', plot = results$plot_actual_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_lambda_trend.png', plot = results$plot_residuals_vs_fitted)
+    expect_null(results$plot_residuals_vs_predictors)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_lambda_trend.png', plot = results$plot_residuals_vs_period)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_lambda_trend.png', plot = results$plot_residuals_vs_season)
+
 })

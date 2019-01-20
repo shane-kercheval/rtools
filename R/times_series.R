@@ -261,7 +261,7 @@ rt_ts_auto_regression <- function(dataset,
     original_dependent_variable <- dependent_variable
     if(is.null(dependent_variable)) {
 
-        dependent_variable <- 'dataset'
+        dependent_variable <- 'data'
     }
 
 
