@@ -1,18 +1,5 @@
 #' returns whether or not a value is NULL, NA, or NAN
 #'
-#' @param x a single value to check
-#'
-#' @examples
-#'
-#' rt_is_null_na_nan(NA)
-#'
-#' @export
-rt_is_null_na_nan <- function(x) {
-    return (is.null(x) || is.na(x) || is.nan(x))
-}
-
-#' returns whether or not a value is NULL, NA, or NAN
-#'
 #' @param date_vector a vector of dates
 #' @param reference_date the reference/base date used for fields such as (is_current_xxx). If NULL (default), then today's date is used.
 #'
@@ -113,4 +100,64 @@ rt_get_date_fields <- function(date_vector, reference_date=NULL) {
                    is_end_of_month, is_end_of_quarter, is_year_start, is_year_end, cohort_week, cohort_month,
                    cohort_quarter)
     )
+}
+
+#' returns a dataframe's column as a vector
+#'
+#' @param df a data.frame
+#' @param column the column to return as a vector
+#' @param return_unique if TRUE, return unique values
+#'
+#' @export
+rt_get_vector <- function(df, column, return_unique=FALSE) {
+
+    if(return_unique) {
+
+        return (unique(df[[column]]))
+    
+    } else {
+
+        return (df[[column]])
+    }
+}
+
+#' returns the vector (`vec`) without the specified value (`val`). If `val` doesn't exist in `vec`, `vec` is
+#' returned unchanged.
+#'
+#' @param vec the vector
+#' @param val the value to remove
+#'
+#' @export
+rt_remove_val <- function(vec, val) {
+
+    return (vec[!vec %in% val])
+}
+
+
+#' Returnes the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
+#'
+#' @param y the value
+#' @param nearest_x the decimal value to round the ceiling to
+#'
+#' @export
+rt_ceiling_nearest_x <- function(y, nearest_x) {
+
+    y_trans <- ceiling(abs(y)/nearest_x)*nearest_x
+    if(y < 0) {
+        y_trans <- y_trans * -1
+    }
+    # round to nearest 10 because computers can't handle decimals
+    return (round(y_trans, 10))
+}
+
+#' Like `stopifnot`, but stop `stopifnot` stops if the expression is not true, and `rt_stopif` stops if the
+#' expression is true. Avoids the unintuitive double-negative e.g. (`stopifnot(!espression)`) which becomes
+#' `rt_stopif(espression)`.
+#'
+#' @param exprs the expression
+#'
+#' @export
+rt_stopif <- function(exprs) {
+
+    stopifnot(!exprs)
 }
