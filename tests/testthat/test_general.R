@@ -107,6 +107,13 @@ test_that("rt_get_vector", {
     expect_identical(expected_a, df %>% rt_get_vector('a'))
     expect_identical(expected_b, df %>% rt_get_vector('b'))
 
+    # test when getting only 1 row
+    expect_equal(df %>% filter(a == 2) %>% rt_get_vector('a'), 2)
+    expect_equal(df %>% filter(a == 2) %>% rt_get_vector('b'), 'b')
+
+    expect_equal(df %>% filter(b == 'c') %>% rt_get_vector('a'), 3)
+    expect_equal(df %>% filter(b == 'c') %>% rt_get_vector('b'), 'c')
+
     # empty df
     df <- df %>% filter(a == 4)
     expect_equal(length(df %>% rt_get_vector('a')), 0)
