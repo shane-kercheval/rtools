@@ -86,7 +86,6 @@ test_that("rt_explore_correlations_credit", {
                                                      p_value_threshold=0.3))
 })
 
-
 test_that("rt_explore_value_totals_counts", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 

@@ -255,7 +255,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n
-#' @importFrom scales percent_format percent
+#' @importFrom scales percent_format comma_format percent
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
@@ -303,8 +303,8 @@ rt_explore_plot_value_totals <- function(dataset,
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = percent(percent), y = percent + 0.01), vjust=-1) +
-                geom_text(aes(label = total, y = percent + 0.01))
+                geom_text(aes(label = percent(percent), y = percent), vjust=-1.5) +
+                geom_text(aes(label = comma_format()(total), y = percent), vjust=-0.25)
         }
 
         return (
