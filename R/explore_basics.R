@@ -203,9 +203,18 @@ rt_explore_plot_correlations <- function(dataset,
 #' returns either a *count* of the unique values of `variable` if `sum_by_variable` is NULL, otherwise it *sums* the
 #' variable represented by `sum_by_variable` across (i.e. grouped by) `variable`
 #'
+#' If `multi_value_delimitor` is not NULL, then it counts all the values found after it splits/separates the
+#'      variable by the delimitor. If `sum_by_variable` is NULL, it counts the values and the denominator for
+#'      the `percent` column returned is the total number of records. If `sum_by_variable` is not NULL, then
+#'      when multiple values are found, each value is weighted by the value found in `sum_by_variable`, and
+#'      the denominator for the `percent` column returned is the `sum` of `sum_by_variable` (before the values
+#'      are split).
+#'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
 #' @param sum_by_variable the numeric variable to sum
+#' @param multi_value_delimitor if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
+#'      this variable to the delimitor will cause the function to count seperate values
 #'
 #' @examples
 #'
@@ -213,35 +222,91 @@ rt_explore_plot_correlations <- function(dataset,
 #' rt_explore_value_totals(dataset=iris, variable='Species')
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr sym count mutate group_by summarise rename arrange desc
+#' @importFrom dplyr sym count mutate group_by ungroup summarise rename arrange desc
+#' @importFrom stringr str_split
+#' @importFrom purrr flatten map2 map_dbl map_chr
 #' @export
-rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
+rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, multi_value_delimitor=NULL) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
+    # temp <- data.frame(values=unlist(str_split(dataset[, variable], multi_value_delimitor, simplify=FALSE)),
+    #                    weight=1)
+    values <- dataset[, variable]
+
+
     if(is.null(sum_by_variable)) {
 
-        totals <- dataset %>%
-            count(!!symbol_variable) %>%
-            rename(count = n) %>%
-            mutate(percent = count / nrow(dataset)) %>%
-            arrange(desc(count))
+        weights <- 1
+        count_column_name <- 'count'
+        denominator <- nrow(dataset)
 
-    } else {
+    } else{
 
-        symbol_sum_by <- sym(sum_by_variable)  # because we are using string variables
-
-        totals <- dataset %>%
-            group_by(!!symbol_variable) %>%
-            summarise(sum = sum(!!symbol_sum_by, na.rm = TRUE)) %>%
-            mutate(percent = sum / sum(sum)) %>%
-            arrange(desc(sum))
+        weights <- dataset[, sum_by_variable]
+        count_column_name <- 'sum'
+        denominator <- sum(weights, na.rm = TRUE)
     }
+
+    if(is.null(multi_value_delimitor)) {
+
+        temp <- data.frame(value = values,
+                           weight = weights,
+                           stringsAsFactors = FALSE)
+
+    }else {
+
+        temp <- map2(values, weights,
+                      function(value, weight) {
+                          split_values <- unlist(str_split(value, multi_value_delimitor, simplify = FALSE))
+                          map2(split_values, rep(weight, length(split_values)),
+                               function(val, val_weight)
+                                   c(val, val_weight))
+                      })
+        temp <- flatten(temp)
+        temp <- data.frame(value = map_chr(temp, ~.[[1]]),
+                           weight = map_dbl(temp, ~as.double(.[[2]])),
+                           stringsAsFactors = FALSE)
+
+    }
+
+    totals <- temp %>%
+        group_by(value) %>%
+        summarise(count = sum(weight, na.rm = TRUE)) %>%
+        ungroup() %>%
+        mutate(percent = count / denominator) %>%
+        arrange(desc(count), value)
+
+    if(is.factor(values)) {
+
+        if(is.null(multi_value_delimitor)) {
+
+            totals <- totals %>%
+                mutate(value = factor(value, levels=levels(values)))
+
+        } else {
+            # if we are delimiting, then the original factors aren't valid because they contain multi-value
+            # levels
+            totals <- totals %>%
+                mutate(value = factor(value, levels=sort(unique(as.character(totals$value)))))
+        }
+    }
+
+    colnames(totals) <- c(variable, count_column_name, 'percent')
 
     return (as.data.frame(totals))
 }
 
 #' returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable
+#'
+#' If `multi_value_delimitor` is not NULL, then it counts all the values found after it splits/separates the
+#'      variable by the delimitor. If `sum_by_variable` is NULL, it counts the values and the denominator for
+#'      the `percent` column returned is the total number of records. If `sum_by_variable` is not NULL, then
+#'      when multiple values are found, each value is weighted by the value found in `sum_by_variable`, and
+#'      the denominator for the `percent` column returned is the `sum` of `sum_by_variable` (before the values
+#'      are split).
+#'
+#' Currently only works when using only `variable` (not `comparison_variable`)
 #'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
@@ -251,6 +316,9 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL) {
 #' @param show_variable_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
 #' @param stacked_comparison rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable
+#' @param multi_value_delimitor if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
+#'      this variable to the delimitor will cause the function to count seperate values
+
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -266,6 +334,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          show_variable_totals=TRUE,
                                          show_comparison_totals=TRUE,
                                          stacked_comparison=FALSE,
+                                         multi_value_delimitor=NULL,
                                          base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
@@ -274,7 +343,9 @@ rt_explore_plot_value_totals <- function(dataset,
 
         plot_title <- paste0('Value Counts - `', variable, '`')
         plot_y_axis_label <- 'Percent of Dataset Containing Value'
-        groups_by_variable <- rt_explore_value_totals(dataset=dataset, variable=variable) %>%
+        groups_by_variable <- rt_explore_value_totals(dataset=dataset,
+                                                      variable=variable,
+                                                      multi_value_delimitor=multi_value_delimitor) %>%
             rename(total=count)
 
     } else {
@@ -283,7 +354,8 @@ rt_explore_plot_value_totals <- function(dataset,
         plot_y_axis_label <- 'Percent of Total Amount'
         groups_by_variable <- rt_explore_value_totals(dataset=dataset,
                                                       variable=variable,
-                                                      sum_by_variable=sum_by_variable) %>%
+                                                      sum_by_variable=sum_by_variable,
+                                                      multi_value_delimitor=multi_value_delimitor) %>%
             rename(total=sum)
     }
 

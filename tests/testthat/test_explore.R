@@ -356,6 +356,56 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      base_size=14))
 })
 
+test_that("rt_explore_plot_value_totals_multivalue_column", {
+
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    expected_totals <- rt_explore_value_totals(dataset=credit_data,
+                                            variable='purpose',
+                                            multi_value_delimitor=NULL)
+
+    # first test with a delimitor when none of the columns are delimited
+    found_totals <- rt_explore_value_totals(dataset=credit_data,
+                                               variable='purpose',
+                                               multi_value_delimitor=', ')
+    expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
+
+
+    # now test with multi-value columns
+    #expected_totals =
+    expected_totals <- rbind(expected_totals,
+                             expected_totals %>%
+                                 filter(purpose == 'car' | purpose == 'business') %>%
+                                 mutate(purpose = paste0(purpose, '_test'))) %>%
+        arrange(desc(count), purpose)
+
+    expected_totals <- expected_totals %>%
+        mutate(purpose = factor(purpose, levels=sort(as.character(expected_totals$purpose))))
+    # create multi-value column
+
+    credit_data <- credit_data %>%
+        mutate(purpose = case_when(
+            purpose == 'car' ~ 'car, car_test',
+            purpose == 'business' ~ 'business, business_test',
+            TRUE ~ as.character(purpose))) %>%
+        mutate(purpose = as.factor(purpose))
+
+    found_totals <- rt_explore_value_totals(dataset=credit_data,
+                                            variable='purpose',
+                                            multi_value_delimitor=', ')
+
+    expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
+
+    variable <- 'purpose'
+    comparison_variable <- NULL
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_purose_multivalue.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable = NULL,
+                                                     multi_value_delimitor=', '))
+
+})
+
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'months_loan_duration'
