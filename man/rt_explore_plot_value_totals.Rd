@@ -8,7 +8,7 @@ rt_explore_plot_value_totals(dataset, variable,
   comparison_variable = NULL, sum_by_variable = NULL,
   order_by_count = TRUE, show_variable_totals = TRUE,
   show_comparison_totals = TRUE, stacked_comparison = FALSE,
-  multi_value_delimitor = NULL, base_size = 11)
+  multi_value_delimiter = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -27,14 +27,14 @@ rt_explore_plot_value_totals(dataset, variable,
 
 \item{stacked_comparison}{rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable}
 
-\item{multi_value_delimitor}{if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
-this variable to the delimitor will cause the function to count seperate values}
+\item{multi_value_delimiter}{if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
+this variable to the delimiter will cause the function to count seperate values}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
 \description{
-If `multi_value_delimitor` is not NULL, then it counts all the values found after it splits/separates the
-     variable by the delimitor. If `sum_by_variable` is NULL, it counts the values and the denominator for
+If `multi_value_delimiter` is not NULL, then it counts all the values found after it splits/separates the
+     variable by the delimiter. If `sum_by_variable` is NULL, it counts the values and the denominator for
      the `percent` column returned is the total number of records. If `sum_by_variable` is not NULL, then
      when multiple values are found, each value is weighted by the value found in `sum_by_variable`, and
      the denominator for the `percent` column returned is the `sum` of `sum_by_variable` (before the values

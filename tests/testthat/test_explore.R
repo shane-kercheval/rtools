@@ -362,12 +362,12 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
 
     expected_totals <- rt_explore_value_totals(dataset=credit_data,
                                             variable='purpose',
-                                            multi_value_delimitor=NULL)
+                                            multi_value_delimiter=NULL)
 
-    # first test with a delimitor when none of the columns are delimited
+    # first test with a delimiter when none of the columns are delimited
     found_totals <- rt_explore_value_totals(dataset=credit_data,
                                                variable='purpose',
-                                               multi_value_delimitor=', ')
+                                               multi_value_delimiter=', ')
     expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
 
 
@@ -392,7 +392,7 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
 
     found_totals <- rt_explore_value_totals(dataset=credit_data,
                                             variable='purpose',
-                                            multi_value_delimitor=', ')
+                                            multi_value_delimiter=', ')
 
     expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
 
@@ -402,7 +402,7 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable = NULL,
-                                                     multi_value_delimitor=', '))
+                                                     multi_value_delimiter=', '))
 
 })
 
