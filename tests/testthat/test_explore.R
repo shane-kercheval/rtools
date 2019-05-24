@@ -2,6 +2,8 @@ context('Exploratory Analysis')
 library(testthat)
 library(ggplot2)
 library(dplyr)
+# library(lubridate)
+# library(scales)
 
 test_that("rt_explore_categoric_summary_NAs", {
 
@@ -919,4 +921,27 @@ test_that('rt_explore_plot_time_series', {
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
                                                     color_variable=color_variable))
+})
+
+test_that('rt_plot_funnel', {
+
+    steps <- c("Step Z", "Step Y", "Step X", "Step W")
+    values <- c(200, 60, 20, 10)
+
+    test_save_plot(file_name='data/rt_plot_funnel_proportionate_FALSE.png',
+                   plot=rt_funnel_plot(step_names=steps, step_values=values,
+                                       title="My title", subtitle = "My Subtitle", caption = "My Caption",
+                                       proportionate=FALSE))
+    test_save_plot(file_name='data/rt_plot_funnel_proportionate_TRUE.png',
+                   plot=rt_funnel_plot(step_names=steps, step_values=values,
+                                       title="My title", subtitle = "My Subtitle", caption = "My Caption",
+                                       proportionate=TRUE))
+
+    steps <- c("Step W", "Step X", "Step Y", "Step Z")
+    values <- c(2000, 1111, 50, 11)
+
+    test_save_plot(file_name='data/rt_plot_funnel_2_proportionate_FALSE.png',
+                   plot=rt_funnel_plot(step_names=steps, step_values=values, proportionate=FALSE))
+    test_save_plot(file_name='data/rt_plot_funnel_2_proportionate_TRUE.png',
+                   plot=rt_funnel_plot(step_names=steps, step_values=values, proportionate=TRUE))
 })

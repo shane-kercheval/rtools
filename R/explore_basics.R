@@ -846,3 +846,124 @@ rt_explore_plot_time_series <- function(dataset,
 
     return (ggplot_object)
 }
+
+#' returns a funnel plot
+#'
+#' @param step_names the names of the steps, top down
+#' @param step_values the values of the steps, top down; the first/top value is assumed to be 100 percent
+#' @param title the title
+#' @param subtitle the subtitle
+#' @param caption the caption
+#' @param proportionate controls the shape of the funnel
+#'      when FALSE, the width consistently decreases with each step
+#'      when TRUE, the width decreases proportionate to the value of each step
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr arrange desc mutate group_by ungroup
+#' @importFrom scales percent comma_format
+#' @importFrom ggplot2 ggplot aes labs geom_polygon geom_text scale_fill_manual theme_classic theme element_blank element_text
+#' @export
+rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", caption="", proportionate=FALSE) {
+
+    step_names <- factor(step_names, levels = step_names)
+    df_steps <- data.frame(Step=rep(step_names, 4),
+                           value=rep(step_values, 4))
+    df_steps <- df_steps %>% arrange(desc(Step))
+    
+    mariner <- '#4E79A7'
+    cadmium_orange <- '#F28E2B'
+    red_valencia <- '#E15759'
+    medium_sea_green <- '#37B57F'
+    tuplip_tree <- '#EBB13E'
+    summer_sky <- '#40C6EE'
+    yale_blue <- '#11499C'
+    blue_de_france <- '#4286E8'
+    dove_gray <- '#7A7A7A'
+    flamingo <- '#FC641F'
+    lavender <- '#C396E8'
+    shamrock <- '#5FECA6'
+    astronaut <- '#283676'
+    cerulean <- '#1EB1ED'
+    pigment_green <- '#1AAF54'
+    tree_poppy <- '#FD9126'
+    well_read <- '#BB3A34'
+    blue_chill <- '#159192'
+    vivid_violet <- '#932791'
+
+    custom_colors  <- c(
+        tuplip_tree,
+        astronaut,
+        cerulean,
+        vivid_violet,
+        tree_poppy,
+        #well_read,
+        blue_chill,
+        flamingo,
+        lavender,
+        blue_de_france,
+        pigment_green
+    )
+    # plot(NULL, xlim=c(0,length(custom_colors)), ylim=c(0,1), 
+    #      xlab="", ylab="", xaxt="n", yaxt="n")
+    # rect(0:(length(custom_colors)-1), 0, 1:length(custom_colors), 1, col=custom_colors)
+    
+    num_steps <- length(step_names)
+    if(proportionate) {
+        width_perc <- rev(step_values) / step_values[1] * 100
+        width_perc <- c(width_perc[1], width_perc)
+
+    } else {
+    
+        width_perc <- seq(5, 100, length.out = num_steps + 1)
+    }
+    
+    
+    df <- data.frame(x=NULL, y=NULL)
+    for(step in 1:num_steps){
+        df <- rbind(df,
+                    data.frame(x=c(-width_perc[step],
+                                   width_perc[step],
+                                   width_perc[step + 1], 
+                                   -width_perc[step + 1]), 
+                               y=c(rep(step - 1, 2), rep(step, 2))))
+    }
+    
+    df <- cbind(df, df_steps)
+    df <- df %>%
+        mutate(conversion_rate = percent(value / step_values[1]),
+               value = comma_format()(value)) %>%
+        group_by(Step) %>%
+        mutate(label_y = mean(y)) %>%
+        # # need to make sure the label is only associated with one point so it's not overlapping
+        # mutate(value = ifelse(x == max(x) & y == max(y), as.character(value), NA)) %>%
+        # mutate(conversion_rate = ifelse(x == max(x) & y == max(y), conversion_rate, NA)) %>%
+        ungroup() %>%
+        mutate(label = ifelse(is.na(conversion_rate),
+                              value,
+                              paste0(value, " (", conversion_rate, ")")))
+    
+    funnel_colors <- custom_colors[1:num_steps]
+    funnel_colors[num_steps] <- medium_sea_green
+    ggplot(df, aes(x = x, y = y)) +
+        geom_polygon(aes(fill = Step, group = Step), alpha=0.3) +
+        #geom_text(aes(x = 0, y=label_y, label=ifelse(is.na(label), '', label)), check_overlap = TRUE) +
+        geom_text(aes(x = 0, y=label_y, label=label), vjust=1, check_overlap = TRUE) +
+        geom_text(aes(x = 0, y=label_y, label=Step), vjust=-1, check_overlap = TRUE) +
+        scale_fill_manual(values=funnel_colors) +
+        theme_classic() +
+        theme(
+              axis.title=element_blank(),
+              axis.text=element_blank(),
+              axis.ticks=element_blank(),
+              axis.line=element_blank(),
+              legend.position = "none", 
+              legend.title=element_text(size=15), 
+              legend.text=element_text(size=12),
+              #legend.justification = c(0, 1),
+              plot.title = element_text(hjust = 0.5),
+              plot.subtitle = element_text(hjust = 0.5)) +
+        labs(title = title,
+             subtitle = subtitle,
+             caption = caption,
+             fill="")
+}
