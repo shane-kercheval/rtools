@@ -322,9 +322,9 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr group_by summarise mutate ungroup arrange n
+#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc
 #' @importFrom scales percent_format comma_format percent
-#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_gray theme element_text position_dodge
+#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
                                          variable,
@@ -369,14 +369,14 @@ rt_explore_plot_value_totals <- function(dataset,
 
         unique_values_plot <- groups_by_variable %>%
             ggplot(aes(x=!!symbol_variable, y = percent, fill=!!symbol_variable)) +
-                geom_bar(stat = 'identity') +
+                geom_bar(stat = 'identity', alpha=0.75) +
                 scale_y_continuous(labels = percent_format())
 
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = percent(percent), y = percent), vjust=-1.5) +
-                geom_text(aes(label = comma_format()(total), y = percent), vjust=-0.25)
+                geom_text(aes(label = percent(percent), y = percent), vjust=-0.25) +
+                geom_text(aes(label = comma_format()(total), y = percent), vjust=1.25)
         }
 
         return (
@@ -384,9 +384,11 @@ rt_explore_plot_value_totals <- function(dataset,
                 labs(title=plot_title,
                      y=plot_y_axis_label,
                      x=variable) +
-                theme_gray(base_size = base_size) +
+                scale_fill_manual(values=rt_colors()) +
+                theme_light(base_size = base_size) +
                 theme(legend.position = 'none',
-                      axis.text.x = element_text(angle = 30, hjust = 1)))
+                      axis.text.x = element_text(angle = 30, hjust = 1))
+            )
 
     } else {
 
@@ -421,15 +423,19 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      levels = as.character(groups_by_variable[, variable]))
             groups_by_both[, variable] <- factor(groups_by_both[, variable],
                                                      levels = as.character(groups_by_variable[, variable]))
+
+            comparison_order <- as.character((dataset %>% count(!!symbol_comparison_variable) %>% arrange(desc(n)))[[comparison_variable]])
+            groups_by_both[, comparison_variable] <- factor(groups_by_both[, comparison_variable],
+                                                     levels = comparison_order)
         }
 
         if(stacked_comparison) {
 
-            comparison_position <- 'fill'
+            comparison_position <- position_fill(reverse = TRUE)
 
         } else {
 
-            comparison_position <- 'dodge'
+            comparison_position <- position_dodge(width = 0.9)
         }
 
         # create the plot
@@ -453,11 +459,11 @@ rt_explore_plot_value_totals <- function(dataset,
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
-                          aes(x=!!symbol_variable, label = percent(percent), y = percent + 0.01),
-                          vjust=-1) +
+                          aes(x=!!symbol_variable, label = percent(percent), y = percent),
+                          vjust=-1.5) +
                 geom_text(data = groups_by_variable,
-                          aes(x=!!symbol_variable, label = total, y = percent + 0.01),
-                          vjust=0.5)
+                          aes(x=!!symbol_variable, label = comma_format()(total), y = percent),
+                          vjust=-0.25)
         }
 
         if(show_comparison_totals && !stacked_comparison) {
@@ -466,17 +472,17 @@ rt_explore_plot_value_totals <- function(dataset,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = actual_percent,
-                              label = total,
+                              label = comma_format()(total),
                               group = !!symbol_comparison_variable),
-                          position = position_dodge(width = 1),
-                          vjust = -0.2) +
+                          position = comparison_position,
+                          vjust=-0.25) +
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = actual_percent,
                               label = percent(group_percent),
                               group = !!symbol_comparison_variable),
-                          position = position_dodge(width = 1),
-                          vjust = -1.5)
+                          position = comparison_position,
+                          vjust=1.25)
 
         } else if (show_comparison_totals && stacked_comparison) {
             #in this case, we don't want to show the totals of the main variable (they are all at 100%)
@@ -486,14 +492,15 @@ rt_explore_plot_value_totals <- function(dataset,
                               y = group_percent,
                               label = percent(group_percent),
                               group = !!symbol_comparison_variable),
-                          position = position_stack(vjust = .5))
+                          position = position_fill(reverse = TRUE, vjust = .5))
         }
 
         return (unique_values_plot +
             labs(title = plot_title,
                  fill = comparison_variable,
                  x = variable) +
-            theme_gray(base_size = base_size) +
+            scale_fill_manual(values=rt_colors()) +
+            theme_light(base_size = base_size) +
             theme(#legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1)))
     }
@@ -509,7 +516,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_gray theme element_text coord_cartesian
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
@@ -529,7 +536,7 @@ rt_explore_plot_boxplot <- function(dataset,
             scale_x_discrete(breaks = NULL) +
             xlab(NULL) +
             ylab(variable) +
-            theme_gray(base_size = base_size)
+            theme_light(base_size = base_size)
 
     } else {
 
@@ -540,9 +547,10 @@ rt_explore_plot_boxplot <- function(dataset,
                                    color=!!symbol_comparison_variable)) +
             scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
+            scale_color_manual(values=rt_colors()) +
             xlab(comparison_variable) +
             ylab(variable) +
-            theme_gray(base_size = base_size) +
+            theme_light(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
     }
@@ -579,11 +587,12 @@ rt_explore_plot_boxplot <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes aes geom_histogram geom_freqpoly geom_density labs theme_gray coord_cartesian
+#' @importFrom ggplot2 ggplot aes aes geom_histogram geom_freqpoly geom_density labs theme_light coord_cartesian scale_color_manual
 #' @export
 rt_explore_plot_histogram <- function(dataset,
                                       variable,
                                       comparison_variable=NULL,
+                                      density=FALSE,
                                       num_bins=30,
                                       x_zoom_min=NULL,
                                       x_zoom_max=NULL,
@@ -599,17 +608,30 @@ rt_explore_plot_histogram <- function(dataset,
             geom_density(aes(y = ..count..), col='red') +
             labs(title=paste0('Histogram & Density Plot of `', variable, '`'),
                  x=variable) +
-            theme_gray(base_size = base_size)
+            theme_light(base_size = base_size)
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
         histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable,
-                                              color=!!symbol_comparison_variable)) +
-            geom_freqpoly(binwidth= 100 / num_bins) +
+                                              color=!!symbol_comparison_variable))
+
+        if(density) {
+
+            histogram_plot <- histogram_plot +
+                geom_density()
+
+        } else {
+
+            histogram_plot <- histogram_plot +
+                geom_freqpoly(binwidth= 100 / num_bins)
+        }
+
+        histogram_plot <- histogram_plot +
+            scale_color_manual(values=rt_colors()) +
             labs(title=paste0('Distribution of `', variable, '` by `', comparison_variable, '`'),
                  x=variable,
                  color=comparison_variable) +
-            theme_gray(base_size = base_size)
+            theme_light(base_size = base_size)
     }
 
     # zoom in on graph is parameters are set
@@ -649,7 +671,7 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_point theme_gray coord_cartesian geom_jitter position_jitter scale_y_continuous
+#' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_scatter <- function(dataset,
@@ -695,12 +717,19 @@ rt_explore_plot_scatter <- function(dataset,
         scatter_plot <- scatter_plot + geom_point(alpha=alpha)
     }
 
+    scale_color_continuous()
+
     scatter_plot <- scatter_plot +
         scale_y_continuous(labels = comma_format()) +
-        theme_gray(base_size = base_size) +
+        theme_light(base_size = base_size) +
         labs(x=variable,
              y=comparison_variable)
 
+    if(!is.null(color_variable) && 
+            (is.character(dataset[, color_variable]) || is.factor(dataset[, color_variable]))) {
+
+        scatter_plot <- scatter_plot + scale_color_manual(values=rt_colors())
+    }
 
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
@@ -755,7 +784,7 @@ rt_explore_plot_scatter <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename
-#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_gray theme element_text coord_cartesian
+#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -798,6 +827,7 @@ rt_explore_plot_time_series <- function(dataset,
         }
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
+            scale_color_manual(values=rt_colors()) +
             labs(title='Count of Records',
                  x=variable,
                  y='Count')
@@ -816,6 +846,7 @@ rt_explore_plot_time_series <- function(dataset,
         }
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
+            scale_color_manual(values=rt_colors()) +
             labs(title=paste(comparison_function_name, 'of', comparison_variable, 'by', variable),
                  x=variable,
                  y=paste(comparison_function_name, comparison_variable))
@@ -823,7 +854,7 @@ rt_explore_plot_time_series <- function(dataset,
     ggplot_object <- ggplot_object +
         geom_line() +
         expand_limits(y=0) +
-        theme_gray(base_size = base_size) +
+        theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
     # zoom in on graph is parameters are set
@@ -869,65 +900,28 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
     df_steps <- data.frame(Step=rep(step_names, 4),
                            value=rep(step_values, 4))
     df_steps <- df_steps %>% arrange(desc(Step))
-    
-    mariner <- '#4E79A7'
-    cadmium_orange <- '#F28E2B'
-    red_valencia <- '#E15759'
-    medium_sea_green <- '#37B57F'
-    tuplip_tree <- '#EBB13E'
-    summer_sky <- '#40C6EE'
-    yale_blue <- '#11499C'
-    blue_de_france <- '#4286E8'
-    dove_gray <- '#7A7A7A'
-    flamingo <- '#FC641F'
-    lavender <- '#C396E8'
-    shamrock <- '#5FECA6'
-    astronaut <- '#283676'
-    cerulean <- '#1EB1ED'
-    pigment_green <- '#1AAF54'
-    tree_poppy <- '#FD9126'
-    well_read <- '#BB3A34'
-    blue_chill <- '#159192'
-    vivid_violet <- '#932791'
 
-    custom_colors  <- c(
-        tuplip_tree,
-        astronaut,
-        cerulean,
-        vivid_violet,
-        tree_poppy,
-        #well_read,
-        blue_chill,
-        flamingo,
-        lavender,
-        blue_de_france,
-        pigment_green
-    )
-    # plot(NULL, xlim=c(0,length(custom_colors)), ylim=c(0,1), 
-    #      xlab="", ylab="", xaxt="n", yaxt="n")
-    # rect(0:(length(custom_colors)-1), 0, 1:length(custom_colors), 1, col=custom_colors)
-    
     num_steps <- length(step_names)
     if(proportionate) {
         width_perc <- rev(step_values) / step_values[1] * 100
         width_perc <- c(width_perc[1], width_perc)
 
     } else {
-    
+
         width_perc <- seq(5, 100, length.out = num_steps + 1)
     }
-    
-    
+
+
     df <- data.frame(x=NULL, y=NULL)
     for(step in 1:num_steps){
         df <- rbind(df,
                     data.frame(x=c(-width_perc[step],
                                    width_perc[step],
-                                   width_perc[step + 1], 
-                                   -width_perc[step + 1]), 
+                                   width_perc[step + 1],
+                                   -width_perc[step + 1]),
                                y=c(rep(step - 1, 2), rep(step, 2))))
     }
-    
+
     df <- cbind(df, df_steps)
     df <- df %>%
         mutate(conversion_rate = percent(value / step_values[1]),
@@ -941,23 +935,21 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
         mutate(label = ifelse(is.na(conversion_rate),
                               value,
                               paste0(value, " (", conversion_rate, ")")))
-    
-    funnel_colors <- custom_colors[1:num_steps]
-    funnel_colors[num_steps] <- medium_sea_green
+
     ggplot(df, aes(x = x, y = y)) +
         geom_polygon(aes(fill = Step, group = Step), alpha=0.3) +
         #geom_text(aes(x = 0, y=label_y, label=ifelse(is.na(label), '', label)), check_overlap = TRUE) +
         geom_text(aes(x = 0, y=label_y, label=label), vjust=1, check_overlap = TRUE) +
         geom_text(aes(x = 0, y=label_y, label=Step), vjust=-1, check_overlap = TRUE) +
-        scale_fill_manual(values=funnel_colors) +
+        scale_fill_manual(values=rt_colors()) +
         theme_classic() +
         theme(
               axis.title=element_blank(),
               axis.text=element_blank(),
               axis.ticks=element_blank(),
               axis.line=element_blank(),
-              legend.position = "none", 
-              legend.title=element_text(size=15), 
+              legend.position = "none",
+              legend.title=element_text(size=15),
               legend.text=element_text(size=12),
               #legend.justification = c(0, 1),
               plot.title = element_text(hjust = 0.5),

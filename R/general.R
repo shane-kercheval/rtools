@@ -114,7 +114,7 @@ rt_get_vector <- function(df, column, return_unique=FALSE) {
     if(return_unique) {
 
         return (unique(df[[column]]))
-    
+
     } else {
 
         return (df[[column]])
@@ -160,4 +160,117 @@ rt_ceiling_nearest_x <- function(y, nearest_x) {
 rt_stopif <- function(exprs) {
 
     stopifnot(!exprs)
+}
+
+#' Hex colors vector
+#'
+#' @param color_names filter by the names of the colors
+#' @param sets filter by the set index
+#' @param return_named_vector returns the colors as a named vector
+#'
+#' @export
+rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
+    color_df <- tribble(
+        ~set, ~name, ~hex,
+        1, "pastel_blue", '#7AA9CF',
+        1, "tuplip_tree", '#EBB13E',
+        1, "custom_green" , '#41B3A3',
+        1, "crail", '#A65B50',
+        1, "granite", '#B7B8B6',
+        1, "custom_purple", '#C38D9E',
+        1, "cadmium_orange", '#F28E2B',
+
+        2, "mariner", '#4E79A7',
+        2, "sandstone", '#F4CC70',
+        2, "avocado", '#258039',
+        2, "tomato", '#CF3721',
+        2, "mist", '#90AFC5',
+        2, "lavender", '#C396E8',
+        2, "tree_poppy", '#FD9126',
+
+        3, "cerulean", '#1EB1ED',
+        3, "yellow_pepper", '#F5BE41',
+        3, "pigment_green", '#1AAF54',
+        3, "poppy", '#FF420E',
+        3, "loblolly_gray", '#B4B7B9',
+        3, "lavendar2", '#6C648B',
+        3, "flamingo", '#FC641F',
+
+        4, "forest", '#1E434C',
+        4, "gold", '#C99E10',
+        4, "sunflower", '#3F681C',
+        4, "crimson", '#8D230F',
+        4, "dove_gray", '#7A7A7A',
+        4, "vivid_violet", '#932791',
+        4, "petal", '#F98866',
+
+        5, "black_shadow", '#2A3132',
+        5, "sky", '#375E97',
+        5, "medium_sea_green", '#37B57F',
+        5, "red_clay", '#A43820'
+        # "coffee", '#B38867',
+        # "turquoise", '#5BC8AC',
+        #
+        #
+        # "custom_red", '#E27D60',
+        #
+        # "sunset", '#FB6542',
+        # "stem", '#80BD9E',
+        # "spring_green", '#89DA59',
+        # "automn_foliage", '#763626',
+        # "stone", '#336B87',
+        #
+        # "pink_tulip", '#F18D9E',
+        # "blue_sky", '#4CB5F5',
+        # "aqua_blue", '#31A9B8',
+        #
+        # "red_valencia", '#E15759',
+        # "summer_sky", '#40C6EE',
+        # "yale_blue", '#11499C',
+        # "blue_de_france", '#4286E8',
+        #
+        # "shamrock", '#5FECA6',
+        # "astronaut", '#283676',
+        # "well_read", '#BB3A34',
+        # "blue_chill", '#159192',
+        #
+        # "custom_blue", '#085DCB',
+        # "custom_orange", '#E8A87C'
+    )
+
+    # blue, yellow, green, red, gray, purple, orange,
+    # color_df <- color_df[1:7, ]
+
+    if(!is.null(color_names)) {
+        color_df <- color_df %>% filter(name %in% color_names)
+        color_df <- color_df[match(color_names, color_df$name),]
+    }
+
+    if(!is.null(sets)) {
+        color_df <- color_df %>% filter(set %in% sets)
+    }
+
+    colors <- color_df$hex
+
+    if(return_named_vector) {
+        names(colors) <- color_df$name
+    }
+    return (colors)
+}
+
+#' Hex colors vector representing "good" (green) and "bad" (red)
+#'
+#' @param good_first if `TRUE` then index 1 is the hex color corresponding to `good` and
+#'  index 2 corresponds to bad, otherwise the reverse.
+#'
+#' @export
+rt_colors_good_bad <- function(good_first=TRUE) {
+    good <- 'avocado'
+    bad <- 'tomato'
+    if(good_first) {
+        custom_color_names <- c(good, bad)
+    } else {
+        custom_color_names <- c(bad, good)
+    }
+    return (rt_colors(color_names=custom_color_names))
 }

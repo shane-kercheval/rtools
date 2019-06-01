@@ -5,8 +5,8 @@
 \title{returns a histogram of `variable`}
 \usage{
 rt_explore_plot_histogram(dataset, variable, comparison_variable = NULL,
-  num_bins = 30, x_zoom_min = NULL, x_zoom_max = NULL,
-  base_size = 11)
+  density = FALSE, num_bins = 30, x_zoom_min = NULL,
+  x_zoom_max = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

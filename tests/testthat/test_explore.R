@@ -102,7 +102,7 @@ test_that("rt_explore_value_totals_counts", {
 
     variable <- 'checking_balance'
 
-    unique_values <- rt_explore_value_totals(dataset=credit_data, variable=variable)
+    unique_values <- suppressWarnings(rt_explore_value_totals(dataset=credit_data, variable=variable))
 
     expect_true(all(colnames(unique_values) == c('checking_balance', 'count', 'percent')))
     expect_true(all(levels(unique_values$checking_balance) == custom_levels))
@@ -256,6 +256,14 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_swapped.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='default',
+                                                     comparison_variable=variable,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE))
 
 
     # plot with labels
@@ -575,6 +583,14 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
                                                   num_bins=15,
+                                                  x_zoom_min=NULL,
+                                                  x_zoom_max=NULL,
+                                                  base_size=11))
+    test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_density.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  density = TRUE,
                                                   x_zoom_min=NULL,
                                                   x_zoom_max=NULL,
                                                   base_size=11))

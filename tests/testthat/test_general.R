@@ -187,3 +187,129 @@ test_that("rt_stopif", {
     expect_null(rt_stopif(bad_condition))
     expect_error(rt_stopif(good_condition))
 })
+
+test_that("rt_colors", {
+
+    create_color_df <- function(custom_colors, rev_factor_names=FALSE) {
+        factor_names <- names(custom_colors)
+        if(rev_factor_names) {
+            factor_names <- rev(names(custom_colors))
+        }
+        data.frame(name=names(custom_colors),
+                   hex=custom_colors,
+                   value=1,
+                   stringsAsFactors = FALSE) %>%
+            mutate(name = factor(name, levels=factor_names))
+    }
+    custom_colors <- rt_colors(return_named_vector=TRUE)
+    rt_stopif(any(duplicated(custom_colors)))
+    rt_stopif(any(duplicated(names(custom_colors))))
+    colors_df <- create_color_df(custom_colors, rev_factor_names=TRUE)
+    all_colors <- colors_df %>%
+        ggplot(aes(x=name, y=value, fill=name)) +
+        geom_col() +
+        scale_fill_manual(values=rev(custom_colors)) +
+        theme(legend.position = 'none') +
+        coord_flip()
+    test_save_plot(file_name='data/rt_colors_all_colors.png',
+                   plot=all_colors)
+
+
+    plot_set <- function(set) {
+
+        custom_colors <- rt_colors(sets=set, return_named_vector=TRUE)
+        rt_stopif(any(duplicated(custom_colors)))
+        rt_stopif(any(duplicated(names(custom_colors))))
+        colors_df <- create_color_df(custom_colors)
+        colors_df %>%
+            ggplot(aes(x=name, y=value, fill=name)) +
+            geom_col() +
+            scale_fill_manual(values=custom_colors) +
+            theme(legend.position = 'none')
+    }
+    test_save_plot(file_name='data/rt_colors_set_1.png',
+                   plot=plot_set(1))
+    test_save_plot(file_name='data/rt_colors_set_2.png',
+                   plot=plot_set(2))
+    test_save_plot(file_name='data/rt_colors_set_3.png',
+                   plot=plot_set(3))
+    test_save_plot(file_name='data/rt_colors_set_4.png',
+                   plot=plot_set(4))
+    test_save_plot(file_name='data/rt_colors_set_5.png',
+                   plot=plot_set(5))
+})
+
+test_that("rt_colors_names", {
+
+    create_color_df <- function(custom_colors, rev_factor_names=FALSE) {
+        factor_names <- names(custom_colors)
+        if(rev_factor_names) {
+            factor_names <- rev(names(custom_colors))
+        }
+        data.frame(name=names(custom_colors),
+                   hex=custom_colors,
+                   value=1,
+                   stringsAsFactors = FALSE) %>%
+            mutate(name = factor(name, levels=factor_names))
+    }
+    custom_color_names <- c('tuplip_tree', 'custom_green', 'crail', 'flamingo', 'red_clay', 'granite')
+    custom_colors <- rt_colors(color_names=custom_color_names,
+                               return_named_vector=TRUE)
+    rt_stopif(any(duplicated(custom_colors)))
+    rt_stopif(any(duplicated(names(custom_colors))))
+    expect_identical(custom_color_names, names(custom_colors))
+    colors_df <- create_color_df(custom_colors, rev_factor_names=TRUE)
+    all_colors <- colors_df %>%
+        ggplot(aes(x=name, y=value, fill=name)) +
+        geom_col() +
+        scale_fill_manual(values=rev(custom_colors)) +
+        theme(legend.position = 'none') +
+        coord_flip()
+    test_save_plot(file_name='data/rt_colors_names.png',
+                   plot=all_colors)
+})
+
+test_that("rt_colors_good_bad", {
+
+    create_color_df <- function(custom_colors, rev_factor_names=FALSE) {
+        factor_names <- names(custom_colors)
+        if(rev_factor_names) {
+            factor_names <- rev(names(custom_colors))
+        }
+        data.frame(name=names(custom_colors),
+                   hex=custom_colors,
+                   value=1,
+                   stringsAsFactors = FALSE) %>%
+            mutate(name = factor(name, levels=factor_names))
+    }
+    custom_colors <- rt_colors_good_bad(good_first = TRUE)
+    custom_color_names <- c("good", "bad")
+    names(custom_colors) <- custom_color_names
+    rt_stopif(any(duplicated(custom_colors)))
+    rt_stopif(any(duplicated(names(custom_colors))))
+    expect_identical(custom_color_names, names(custom_colors))
+    colors_df <- create_color_df(custom_colors)
+    all_colors <- colors_df %>%
+        ggplot(aes(x=name, y=value, fill=name)) +
+        geom_col() +
+        scale_fill_manual(values=custom_colors) +
+        theme(legend.position = 'none')
+    test_save_plot(file_name='data/rt_colors_good_bad.png',
+                   plot=all_colors)
+
+    custom_colors <- rt_colors_good_bad(good_first = FALSE)
+    custom_color_names <- c("bad", "good")
+    names(custom_colors) <- custom_color_names
+    rt_stopif(any(duplicated(custom_colors)))
+    rt_stopif(any(duplicated(names(custom_colors))))
+    expect_identical(custom_color_names, names(custom_colors))
+    colors_df <- create_color_df(custom_colors)
+    all_colors <- colors_df %>%
+        ggplot(aes(x=name, y=value, fill=name)) +
+        geom_col() +
+        scale_fill_manual(values=custom_colors) +
+        theme(legend.position = 'none')
+    test_save_plot(file_name='data/rt_colors_bad_good.png',
+                   plot=all_colors)
+
+})
