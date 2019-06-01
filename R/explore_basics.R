@@ -581,6 +581,7 @@ rt_explore_plot_boxplot <- function(dataset,
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable from which to create a histogram
 #' @param comparison_variable (optional) the additional variable to group by; must be a string/factor column
+#' @param density use geom_density rather than geom_freqpoly for comparison_variable
 #' @param num_bins the number of bins that the histogram will use
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment

@@ -167,7 +167,11 @@ rt_stopif <- function(exprs) {
 #' @param color_names filter by the names of the colors
 #' @param sets filter by the set index
 #' @param return_named_vector returns the colors as a named vector
-#'
+#' 
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr filter
+#' @importFrom tibble tribble
+
 #' @export
 rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
     color_df <- tribble(

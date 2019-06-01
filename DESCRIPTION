@@ -19,6 +19,7 @@ Imports:
     scales,
     stringr,
     timeDate,
-    tidyr
+    tidyr,
+    tibble,
 Suggests: testthat
 RoxygenNote: 6.1.1

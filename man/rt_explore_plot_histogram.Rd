@@ -15,6 +15,8 @@ rt_explore_plot_histogram(dataset, variable, comparison_variable = NULL,
 
 \item{comparison_variable}{(optional) the additional variable to group by; must be a string/factor column}
 
+\item{density}{use geom_density rather than geom_freqpoly for comparison_variable}
+
 \item{num_bins}{the number of bins that the histogram will use}
 
 \item{x_zoom_min}{adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment}
