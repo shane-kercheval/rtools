@@ -516,7 +516,8 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text
+#' @importFrom dplyr group_by summarise n
 #' @importFrom scales comma_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
@@ -534,22 +535,40 @@ rt_explore_plot_boxplot <- function(dataset,
             geom_boxplot() +
             scale_y_continuous(labels = comma_format()) +
             scale_x_discrete(breaks = NULL) +
-            xlab(NULL) +
-            ylab(variable) +
+            labs(caption = paste("\n", comma_format()(sum(!is.na(dataset[[variable]]))), 'Non-NA Values'),
+                 y=variable,
+                 x='') +
             theme_light(base_size = base_size)
 
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
+
+        aggregations <- dataset %>%
+            group_by(!!symbol_comparison_variable) %>%
+            summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
+                      count = n())
+
         boxplot_plot <- ggplot(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_comparison_variable)) +
             scale_y_continuous(labels = comma_format()) +
             geom_boxplot() +
+            geom_text(data = aggregations,
+                      mapping = aes(y=median,
+                                    x=!!symbol_comparison_variable,
+                                    label = comma_format()(median)),
+                      vjust=-0.5) +
+            geom_text(data = aggregations,
+                      mapping = aes(y=median,
+                                    x=!!symbol_comparison_variable,
+                                    label = comma_format()(count)),
+                      vjust=1.3) +
             scale_color_manual(values=rt_colors()) +
-            xlab(comparison_variable) +
-            ylab(variable) +
+            labs(caption="\n# above median line is the median value, # below median line is the size of the group.",
+                 x=comparison_variable,
+                 y=variable) +
             theme_light(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
@@ -726,7 +745,7 @@ rt_explore_plot_scatter <- function(dataset,
         labs(x=variable,
              y=comparison_variable)
 
-    if(!is.null(color_variable) && 
+    if(!is.null(color_variable) &&
             (is.character(dataset[, color_variable]) || is.factor(dataset[, color_variable]))) {
 
         scatter_plot <- scatter_plot + scale_color_manual(values=rt_colors())
