@@ -944,7 +944,8 @@ test_that('rt_explore_plot_time_series', {
                                                     variable=variable,
                                                     color_variable=color_variable,
                                                     show_points=TRUE,
-                                                    show_labels=TRUE))
+                                                    show_labels=TRUE,
+                                                    date_breaks = '1 day'))
 })
 
 test_that('rt_plot_funnel', {

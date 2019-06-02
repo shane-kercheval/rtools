@@ -802,12 +802,14 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param show_points if TRUE adds points to the graph
 #' @param show_labels if TRUE adds labels to each point
+#' @param date_break_format format of date breaks
+#' @param date_breaks the date breaks for x axis, values correspond to ggplot scale_x_date
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename
-#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point
-#' @importFrom scales comma_format
+#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date
+#' @importFrom scales comma_format date_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -819,6 +821,8 @@ rt_explore_plot_time_series <- function(dataset,
                                         y_zoom_max=NULL,
                                         show_points=FALSE,
                                         show_labels=FALSE,
+                                        date_break_format='%Y-%m-%d',
+                                        date_breaks='1 month',
                                         base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
@@ -879,6 +883,7 @@ rt_explore_plot_time_series <- function(dataset,
     ggplot_object <- ggplot_object +
         geom_line() +
         scale_y_continuous(labels = comma_format()) +
+        scale_x_date(labels = date_format(date_break_format), breaks=date_breaks) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
