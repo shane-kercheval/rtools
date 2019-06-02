@@ -948,6 +948,186 @@ test_that('rt_explore_plot_time_series', {
                                                     date_breaks = '1 day'))
 })
 
+test_that('rt_explore_plot_time_series_breaks_floors', {
+    dataset <- data.frame(nycflights13::flights %>%
+                              mutate(date = lubridate::make_date(year, month, day),
+                                     cohort = paste0(year, '-',
+                                                     lubridate::week(date)))) %>%
+        select(date, dep_delay, dep_time, origin, cohort)
+
+    variable <- 'date'
+    comparison_variable <- 'dep_delay'
+
+    comp_func_sum <- function(x) {
+        return (sum(x, na.rm=TRUE))
+    }
+    comp_func_mean <- function(x) {
+        return (mean(x, na.rm=TRUE))
+    }
+    comp_func_median <- function(x) {
+        return (median(x, na.rm=TRUE))
+    }
+
+    ##########################################################################################################
+    # week/month/quarter/year defaults
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_time_series_week.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = NULL))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_month.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = NULL))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_quarter.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = NULL))
+
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_year.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'year',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = NULL))
+
+    ##########################################################################################################
+    # week/month/quarter/year widths
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_time_series_week_width.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 weeks'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_month_width.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '4 months'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_quarter_width.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '3 months'))
+
+
+
+
+
+
+
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_sum,
+                                                    comparison_function_name='Sum of'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_mean,
+                                                    comparison_function_name='Average'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    y_zoom_min=0))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    y_zoom_min=0,
+                                                    y_zoom_max=10,
+                                                    base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    y_zoom_min=750,
+                                                    base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable='dep_time',
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    y_zoom_min=1000,
+                                                    y_zoom_max=NULL,
+                                                    base_size=15))
+
+    color_variable <- 'origin'
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_median,
+                                                    comparison_function_name='Median',
+                                                    color_variable = color_variable,
+                                                    # y_zoom_min=0,
+                                                    show_labels = TRUE,
+                                                    y_zoom_max=25,
+                                                    base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    color_variable=color_variable))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_xxxx.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>% filter(month(date) == 12),
+                                                    variable=variable,
+                                                    color_variable=color_variable,
+                                                    show_points=TRUE,
+                                                    show_labels=TRUE,
+                                                    date_breaks = '1 day'))
+})
+
+
 test_that('rt_plot_funnel', {
 
     steps <- c("Step Z", "Step Y", "Step X", "Step W")

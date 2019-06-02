@@ -4,11 +4,6 @@ library(dplyr)
 
 test_that("rt_get_date_fields_lubridate", {
 
-    #library(lubridate)
-    #library(timeDate)
-    #library(purrr)
-    #library(dplyr)
-    #library(stringr)
     reference_date <- lubridate::as_date('2018-12-01')
     expect_true(year(reference_date) == 2018)
     expect_true(month(reference_date) == 12)
@@ -26,6 +21,16 @@ test_that("rt_get_date_fields_lubridate", {
                                                    'December'))
     expect_identical(levels(results$day_name), c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
                                                  'Saturday', 'Sunday'))
+
+    expected_week_levels <- c('2018-W01', '2018-W02', '2018-W03', '2018-W04', '2018-W05', '2018-W06', '2018-W07',
+                              '2018-W08', '2018-W09', '2018-W10', '2018-W11', '2018-W12', '2018-W13', '2018-W14', '2018-W15',
+                              '2018-W16', '2018-W17', '2018-W18', '2018-W19', '2018-W20', '2018-W21', '2018-W22', '2018-W23',
+                              '2018-W24', '2018-W25', '2018-W26', '2018-W27', '2018-W28', '2018-W29', '2018-W30', '2018-W31',
+                              '2018-W32', '2018-W33', '2018-W34', '2018-W35', '2018-W36', '2018-W37', '2018-W38', '2018-W39',
+                              '2018-W40', '2018-W41', '2018-W42', '2018-W43', '2018-W44', '2018-W45', '2018-W46', '2018-W47',
+                              '2018-W48', '2018-W49', '2018-W50', '2018-W51', '2018-W52', '2018-W53', '2019-W01', '2019-W02',
+                              '2019-W03', '2019-W04', '2019-W05', '2019-W06')
+    expect_identical(levels(results$cohort_week), expected_week_levels)
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
                                                   rds_file='data/rt_get_date_fields_lubridate.RDS'))
     expect_identical(levels(results$cohort_quarter), c("2018-Q1", "2018-Q2", "2018-Q3", "2018-Q4", "2019-Q1"))
@@ -50,27 +55,79 @@ test_that("rt_get_date_fields_lubridate", {
                                                   rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })
 
-test_that("rt_get_date_fields_POSIXlt", {
+test_that("rt_get_date_fields_random_order", {
 
-    # same reference date as above but with POSIXlt
-    reference_date <- as.POSIXlt('2018-12-01')
+
+    reference_date <- lubridate::as_date('2018-12-01')
     expect_true(year(reference_date) == 2018)
     expect_true(month(reference_date) == 12)
     expect_true(day(reference_date) == 1)
 
-    # same date vector as above but with POSIXlt
-    date_vector <- as.POSIXlt('2018-01-01') + as.difftime(seq(0, 400), unit='days')
+    date_vector <- lubridate::as_date('2018-01-01') + seq(0, 400)
+    # make sure NAs are handled
+    date_vector[2] <- NA
+    date_vector[30] <- NA
+    date_vector[31] <- NA
+    # randomize
+    set.seed(42)
+    new_indices <- base::sample(length(date_vector))
+    date_vector <- date_vector[new_indices]
+
+    t <- data.frame(original_indices=1:length(date_vector),
+               new_indices=new_indices)
+    original_indices_map <- t %>% arrange(new_indices) %>% rt_get_vector('original_indices')
+
+    results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
+    expect_identical(levels(results$month_name), c('January', 'February', 'March', 'April', 'May', 'June',
+                                                   'July', 'August', 'September', 'October', 'November',
+                                                   'December'))
+    expect_identical(levels(results$day_name), c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+                                                 'Saturday', 'Sunday'))
+    expected_week_levels <- c('2018-W01', '2018-W02', '2018-W03', '2018-W04', '2018-W05', '2018-W06', '2018-W07',
+                              '2018-W08', '2018-W09', '2018-W10', '2018-W11', '2018-W12', '2018-W13', '2018-W14', '2018-W15',
+                              '2018-W16', '2018-W17', '2018-W18', '2018-W19', '2018-W20', '2018-W21', '2018-W22', '2018-W23',
+                              '2018-W24', '2018-W25', '2018-W26', '2018-W27', '2018-W28', '2018-W29', '2018-W30', '2018-W31',
+                              '2018-W32', '2018-W33', '2018-W34', '2018-W35', '2018-W36', '2018-W37', '2018-W38', '2018-W39',
+                              '2018-W40', '2018-W41', '2018-W42', '2018-W43', '2018-W44', '2018-W45', '2018-W46', '2018-W47',
+                              '2018-W48', '2018-W49', '2018-W50', '2018-W51', '2018-W52', '2018-W53', '2019-W01', '2019-W02',
+                              '2019-W03', '2019-W04', '2019-W05', '2019-W06')
+    expect_identical(levels(results$cohort_week), expected_week_levels)
+
+    results <- results[original_indices_map, ]
+    rownames(results) <- t$original_indices
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
+                                                  rds_file='data/rt_get_date_fields_lubridate.RDS'))
+    expect_identical(levels(results$cohort_quarter), c("2018-Q1", "2018-Q2", "2018-Q3", "2018-Q4", "2019-Q1"))
+
+    # same thing but with string reference date and date vector
+    reference_date <- '2018-12-01'
+
+    date_vector <- as.character(lubridate::as_date('2018-01-01') + seq(0, 400))
     # make sure NAs are handled
     date_vector[2] <- NA
     date_vector[30] <- NA
     date_vector[31] <- NA
 
+    date_vector <- date_vector[new_indices]
+
     results <- rt_get_date_fields(date_vector = date_vector, reference_date=reference_date)
+
     expect_identical(levels(results$month_name),
                      c('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
                        'October', 'November', 'December'))
     expect_identical(levels(results$day_name),
-                    c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
+                     c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'))
+    expected_week_levels <- c('2018-W01', '2018-W02', '2018-W03', '2018-W04', '2018-W05', '2018-W06', '2018-W07',
+                              '2018-W08', '2018-W09', '2018-W10', '2018-W11', '2018-W12', '2018-W13', '2018-W14', '2018-W15',
+                              '2018-W16', '2018-W17', '2018-W18', '2018-W19', '2018-W20', '2018-W21', '2018-W22', '2018-W23',
+                              '2018-W24', '2018-W25', '2018-W26', '2018-W27', '2018-W28', '2018-W29', '2018-W30', '2018-W31',
+                              '2018-W32', '2018-W33', '2018-W34', '2018-W35', '2018-W36', '2018-W37', '2018-W38', '2018-W39',
+                              '2018-W40', '2018-W41', '2018-W42', '2018-W43', '2018-W44', '2018-W45', '2018-W46', '2018-W47',
+                              '2018-W48', '2018-W49', '2018-W50', '2018-W51', '2018-W52', '2018-W53', '2019-W01', '2019-W02',
+                              '2019-W03', '2019-W04', '2019-W05', '2019-W06')
+    expect_identical(levels(results$cohort_week), expected_week_levels)
+    results <- results[original_indices_map, ]
+    rownames(results) <- t$original_indices
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
                                                   rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })
@@ -96,6 +153,15 @@ test_that("rt_get_date_fields_POSIXlt", {
                                                    'December'))
     expect_identical(levels(results$day_name), c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
                                                  'Saturday', 'Sunday'))
+    expected_week_levels <- c('2018-W01', '2018-W02', '2018-W03', '2018-W04', '2018-W05', '2018-W06', '2018-W07',
+                              '2018-W08', '2018-W09', '2018-W10', '2018-W11', '2018-W12', '2018-W13', '2018-W14', '2018-W15',
+                              '2018-W16', '2018-W17', '2018-W18', '2018-W19', '2018-W20', '2018-W21', '2018-W22', '2018-W23',
+                              '2018-W24', '2018-W25', '2018-W26', '2018-W27', '2018-W28', '2018-W29', '2018-W30', '2018-W31',
+                              '2018-W32', '2018-W33', '2018-W34', '2018-W35', '2018-W36', '2018-W37', '2018-W38', '2018-W39',
+                              '2018-W40', '2018-W41', '2018-W42', '2018-W43', '2018-W44', '2018-W45', '2018-W46', '2018-W47',
+                              '2018-W48', '2018-W49', '2018-W50', '2018-W51', '2018-W52', '2018-W53', '2019-W01', '2019-W02',
+                              '2019-W03', '2019-W04', '2019-W05', '2019-W06')
+    expect_identical(levels(results$cohort_week), expected_week_levels)
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=results,
                                                   rds_file='data/rt_get_date_fields_lubridate.RDS'))
 })

@@ -802,13 +802,16 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param show_points if TRUE adds points to the graph
 #' @param show_labels if TRUE adds labels to each point
+#' @param date_floor options are e.g. "week", "month", "quarter"
 #' @param date_break_format format of date breaks
-#' @param date_breaks the date breaks for x axis, values correspond to ggplot scale_x_date
+#' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date
+#' @importFrom lubridate floor_date
+#' @importFrom stringr str_to_title str_trim
 #' @importFrom scales comma_format date_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
@@ -821,8 +824,9 @@ rt_explore_plot_time_series <- function(dataset,
                                         y_zoom_max=NULL,
                                         show_points=FALSE,
                                         show_labels=FALSE,
-                                        date_break_format='%Y-%m-%d',
-                                        date_breaks='1 month',
+                                        date_floor=NULL,
+                                        date_break_format=NULL,
+                                        date_breaks_width=NULL,
                                         base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
@@ -841,6 +845,61 @@ rt_explore_plot_time_series <- function(dataset,
             return (sym(x))
         }
     }
+
+    title_context <- NULL
+    x_label_context <- NULL
+    if(!is.null(date_floor)) {
+        title_context <- paste0(str_to_title(date_floor), "ly")
+        x_label_context <- paste0("(", date_floor, ")")
+
+        dataset[, variable] <- floor_date(dataset[, variable], unit=date_floor, week_start = 1)
+
+        if(is.null(date_breaks_width)) {
+
+            if (date_floor == 'quarter') {
+
+                date_breaks_width <- NULL
+            } else {
+                date_breaks_width <- paste('1', date_floor)
+            }
+
+        }
+
+        if(is.null(date_break_format)) {
+            if(date_floor == 'week') {
+
+                date_break_format <- '%Y-%W'
+
+            } else if (date_floor == 'month') {
+
+                date_break_format <- '%Y-%m'
+
+            } else if (date_floor == 'quarter') {
+
+                date_break_format <- '%Y-%m'
+
+            } else if (date_floor == 'year') {
+
+                date_break_format <- '%Y'
+
+            } else {
+
+                date_break_format <- '%Y-%m-%d'
+            }
+        }
+    }
+
+    # need to do this after date_floor because if date_floor is not NULL and date_breaks_width is NULL date_breaks_width
+    # will get set
+    if(is.null(date_breaks_width)) {
+
+        date_breaks_width <- '1 month'
+    }
+    if(is.null(date_break_format)) {
+
+        date_break_format <- '%Y-%m-%d'
+    }
+
     sym_comparison_variable <- symbol_if_not_null(comparison_variable)
     sym_color_variable <- symbol_if_not_null(color_variable)
 
@@ -857,8 +916,8 @@ rt_explore_plot_time_series <- function(dataset,
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
             scale_color_manual(values=rt_colors()) +
-            labs(title='Count of Records',
-                 x=variable,
+            labs(title=str_trim(paste(title_context, 'Count of Records')),
+                 x=str_trim(paste(variable, x_label_context)),
                  y='Count')
 
     } else {
@@ -876,14 +935,17 @@ rt_explore_plot_time_series <- function(dataset,
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
             scale_color_manual(values=rt_colors()) +
-            labs(title=paste(comparison_function_name, 'of', comparison_variable, 'by', variable),
-                 x=variable,
+            labs(title=str_trim(paste(title_context,
+                                      paste(comparison_function_name,
+                                            'of', comparison_variable,
+                                            'by', variable))),
+                 x=str_trim(paste(variable, x_label_context)),
                  y=paste(comparison_function_name, comparison_variable))
     }
     ggplot_object <- ggplot_object +
         geom_line() +
         scale_y_continuous(labels = comma_format()) +
-        scale_x_date(labels = date_format(date_break_format), breaks=date_breaks) +
+        scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
