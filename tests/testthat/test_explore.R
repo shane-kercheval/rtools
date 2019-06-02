@@ -1184,6 +1184,9 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_labels = TRUE,
                                                     date_floor = 'year'))
 
+    ##########################################################################################################
+    # week/month/quarter/year other variables & options
+    ##########################################################################################################
     color_variable <- 'origin'
     test_save_plot(file_name='data/rt_explore_plot_time_series_week_color.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
@@ -1257,7 +1260,6 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'year'))
-
 })
 
 
