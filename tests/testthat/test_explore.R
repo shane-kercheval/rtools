@@ -1064,6 +1064,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
                                                     show_labels = TRUE,
+                                                    show_points = TRUE,
                                                     date_floor = 'quarter',
                                                     date_break_format = '%Y-%m-%d',
                                                     date_breaks_width = '3 months'))
