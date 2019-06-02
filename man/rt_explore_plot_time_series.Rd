@@ -8,8 +8,8 @@ rt_explore_plot_time_series(dataset, variable,
   comparison_variable = NULL, comparison_function = NULL,
   comparison_function_name = NULL, color_variable = NULL,
   y_zoom_min = NULL, y_zoom_max = NULL, show_points = FALSE,
-  show_labels = FALSE, date_break_format = "\%Y-\%m-\%d",
-  date_breaks = "1 month", base_size = 11)
+  show_labels = FALSE, date_floor = NULL, date_break_format = NULL,
+  date_breaks_width = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -32,9 +32,11 @@ rt_explore_plot_time_series(dataset, variable,
 
 \item{show_labels}{if TRUE adds labels to each point}
 
+\item{date_floor}{options are e.g. "week", "month", "quarter"}
+
 \item{date_break_format}{format of date breaks}
 
-\item{date_breaks}{the date breaks for x axis, values correspond to ggplot scale_x_date}
+\item{date_breaks_width}{the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
