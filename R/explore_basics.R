@@ -800,11 +800,14 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param color_variable an optional variable (categoric) that seperates the time series
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param show_points if TRUE adds points to the graph
+#' @param show_labels if TRUE adds labels to each point
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename
-#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual
+#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point
+#' @importFrom scales comma_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -814,6 +817,8 @@ rt_explore_plot_time_series <- function(dataset,
                                         color_variable=NULL,
                                         y_zoom_min=NULL,
                                         y_zoom_max=NULL,
+                                        show_points=FALSE,
+                                        show_labels=FALSE,
                                         base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
@@ -873,9 +878,20 @@ rt_explore_plot_time_series <- function(dataset,
     }
     ggplot_object <- ggplot_object +
         geom_line() +
+        scale_y_continuous(labels = comma_format()) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+    if(show_points) {
+        ggplot_object <- ggplot_object +
+            geom_point()
+    }
+
+    if(show_labels) {
+        ggplot_object <- ggplot_object +
+            geom_text(aes(label = comma_format()(total)), check_overlap = TRUE, vjust=-0.5)
+    }
 
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {

@@ -7,7 +7,8 @@
 rt_explore_plot_time_series(dataset, variable,
   comparison_variable = NULL, comparison_function = NULL,
   comparison_function_name = NULL, color_variable = NULL,
-  y_zoom_min = NULL, y_zoom_max = NULL, base_size = 11)
+  y_zoom_min = NULL, y_zoom_max = NULL, show_points = FALSE,
+  show_labels = FALSE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -25,6 +26,10 @@ rt_explore_plot_time_series(dataset, variable,
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
+
+\item{show_points}{if TRUE adds points to the graph}
+
+\item{show_labels}{if TRUE adds labels to each point}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
