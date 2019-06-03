@@ -323,7 +323,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc
-#' @importFrom scales percent_format comma_format percent pretty_breaks format_format
+#' @importFrom scales percent_format percent pretty_breaks format_format
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
@@ -518,7 +518,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text
 #' @importFrom dplyr group_by summarise n
-#' @importFrom scales comma_format pretty_breaks format_format
+#' @importFrom scales pretty_breaks format_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
                                     variable,
@@ -533,7 +533,7 @@ rt_explore_plot_boxplot <- function(dataset,
 
         boxplot_plot <- ggplot(dataset, aes(y=!!symbol_variable, group=1)) +
             geom_boxplot() +
-            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             scale_x_discrete(breaks = NULL) +
             labs(caption = paste("\n", prettyNum(sum(!is.na(dataset[[variable]])),
                                                  big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
@@ -555,7 +555,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_comparison_variable)) +
-            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             geom_boxplot() +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
@@ -694,7 +694,7 @@ rt_explore_plot_histogram <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual
-#' @importFrom scales comma_format pretty_breaks format_format
+#' @importFrom scales pretty_breaks format_format
 #' @export
 rt_explore_plot_scatter <- function(dataset,
                                     variable,
@@ -742,7 +742,7 @@ rt_explore_plot_scatter <- function(dataset,
     scale_color_continuous()
 
     scatter_plot <- scatter_plot +
-        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
+        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         theme_light(base_size = base_size) +
         labs(x=variable,
              y=comparison_variable)
@@ -814,7 +814,7 @@ rt_explore_plot_scatter <- function(dataset,
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date
 #' @importFrom lubridate floor_date
 #' @importFrom stringr str_to_title str_trim
-#' @importFrom scales comma_format date_format pretty_breaks format_format
+#' @importFrom scales date_format pretty_breaks format_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -949,7 +949,7 @@ rt_explore_plot_time_series <- function(dataset,
     }
     ggplot_object <- ggplot_object +
         geom_line() +
-        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
+        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
@@ -999,7 +999,7 @@ rt_explore_plot_time_series <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange desc mutate group_by ungroup
-#' @importFrom scales percent comma_format pretty_breaks format_format
+#' @importFrom scales percent pretty_breaks format_format
 #' @importFrom ggplot2 ggplot aes labs geom_polygon geom_text scale_fill_manual theme_classic theme element_blank element_text
 #' @export
 rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", caption="", proportionate=FALSE) {
