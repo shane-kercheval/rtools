@@ -323,7 +323,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc
-#' @importFrom scales percent_format comma_format percent
+#' @importFrom scales percent_format comma_format percent pretty_breaks format_format
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
@@ -376,7 +376,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
             unique_values_plot <- unique_values_plot +
                 geom_text(aes(label = percent(percent), y = percent), vjust=-0.25) +
-                geom_text(aes(label = comma_format()(total), y = percent), vjust=1.25)
+                geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent), vjust=1.25)
         }
 
         return (
@@ -462,7 +462,7 @@ rt_explore_plot_value_totals <- function(dataset,
                           aes(x=!!symbol_variable, label = percent(percent), y = percent),
                           vjust=-1.5) +
                 geom_text(data = groups_by_variable,
-                          aes(x=!!symbol_variable, label = comma_format()(total), y = percent),
+                          aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent),
                           vjust=-0.25)
         }
 
@@ -472,7 +472,7 @@ rt_explore_plot_value_totals <- function(dataset,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = actual_percent,
-                              label = comma_format()(total),
+                              label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
                               group = !!symbol_comparison_variable),
                           position = comparison_position,
                           vjust=-0.25) +
@@ -518,7 +518,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text
 #' @importFrom dplyr group_by summarise n
-#' @importFrom scales comma_format
+#' @importFrom scales comma_format pretty_breaks format_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
                                     variable,
@@ -533,9 +533,11 @@ rt_explore_plot_boxplot <- function(dataset,
 
         boxplot_plot <- ggplot(dataset, aes(y=!!symbol_variable, group=1)) +
             geom_boxplot() +
-            scale_y_continuous(labels = comma_format()) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
             scale_x_discrete(breaks = NULL) +
-            labs(caption = paste("\n", comma_format()(sum(!is.na(dataset[[variable]]))), 'Non-NA Values'),
+            labs(caption = paste("\n", prettyNum(sum(!is.na(dataset[[variable]])),
+                                                 big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
+                                 'Non-NA Values'),
                  y=variable,
                  x='') +
             theme_light(base_size = base_size)
@@ -553,17 +555,17 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_comparison_variable)) +
-            scale_y_continuous(labels = comma_format()) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
             geom_boxplot() +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = comma_format()(median)),
+                                    label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
                       vjust=-0.5) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = comma_format()(count)),
+                                    label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
                       vjust=1.3) +
             scale_color_manual(values=rt_colors()) +
             labs(caption="\n# above median line is the median value, # below median line is the size of the group.",
@@ -692,7 +694,7 @@ rt_explore_plot_histogram <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual
-#' @importFrom scales comma_format
+#' @importFrom scales comma_format pretty_breaks format_format
 #' @export
 rt_explore_plot_scatter <- function(dataset,
                                     variable,
@@ -740,7 +742,7 @@ rt_explore_plot_scatter <- function(dataset,
     scale_color_continuous()
 
     scatter_plot <- scatter_plot +
-        scale_y_continuous(labels = comma_format()) +
+        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
         theme_light(base_size = base_size) +
         labs(x=variable,
              y=comparison_variable)
@@ -812,7 +814,7 @@ rt_explore_plot_scatter <- function(dataset,
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date
 #' @importFrom lubridate floor_date
 #' @importFrom stringr str_to_title str_trim
-#' @importFrom scales comma_format date_format
+#' @importFrom scales comma_format date_format pretty_breaks format_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -850,6 +852,9 @@ rt_explore_plot_time_series <- function(dataset,
     x_label_context <- NULL
     if(!is.null(date_floor)) {
         title_context <- paste0(str_to_title(date_floor), "ly")
+        if(title_context == "Dayly") {
+            title_context <- "Daily"
+        }
         x_label_context <- paste0("(", date_floor, ")")
 
         dataset[, variable] <- floor_date(dataset[, variable], unit=date_floor, week_start = 1)
@@ -944,7 +949,7 @@ rt_explore_plot_time_series <- function(dataset,
     }
     ggplot_object <- ggplot_object +
         geom_line() +
-        scale_y_continuous(labels = comma_format()) +
+        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +#labels = comma_format()) +
         scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
@@ -957,7 +962,7 @@ rt_explore_plot_time_series <- function(dataset,
 
     if(show_labels) {
         ggplot_object <- ggplot_object +
-            geom_text(aes(label = comma_format()(total)), check_overlap = TRUE, vjust=-0.5)
+            geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)), check_overlap = TRUE, vjust=-0.5)
     }
 
     # zoom in on graph is parameters are set
@@ -994,7 +999,7 @@ rt_explore_plot_time_series <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange desc mutate group_by ungroup
-#' @importFrom scales percent comma_format
+#' @importFrom scales percent comma_format pretty_breaks format_format
 #' @importFrom ggplot2 ggplot aes labs geom_polygon geom_text scale_fill_manual theme_classic theme element_blank element_text
 #' @export
 rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", caption="", proportionate=FALSE) {
@@ -1028,7 +1033,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
     df <- cbind(df, df_steps)
     df <- df %>%
         mutate(conversion_rate = percent(value / step_values[1]),
-               value = comma_format()(value)) %>%
+               value = prettyNum(value, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
         # # need to make sure the label is only associated with one point so it's not overlapping
