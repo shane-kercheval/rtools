@@ -184,6 +184,14 @@ test_that("rt_explore_plot_value_counts", {
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
+    t <- credit_data %>% mutate(checking_balance = ifelse(checking_balance == 'unknown', NA, as.character(checking_balance)))
+    # plot without order
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_nas.png',
+                   plot=rt_explore_plot_value_totals(dataset=t,
+                                                     variable=variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_group_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -833,6 +841,158 @@ test_that("rt_explore_plot_scatterplot_jitter", {
                                                 base_size=15))
 })
 
+test_that("rt_explore_plot_aggregate_2_numerics", {
+    dataset <- read.csv("data/credit.csv", header=TRUE)
+    # make sure it handles NAs
+    dataset[1, 'months_loan_duration'] <- NA
+    variable <- 'months_loan_duration'
+    comparison_variable <- 'amount'
+
+    rt_geometric_mean <- function(values, na.rm=TRUE){
+        return (exp(mean(log(values + 0.0001), na.rm =na.rm) - 0.0001))
+    }
+
+    aggregation_function <- rt_geometric_mean
+    aggregation_function_name <- "Geometric Mean"
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__boxplot_0_min.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=NULL,
+                                                             aggregation_function_name=NULL,
+                                                             aggregation_count_minimum=0, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=TRUE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=NULL,
+                                                             x_zoom_max=NULL,
+                                                             y_zoom_min=NULL,
+                                                             y_zoom_max=NULL,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__boxplot_30_min.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=NULL,
+                                                             aggregation_function_name=NULL,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=TRUE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=NULL,
+                                                             x_zoom_max=NULL,
+                                                             y_zoom_min=NULL,
+                                                             y_zoom_max=NULL,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__geometric_mean.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=TRUE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=NULL,
+                                                             x_zoom_max=NULL,
+                                                             y_zoom_min=NULL,
+                                                             y_zoom_max=NULL,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__geometric_mean__2.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=FALSE,
+                                                             show_points=FALSE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=10,
+                                                             x_zoom_max=40,
+                                                             y_zoom_min=1900,
+                                                             y_zoom_max=5000,
+                                                             base_size=11))
+
+    variable <- 'existing_loans_count'
+    comparison_variable <- 'months_loan_duration'
+
+    aggregation_function <- function(values) {
+        return (mean(values, na.rm = TRUE))
+    }
+    aggregation_function_name <- "Mean"
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__boxplot_0_min.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=NULL,
+                                                             aggregation_function_name=NULL,
+                                                             aggregation_count_minimum=0, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=TRUE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=NULL,
+                                                             x_zoom_max=NULL,
+                                                             y_zoom_min=NULL,
+                                                             y_zoom_max=NULL,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__boxplot_30_min.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=NULL,
+                                                             aggregation_function_name=NULL,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=TRUE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=NULL,
+                                                             x_zoom_max=NULL,
+                                                             y_zoom_min=NULL,
+                                                             y_zoom_max=NULL,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__mean.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=TRUE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=NULL,
+                                                             x_zoom_max=NULL,
+                                                             y_zoom_min=NULL,
+                                                             y_zoom_max=NULL,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__mean__2.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=FALSE,
+                                                             show_points=FALSE,
+                                                             show_labels=TRUE,
+                                                             x_zoom_min=-1,
+                                                             x_zoom_max=3,
+                                                             y_zoom_min=4,
+                                                             y_zoom_max=25,
+                                                             base_size=11))
+
+})
+
 test_that('rt_explore_plot_time_series', {
     dataset <- data.frame(nycflights13::flights %>%
                               mutate(date = lubridate::make_date(year, month, day),
@@ -1261,7 +1421,6 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_labels = TRUE,
                                                     date_floor = 'year'))
 })
-
 
 test_that('rt_plot_funnel', {
 

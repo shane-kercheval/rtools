@@ -384,7 +384,7 @@ rt_explore_plot_value_totals <- function(dataset,
                 labs(title=plot_title,
                      y=plot_y_axis_label,
                      x=variable) +
-                scale_fill_manual(values=rt_colors()) +
+                scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
                 theme_light(base_size = base_size) +
                 theme(legend.position = 'none',
                       axis.text.x = element_text(angle = 30, hjust = 1))
@@ -499,7 +499,7 @@ rt_explore_plot_value_totals <- function(dataset,
             labs(title = plot_title,
                  fill = comparison_variable,
                  x = variable) +
-            scale_fill_manual(values=rt_colors()) +
+            scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(#legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1)))
@@ -546,10 +546,10 @@ rt_explore_plot_boxplot <- function(dataset,
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
 
-        aggregations <- dataset %>%
-            group_by(!!symbol_comparison_variable) %>%
-            summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
-                      count = n())
+            aggregations <- dataset %>%
+                group_by(!!symbol_comparison_variable) %>%
+                summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
+                          count = n())
 
         boxplot_plot <- ggplot(dataset,
                                aes(y=!!symbol_variable,
@@ -561,13 +561,15 @@ rt_explore_plot_boxplot <- function(dataset,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
                                     label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
-                      vjust=-0.5) +
+                      vjust=-0.5,
+                      check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
                                     label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
-                      vjust=1.3) +
-            scale_color_manual(values=rt_colors()) +
+                      vjust=1.3,
+                      check_overlap = TRUE) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             labs(caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
                  y=variable) +
@@ -649,7 +651,7 @@ rt_explore_plot_histogram <- function(dataset,
         }
 
         histogram_plot <- histogram_plot +
-            scale_color_manual(values=rt_colors()) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             labs(title=paste0('Distribution of `', variable, '` by `', comparison_variable, '`'),
                  x=variable,
                  color=comparison_variable) +
@@ -722,6 +724,7 @@ rt_explore_plot_scatter <- function(dataset,
             return (sym(x))
         }
     }
+
     symbol_color_variable <- symbol_if_not_null(color_variable)
     symbol_size_variable <- symbol_if_not_null(size_variable)
 
@@ -739,8 +742,6 @@ rt_explore_plot_scatter <- function(dataset,
         scatter_plot <- scatter_plot + geom_point(alpha=alpha)
     }
 
-    scale_color_continuous()
-
     scatter_plot <- scatter_plot +
         scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         theme_light(base_size = base_size) +
@@ -753,6 +754,7 @@ rt_explore_plot_scatter <- function(dataset,
         scatter_plot <- scatter_plot + scale_color_manual(values=rt_colors())
     }
 
+    x_zooms <- NULL
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
         # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
@@ -767,10 +769,10 @@ rt_explore_plot_scatter <- function(dataset,
             x_zoom_max <- max(dataset[, variable], na.rm = TRUE)
         }
 
-        scatter_plot <- scatter_plot +
-            coord_cartesian(xlim = c(x_zoom_min, x_zoom_max))
+        x_zooms <- c(x_zoom_min, x_zoom_max)
     }
 
+    y_zooms <- NULL
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
         # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
@@ -785,11 +787,186 @@ rt_explore_plot_scatter <- function(dataset,
             y_zoom_max <- max(dataset[, comparison_variable], na.rm = TRUE)
         }
 
-        scatter_plot <- scatter_plot +
-            coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+        y_zooms <- c(y_zoom_min, y_zoom_max)
     }
+    scatter_plot <- scatter_plot +
+        coord_cartesian(xlim=x_zooms, ylim = y_zooms)
 
     return (scatter_plot)
+}
+
+#' returns a eih
+#'
+#' @param dataset dataframe
+#' @param variable a numeric variable (x-axis)
+#' @param comparison_variable the additional numeric variable (y-axis)
+#' @param aggregation_function the aggregation function that gives, for example,
+#'      the mean of the `comparison_variable` grouped by the `variable`
+#'      if no aggregation function is supplied the boxplots are showed for each grouped `variable` value.`
+#' @param aggregation_function_name the friendly name of the `aggregation_function`
+#' @param aggregation_count_minimum the minimum number of samples to included for each `variable` value.
+#'      the default is 30, so any value of `variable` that didn't occur at least 30 times would be removed.
+#'      We need at least 30, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd
+#'      pull e.g. 100 random samples of the same value
+#' @param show_resampled_confidence_interval when `aggregation_function` is not null, then we have the option
+#'      to show a confidence interval based on resampling
+#' @param show_points the show points
+#' @param show_labels show the labels
+#' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
+#' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr group_by filter n ungroup summarise rename
+#' @importFrom ggplot2 ggplot aes geom_boxplot geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text labs theme element_text geom_line scale_x_continuous expand_limits geom_ribbon
+#' @importFrom scales pretty_breaks format_format
+#' @importFrom rsample bootstraps
+#' @importFrom tidyr unnest
+#' @export
+rt_explore_plot_aggregate_2_numerics <- function(dataset,
+                                                 variable,
+                                                 comparison_variable,
+                                                 aggregation_function=NULL,
+                                                 aggregation_function_name=NULL,
+                                                 aggregation_count_minimum=30,
+                                                 show_resampled_confidence_interval=FALSE,
+                                                 show_points=FALSE,
+                                                 show_labels=FALSE,
+                                                 x_zoom_min=NULL,
+                                                 x_zoom_max=NULL,
+                                                 y_zoom_min=NULL,
+                                                 y_zoom_max=NULL,
+                                                 base_size=11) {
+
+    symbol_variable <- sym(variable)  # because we are using string variables
+    symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
+
+    t <- dataset %>%
+        group_by(!!symbol_variable) %>%
+        filter(n() >= aggregation_count_minimum) %>%
+        ungroup()
+
+    if(is.null(aggregation_function)) {
+        # if no aggregation function then show boxplots
+        aggregations <- t %>%
+            group_by(!!symbol_variable) %>%
+            summarise(median = round(median(!!symbol_comparison_variable, na.rm = TRUE), 4),
+                      count = n())
+
+        aggregate_plot <- ggplot(t, aes(x=!!symbol_variable, y=!!symbol_comparison_variable, group=!!symbol_variable)) +
+            geom_boxplot() +
+            geom_text(data = aggregations,
+                      mapping = aes(y=median,
+                                    x=!!symbol_variable,
+                                    label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                      vjust=-0.5,
+                      check_overlap = TRUE) +
+            geom_text(data = aggregations,
+                      mapping = aes(y=median,
+                                    x=!!symbol_variable,
+                                    label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                      vjust=1.3,
+                      check_overlap = TRUE) +
+            scale_x_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            labs(title=paste0("`", comparison_variable, "` grouped by `", variable, "`"),
+                 caption="\n# above median line is the median value, # below median line is the size of the group.",
+                 x=variable,
+                 y=comparison_variable) +
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1))
+
+    } else {
+
+        t <- t %>%
+            group_by(!!symbol_variable) %>%
+            summarise(agg_variable = aggregation_function(!!symbol_comparison_variable))
+        aggregate_plot <- ggplot(t, aes(x=!!symbol_variable)) +
+            geom_line(aes(y=agg_variable)) +
+            scale_x_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            expand_limits(y=0) +
+            labs(title = paste0(aggregation_function_name, " of `", comparison_variable, "` by `", variable, "`"),
+                 y = paste0(aggregation_function_name, " of `", comparison_variable, "`"),
+                 x = variable)
+
+        if(show_points) {
+            aggregate_plot <- aggregate_plot +
+                geom_point(aes(y=agg_variable))
+        }
+
+        if(show_labels) {
+            aggregate_plot <- aggregate_plot +
+                geom_text(aes(y=agg_variable, label = prettyNum(agg_variable, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)), check_overlap = TRUE, vjust=-0.5)
+        }
+
+        if(show_resampled_confidence_interval) {
+            # https://www.youtube.com/watch?v=zjWm__nFLXI
+            #install.packages('rsample')
+            bs <- dataset[, c(variable, comparison_variable)] %>%
+                rename(value = !!symbol_comparison_variable) %>%
+                #count(!!symbol_variable)
+                group_by(!!symbol_variable) %>%
+                filter(n() >= aggregation_count_minimum) %>%
+                ungroup() %>%
+                # filter(!!symbol_variable == 5) %>%
+                bootstraps(times=1000)
+            #pull(splits) %>% pluck(1)
+            #bs %>% mutate(statistic = map_dbl(splits, ~ rt_geometric_mean(as.data.frame(.)$amount)))
+            bs <- bs %>%
+                unnest(map(splits, as.data.frame)) %>%
+                group_by(!!symbol_variable, id) %>%
+                summarise(average_value = aggregation_function(value)) %>%
+                summarise(bootstrap_low = quantile(average_value, 0.025),
+                          bootstrap_high = quantile(average_value, 0.975))
+            aggregate_plot <- aggregate_plot +
+                geom_ribbon(data=bs, aes(ymin=bootstrap_low, ymax=bootstrap_high), alpha=0.25)
+        }
+    }
+
+    aggregate_plot <- aggregate_plot +
+        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        theme_light(base_size = base_size)
+
+    x_zooms <- NULL
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(x_zoom_min) || !rt_is_null_na_nan(x_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(x_zoom_min)) {
+
+            x_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(x_zoom_max)) {
+
+            x_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+        }
+
+        x_zooms <- c(x_zoom_min, x_zoom_max)
+    }
+
+    y_zooms <- NULL
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(y_zoom_min)) {
+
+            y_zoom_min <- min(dataset[, comparison_variable], na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(y_zoom_max)) {
+
+            y_zoom_max <- max(dataset[, comparison_variable], na.rm = TRUE)
+        }
+
+        y_zooms <- c(y_zoom_min, y_zoom_max)
+    }
+    aggregate_plot <- aggregate_plot +
+        coord_cartesian(xlim=x_zooms, ylim = y_zooms)
+
+    return (aggregate_plot)
 }
 
 #' returns a time-series plot
@@ -835,7 +1012,7 @@ rt_explore_plot_time_series <- function(dataset,
     stopifnot(!(!is.null(comparison_variable) &&
         (is.null(comparison_function) || is.null(comparison_function_name))))
 
-    sym_variable <- sym(variable)  # because we are using string variables
+    symbol_variable <- sym(variable)  # because we are using string variables
 
     symbol_if_not_null <- function(x) {
         if (is.null(x)) {
@@ -912,15 +1089,15 @@ rt_explore_plot_time_series <- function(dataset,
 
         if(is.null(sym_color_variable)) {
 
-            dataset <- dataset %>% count(!!sym_variable) %>% rename(total=n)
+            dataset <- dataset %>% count(!!symbol_variable) %>% rename(total=n)
 
         } else {
 
-            dataset <- dataset %>% count(!!sym_variable, !!sym_color_variable) %>% rename(total=n)
+            dataset <- dataset %>% count(!!symbol_variable, !!sym_color_variable) %>% rename(total=n)
         }
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
-            scale_color_manual(values=rt_colors()) +
+            ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             labs(title=str_trim(paste(title_context, 'Count of Records')),
                  x=str_trim(paste(variable, x_label_context)),
                  y='Count')
@@ -928,18 +1105,18 @@ rt_explore_plot_time_series <- function(dataset,
     } else {
         if(is.null(sym_color_variable)) {
             dataset <- dataset %>%
-                group_by(!!sym_variable) %>%
+                group_by(!!symbol_variable) %>%
                 summarise(total=comparison_function(!!sym_comparison_variable))
 
         } else {
 
             dataset <- dataset %>%
-                group_by(!!sym_variable, !!sym_color_variable) %>%
+                group_by(!!symbol_variable, !!sym_color_variable) %>%
                 summarise(total=comparison_function(!!sym_comparison_variable))
         }
         ggplot_object <- dataset %>%
-            ggplot(aes(x=!!sym_variable, y=total, color=!!sym_color_variable)) +
-            scale_color_manual(values=rt_colors()) +
+            ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             labs(title=str_trim(paste(title_context,
                                       paste(comparison_function_name,
                                             'of', comparison_variable,
@@ -1049,7 +1226,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
         #geom_text(aes(x = 0, y=label_y, label=ifelse(is.na(label), '', label)), check_overlap = TRUE) +
         geom_text(aes(x = 0, y=label_y, label=label), vjust=1, check_overlap = TRUE) +
         geom_text(aes(x = 0, y=label_y, label=Step), vjust=-1, check_overlap = TRUE) +
-        scale_fill_manual(values=rt_colors()) +
+        scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
         theme_classic() +
         theme(
               axis.title=element_blank(),
