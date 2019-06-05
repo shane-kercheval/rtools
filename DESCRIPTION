@@ -16,6 +16,7 @@ Imports:
     moments,
     purrr,
     reshape2,
+    rsample,
     scales,
     stringr,
     timeDate,
