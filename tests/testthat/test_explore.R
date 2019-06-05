@@ -848,10 +848,6 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
     variable <- 'months_loan_duration'
     comparison_variable <- 'amount'
 
-    rt_geometric_mean <- function(values, na.rm=TRUE){
-        return (exp(mean(log(values + 0.0001), na.rm =na.rm) - 0.0001))
-    }
-
     aggregation_function <- rt_geometric_mean
     aggregation_function_name <- "Geometric Mean"
 

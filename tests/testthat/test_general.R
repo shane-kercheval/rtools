@@ -377,5 +377,47 @@ test_that("rt_colors_good_bad", {
         theme(legend.position = 'none')
     test_save_plot(file_name='data/rt_colors_bad_good.png',
                    plot=all_colors)
+})
 
+test_that("rt_geometric_mean", {
+
+    values <- c(3, 8, 10, 17, 24, 27)
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0.0001),
+                 11.75802, tolerance=1e-6)
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=FALSE, add_subtract=0),
+                 11.75906, tolerance=1e-6)
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0),
+                 11.75906, tolerance=1e-6)
+
+    values <- c(3, 8, 10, 17, 24, 27, 100, 1000)
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0.0001),
+                 26.77564, tolerance=1e-6)
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=FALSE, add_subtract=0.0001),
+                 26.77564, tolerance=1e-6)
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0),
+                 26.77808, tolerance=1e-6)
+
+    values <- c(3, 8, 10, 17, 24, 27, 100, 1000, 0)
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0.0001),
+                 6.678098, tolerance=1e-6)
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0),
+                 -Inf, tolerance=1e-6)
+
+    values <- c(3, 8, 10, 17, 24, 27, 100, 1000, 0.0000001)
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0),
+                 3.099984, tolerance=1e-6)
+
+    values <- c(3, 8, 10, 17, 24, 27, 100, 1000, 0, NA)
+    expect_true(is.na(rt_geometric_mean(values=values, na.rm=FALSE, add_subtract=0.0001)))
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0.0001),
+                 6.678098, tolerance=1e-6)
+
+    expect_equal(rt_geometric_mean(values=values, na.rm=TRUE, add_subtract=0),
+                 -Inf, tolerance=1e-6)
 })
