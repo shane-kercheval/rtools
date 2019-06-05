@@ -903,6 +903,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
         if(show_resampled_confidence_interval) {
             # https://www.youtube.com/watch?v=zjWm__nFLXI
             #install.packages('rsample')
+            set.seed(42)
             bs <- dataset[, c(variable, comparison_variable)] %>%
                 rename(value = !!symbol_comparison_variable) %>%
                 #count(!!symbol_variable)
