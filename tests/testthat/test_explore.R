@@ -88,6 +88,49 @@ test_that("rt_explore_correlations_credit", {
                                                      p_value_threshold=0.3))
 })
 
+test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    # only include columns that have <= x% missing values
+    max_missing_perc <- 0.05
+
+    set.seed(42)
+    rows_to_make_na_valid <- sample(nrow(credit_data), nrow(credit_data) * (max_missing_perc - 0.01))
+    set.seed(43)
+    rows_to_make_na_invalid <- sample(nrow(credit_data), nrow(credit_data) * (max_missing_perc + 0.01))
+
+    # plots should include months_loan_duration and exclude age
+    credit_data[rows_to_make_na_valid, 'months_loan_duration'] <- NA
+    credit_data[rows_to_make_na_invalid, 'age'] <- NA
+
+    #correlations <- rt_explore_correlations(dataset=credit_data, max_missing_column_perc=max_missing_perc)
+
+    # use correlation parameters from above
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_2.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     max_missing_column_perc=max_missing_perc))
+
+    # lower p_value_threshold
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_pvalue_2.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     max_missing_column_perc=max_missing_perc,
+                                                     p_value_threshold=0.3))
+
+    # lower p_value_threshold
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_corr_treshold_2.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     max_missing_column_perc=max_missing_perc,
+                                                     corr_threshold=0.115))
+
+    # lower p_value_threshold
+    test_save_plot(file_name='data/rt_explore_plot_correlations_credit_both_parameters_2.png',
+                   plot=rt_explore_plot_correlations(dataset=credit_data,
+                                                     max_missing_column_perc=max_missing_perc,
+                                                     corr_threshold=0.115,
+                                                     p_value_threshold=0.3))
+})
+
+
+
 test_that("rt_explore_value_totals_counts", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 

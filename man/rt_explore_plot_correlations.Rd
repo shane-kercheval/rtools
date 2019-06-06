@@ -5,7 +5,8 @@
 \title{returns a heatmap of correlations}
 \usage{
 rt_explore_plot_correlations(dataset, corr_threshold = 0,
-  p_value_threshold = 1, type = "pearson", base_size = 11)
+  p_value_threshold = 1, type = "pearson",
+  max_missing_column_perc = 0.25, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -15,6 +16,12 @@ rt_explore_plot_correlations(dataset, corr_threshold = 0,
 \item{p_value_threshold}{any correlations that have a p-value greater than `p_value_threshold` will be set to `NA` (Default is `1`, so all correlations are shown)}
 
 \item{type}{type of correlation to perform (Default is `pearson`)}
+
+\item{max_missing_column_perc}{the max percent of missing values for a column for it to be included.
+The default is `0.25` (i.e. `25%`) meaning any column with more than 25% of it's data missing will be
+removed.
+For example, if you set the value to `0.05` (i.e. `5%` then the any column that had more than 5% of
+values missing would be removed.}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

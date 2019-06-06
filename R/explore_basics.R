@@ -107,6 +107,11 @@ rt_explore_categoric_summary <- function(dataset) {
 #' @param dataset dataframe containing numberic columns
 #' @param corr_threshold any correlations that are <= `corr_threshold` will be set to `NA`. (Default is `0`, so all correlations are shown). Helps to reduce noise.
 #' @param p_value_threshold any correlations that have a p-value greater than `p_value_threshold` will be set to `NA` (Default is `1`, so all correlations are shown)
+#' @param max_missing_column_perc the max percent of missing values for a column for it to be included.
+#'       The default is `0.25` (i.e. `25%`) meaning any column with more than 25% of it's data missing will be
+#'       removed.
+#'       For example, if you set the value to `0.05` (i.e. `5%` then the any column that had more than 5% of
+#'       values missing would be removed.
 #' @param type type of correlation to perform (Default is `pearson`)
 #'
 #' @examples
@@ -119,13 +124,20 @@ rt_explore_categoric_summary <- function(dataset) {
 #' @importFrom Hmisc rcorr
 #' @importFrom stats complete.cases
 #' @export
-rt_explore_correlations <- function(dataset, corr_threshold=0, p_value_threshold=1, type='pearson') {
+rt_explore_correlations <- function(dataset,
+                                    corr_threshold=0,
+                                    p_value_threshold=1,
+                                    max_missing_column_perc=0.25,
+                                    type='pearson') {
 
-    data_numeric = dataset %>% select_if(is.numeric)
+    data_numeric <- dataset %>% select_if(is.numeric)
 
-    rcorr_results = rcorr(as.matrix(data_numeric[complete.cases(data_numeric), ]), type=type)
-    correlations = rcorr_results$r
-    p_values = rcorr_results$P
+    # remove columns that have > max_missing_column_perc % of data missing
+    data_numeric <- data_numeric[, colSums(is.na(data_numeric)) / nrow(data_numeric) <= max_missing_column_perc]
+
+    rcorr_results <- rcorr(as.matrix(data_numeric[complete.cases(data_numeric), ]), type=type)
+    correlations <- rcorr_results$r
+    p_values <- rcorr_results$P
 
     correlations[which(abs(correlations) <= corr_threshold, arr.ind=TRUE)] <- NA # set correlations that are 'lower' than corr_threshold to NA
     correlations[which(p_values > p_value_threshold, arr.ind=TRUE)] <- NA # set correlations that have p_value > `p_value_threshold` to NA (i.e. we only want values who have low p_value (i.e. statistically significant), lower than pvalue threshold)
@@ -146,6 +158,11 @@ rt_explore_correlations <- function(dataset, corr_threshold=0, p_value_threshold
 #' @param corr_threshold any correlations that are <= `corr_threshold` will be set to `NA`. (Default is `0`, so all correlations are shown). Helps to reduce noise.
 #' @param p_value_threshold any correlations that have a p-value greater than `p_value_threshold` will be set to `NA` (Default is `1`, so all correlations are shown)
 #' @param type type of correlation to perform (Default is `pearson`)
+#' @param max_missing_column_perc the max percent of missing values for a column for it to be included.
+#'       The default is `0.25` (i.e. `25%`) meaning any column with more than 25% of it's data missing will be
+#'       removed.
+#'       For example, if you set the value to `0.05` (i.e. `5%` then the any column that had more than 5% of
+#'       values missing would be removed.
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @examples
@@ -162,12 +179,14 @@ rt_explore_plot_correlations <- function(dataset,
                                          corr_threshold=0,
                                          p_value_threshold=1,
                                          type='pearson',
+                                         max_missing_column_perc=0.25,
                                          base_size=11) {
 
     correlations <- rt_explore_correlations(dataset=dataset,
                                             corr_threshold=corr_threshold,
                                             p_value_threshold=p_value_threshold,
-                                            type=type)
+                                            type=type,
+                                            max_missing_column_perc=max_missing_column_perc)
 
     column_names <- colnames(correlations)
     row_names <- rownames(correlations)
