@@ -12,9 +12,9 @@ rt_explore_plot_scatter(dataset, variable, comparison_variable,
 \arguments{
 \item{dataset}{dataframe}
 
-\item{variable}{a numeric variable (x-axis)}
+\item{variable}{a numeric variable (y-axis)}
 
-\item{comparison_variable}{the additional numeric variable (y-axis)}
+\item{comparison_variable}{the additional numeric variable (x-axis)}
 
 \item{color_variable}{an optional variable (categoric or numeric) that allows points to be colored based on the values of the variable}
 

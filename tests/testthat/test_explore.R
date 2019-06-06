@@ -643,8 +643,8 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
 
 test_that("rt_explore_plot_scatterplot", {
     dataset <- read.csv("data/housing.csv", header=TRUE)
-    variable <- 'median_income'
-    comparison_variable <- 'median_house_value'
+    variable <- 'median_house_value'
+    comparison_variable <- 'median_income'
 
     test_save_plot(file_name='data/rt_explore_plot_scatter.png',
                     plot=rt_explore_plot_scatter(dataset=dataset,
@@ -771,8 +771,8 @@ test_that("rt_explore_plot_scatterplot", {
 
 test_that('rt_explore_plot_scatterplot_size_color', {
     dataset <- read.csv("data/housing.csv", header=TRUE)
-    variable <- 'median_income'
-    comparison_variable <- 'median_house_value'
+    variable <- 'median_house_value'
+    comparison_variable <- 'median_income'
 
 
     test_save_plot(file_name='data/rt_explore_plot_scatter_color.png',
@@ -845,8 +845,8 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     # make sure it handles NAs
     dataset[1, 'months_loan_duration'] <- NA
-    variable <- 'months_loan_duration'
-    comparison_variable <- 'amount'
+    variable <- 'amount'
+    comparison_variable <- 'months_loan_duration'
 
     aggregation_function <- rt_geometric_mean
     aggregation_function_name <- "Geometric Mean"
@@ -915,8 +915,8 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              y_zoom_max=5000,
                                                              base_size=11))
 
-    variable <- 'existing_loans_count'
-    comparison_variable <- 'months_loan_duration'
+    variable <- 'months_loan_duration'
+    comparison_variable <- 'existing_loans_count'
 
     aggregation_function <- function(values) {
         return (mean(values, na.rm = TRUE))

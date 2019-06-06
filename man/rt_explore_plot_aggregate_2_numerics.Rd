@@ -14,20 +14,21 @@ rt_explore_plot_aggregate_2_numerics(dataset, variable,
 \arguments{
 \item{dataset}{dataframe}
 
-\item{variable}{a numeric variable (x-axis)}
+\item{variable}{a numeric variable (y-axis)}
 
-\item{comparison_variable}{the additional numeric variable (y-axis)}
+\item{comparison_variable}{the additional numeric variable (x-axis) that will be grouped}
 
 \item{aggregation_function}{the aggregation function that gives, for example,
-the mean of the `comparison_variable` grouped by the `variable`
-if no aggregation function is supplied the boxplots are showed for each grouped `variable` value.`}
+the mean of the `variable` grouped by the `comparison_variable`
+if no aggregation function is supplied the boxplots are showed for each grouped `comparison_variable`
+value.}
 
 \item{aggregation_function_name}{the friendly name of the `aggregation_function`}
 
-\item{aggregation_count_minimum}{the minimum number of samples to included for each `variable` value.
-the default is 30, so any value of `variable` that didn't occur at least 30 times would be removed.
-We need at least 30, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd
-pull e.g. 100 random samples of the same value}
+\item{aggregation_count_minimum}{the minimum number of samples to included for each `comparison_variable`
+value. The default is 30, so any value of `comparison_variable` that didn't occur at least 30 times
+would be removed. We need at least 30, otherwise when we bootstrap resample e.g. with a group that has
+1 sample we'd pull e.g. 100 random samples of the same value}
 
 \item{show_resampled_confidence_interval}{when `aggregation_function` is not null, then we have the option
 to show a confidence interval based on resampling}
