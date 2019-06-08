@@ -18,6 +18,16 @@ rt_is_null_na_nan <- function(x) {
 #'
 #' @export
 rt_are_dataframes_equal <- function(dataframe1, dataframe2) {
+
+    nrows_df1 <- nrow(dataframe1)
+    nrows_df2 <- nrow(dataframe2)
+
+    if((is.null(nrows_df1) && !is.null(nrows_df2)) ||
+       (!is.null(nrows_df1) && is.null(nrows_df2)) ||
+       nrows_df1 != nrows_df2) {
+        return (FALSE)
+    }
+
     return (all(rownames(dataframe1) == rownames(dataframe2)) &&
                 all(colnames(dataframe1) == colnames(dataframe2)) &&
                 # if either df1 or df2 is NA, then both should be NA
@@ -40,7 +50,7 @@ rt_are_dataframes_equal_from_file <- function(dataframe1, rds_file) {
 
 #' returns TRUE if `set1` is a subset of `set2`. Returns `FALSE` if either `set1` or `set2` is `NULL` (even
 #' if they are both NULL). The reason for this is because it is used to test sets, and more often then not,
-#' NULL values when testing sets is indicative of a bug. 
+#' NULL values when testing sets is indicative of a bug.
 #'
 #' @param set1 the set that is a subset
 #' @param set2 the set that is the superset

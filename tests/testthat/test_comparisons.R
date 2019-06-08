@@ -26,6 +26,9 @@ test_that("rt_are_dataframes_equal", {
     expect_true(rt_are_dataframes_equal(dataframe1=iris, dataframe2=other))
     colnames(other)[1] <- 'a'
     expect_false(rt_are_dataframes_equal(dataframe1=iris, dataframe2=other))
+
+    # testing this becaue it originally didn't fucking work because apparently `all(rownames(iris) == rownames(list()))`` is TRUE
+    expect_false(rt_are_dataframes_equal(dataframe1=iris, dataframe2=list()))
 })
 
 test_that("rt_are_dataframes_equal_from_file", {
