@@ -279,6 +279,42 @@ rt_colors_good_bad <- function(good_first=TRUE) {
     return (rt_colors(color_names=custom_color_names))
 }
 
+#' Plots the colors from `rt_colors()`
+#'
+#' @param color_names filter by the names of the colors
+#' @param sets filter by the set index
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr mutate
+#' @importFrom ggplot2 ggplot aes geom_col scale_fill_manual theme_light theme element_blank coord_flip
+
+#' @export
+rt_plot_colors <- function(color_names=NULL, sets=NULL) {
+    custom_colors <- rt_colors(color_names=color_names, sets=sets, return_named_vector=TRUE)
+    rt_stopif(any(duplicated(custom_colors)))
+    rt_stopif(any(duplicated(names(custom_colors))))
+
+    factor_names <- names(custom_colors)
+    factor_names <- rev(names(custom_colors))
+    colors_df <- data.frame(name=names(custom_colors),
+                   hex=custom_colors,
+                   value=1,
+                   stringsAsFactors = FALSE) %>%
+            mutate(name = factor(name, levels=factor_names))
+
+    colors_df %>%
+        ggplot(aes(x=name, y=value, fill=name)) +
+        geom_col() +
+        scale_fill_manual(values=rev(custom_colors)) +
+        theme_light() +
+        theme(legend.position = 'none',
+              axis.title.y=element_blank(),
+              axis.title.x=element_blank(),
+              axis.text.x=element_blank(),
+              axis.ticks.x=element_blank()) +
+        coord_flip()
+}
+
 #' Calculates the geometric mean of a vector of numbers
 #'
 #' @param values vector of numeric values
