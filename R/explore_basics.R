@@ -289,12 +289,14 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 
     }
 
-    totals <- temp %>%
-        group_by(value) %>%
-        summarise(count = sum(weight, na.rm = TRUE)) %>%
-        ungroup() %>%
-        mutate(percent = count / denominator) %>%
-        arrange(desc(count), value)
+    # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
+    # we can use `na.value = '#2A3132'` with scale_fill_manual
+    totals <- suppressWarnings(temp %>%
+                                   group_by(value) %>%
+                                   summarise(count = sum(weight, na.rm = TRUE)) %>%
+                                   ungroup() %>%
+                                   mutate(percent = count / denominator) %>%
+                                   arrange(desc(count), value))
 
     if(is.factor(values)) {
 
@@ -415,26 +417,30 @@ rt_explore_plot_value_totals <- function(dataset,
         plot_title <- paste0(plot_title, ' against `', comparison_variable, '`')
 
         if(is.null(sum_by_variable)) {
-
-            groups_by_both <- dataset %>%
+            # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
+            # we can use `na.value = '#2A3132'` with scale_fill_manual
+            groups_by_both <- suppressWarnings(dataset %>%
                     group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
-                    summarise(total = n(), actual_percent=total / nrow(dataset))
+                    summarise(total = n(), actual_percent=total / nrow(dataset)))
 
         } else {
 
             symbol_sum_by <- sym(sum_by_variable)  # because we are using string variables
-            groups_by_both <- dataset %>%
+            # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
+            # we can use `na.value = '#2A3132'` with scale_fill_manual
+            groups_by_both <- suppressWarnings(dataset %>%
                     group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
                     summarise(total = sum(!!symbol_sum_by, na.rm=TRUE)) %>%
                     ungroup() %>%
-                    mutate(actual_percent=total / sum(total, na.rm = TRUE))
+                    mutate(actual_percent=total / sum(total, na.rm = TRUE)))
         }
-
-        groups_by_both <- as.data.frame(groups_by_both %>%
+        # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
+        # we can use `na.value = '#2A3132'` with scale_fill_manual
+        groups_by_both <- suppressWarnings(as.data.frame(groups_by_both %>%
                 group_by(!!symbol_variable) %>%
                 mutate(group_percent = total / sum(total, na.rm=TRUE)) %>%
                 ungroup() %>%
-                arrange(!!symbol_variable, !!symbol_comparison_variable))
+                arrange(!!symbol_variable, !!symbol_comparison_variable)))
 
         if(order_by_count) {
 

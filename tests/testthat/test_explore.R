@@ -893,7 +893,7 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
     aggregation_function_name <- "Geometric Mean"
 
     test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__boxplot_0_min.png',
-                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                   plot=suppressWarnings(rt_explore_plot_aggregate_2_numerics(dataset=dataset,
                                                              variable=variable,
                                                              comparison_variable=comparison_variable,
                                                              aggregation_function=NULL,
@@ -906,7 +906,7 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              x_zoom_max=NULL,
                                                              y_zoom_min=NULL,
                                                              y_zoom_max=NULL,
-                                                             base_size=11))
+                                                             base_size=11)))
 
     test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__boxplot_30_min.png',
                    plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
@@ -965,7 +965,7 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
     aggregation_function_name <- "Mean"
 
     test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__boxplot_0_min.png',
-                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                   plot=suppressWarnings(rt_explore_plot_aggregate_2_numerics(dataset=dataset,
                                                              variable=variable,
                                                              comparison_variable=comparison_variable,
                                                              aggregation_function=NULL,
@@ -978,10 +978,10 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              x_zoom_max=NULL,
                                                              y_zoom_min=NULL,
                                                              y_zoom_max=NULL,
-                                                             base_size=11))
+                                                             base_size=11)))
 
     test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__boxplot_30_min.png',
-                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                   plot=suppressWarnings(rt_explore_plot_aggregate_2_numerics(dataset=dataset,
                                                              variable=variable,
                                                              comparison_variable=comparison_variable,
                                                              aggregation_function=NULL,
@@ -994,7 +994,7 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              x_zoom_max=NULL,
                                                              y_zoom_min=NULL,
                                                              y_zoom_max=NULL,
-                                                             base_size=11))
+                                                             base_size=11)))
 
     test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__loan_count__mean.png',
                    plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
