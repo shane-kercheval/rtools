@@ -129,8 +129,6 @@ test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
                                                      p_value_threshold=0.3))
 })
 
-
-
 test_that("rt_explore_value_totals_counts", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
