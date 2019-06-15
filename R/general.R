@@ -211,7 +211,10 @@ rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
         5, "black_shadow", '#2A3132',
         5, "sky", '#375E97',
         5, "medium_sea_green", '#37B57F',
-        5, "red_clay", '#A43820'
+        5, "red_clay", '#A43820',
+
+        #6, "mint", '#3EB480',
+        6, "mandy", '#DF585C'
         # "coffee", '#B38867',
         # "turquoise", '#5BC8AC',
         #
@@ -242,6 +245,9 @@ rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
         # "custom_orange", '#E8A87C'
     )
 
+    rt_stopif(any(duplicated(color_df$name)))
+    rt_stopif(any(duplicated(color_df$hex)))
+
     # blue, yellow, green, red, gray, purple, orange,
     # color_df <- color_df[1:7, ]
 
@@ -269,8 +275,8 @@ rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
 #'
 #' @export
 rt_colors_good_bad <- function(good_first=TRUE) {
-    good <- 'avocado'
-    bad <- 'tomato'
+    good <- 'medium_sea_green'
+    bad <- 'mandy'
     if(good_first) {
         custom_color_names <- c(good, bad)
     } else {
@@ -291,8 +297,6 @@ rt_colors_good_bad <- function(good_first=TRUE) {
 #' @export
 rt_plot_colors <- function(color_names=NULL, sets=NULL) {
     custom_colors <- rt_colors(color_names=color_names, sets=sets, return_named_vector=TRUE)
-    rt_stopif(any(duplicated(custom_colors)))
-    rt_stopif(any(duplicated(names(custom_colors))))
 
     factor_names <- names(custom_colors)
     factor_names <- rev(names(custom_colors))
