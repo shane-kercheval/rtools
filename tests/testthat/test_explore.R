@@ -144,6 +144,11 @@ test_that("rt_explore_value_totals_counts", {
     variable <- 'checking_balance'
 
     unique_values <- suppressWarnings(rt_explore_value_totals(dataset=credit_data, variable=variable))
+    expected_values <- suppressWarnings(credit_data %>%
+                                            count(checking_balance, sort = TRUE) %>%
+                                            rename(count = n))
+    expected_values <- expected_values %>% mutate(percent = count / sum(expected_values$count))
+    expect_true(rt_are_dataframes_equal(expected_values, unique_values))
 
     expect_true(all(colnames(unique_values) == c('checking_balance', 'count', 'percent')))
     expect_true(all(levels(unique_values$checking_balance) == custom_levels))
