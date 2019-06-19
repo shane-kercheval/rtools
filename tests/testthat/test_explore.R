@@ -1178,6 +1178,22 @@ test_that('rt_explore_plot_time_series', {
                                                     date_breaks = '1 day'))
 })
 
+test_that('rt_explore_plot_time_series__POSIXct', {
+    dataset <- data.frame(nycflights13::flights %>%
+                              mutate(date = lubridate::make_date(year, month, day),
+                                     cohort = paste0(year, '-',
+                                                     lubridate::week(date)))) %>%
+        select(date, dep_delay, dep_time, origin, cohort) %>%
+        mutate(date = as.POSIXct(date))
+
+    variable <- 'date'
+    comparison_variable <- 'dep_delay'
+
+    # was POSIXct failing
+    test_save_plot(file_name='data/rt_explore_plot_time_series_default__POSIXct.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset, variable=variable))
+})
+
 test_that('rt_explore_plot_time_series_breaks_floors', {
     dataset <- data.frame(nycflights13::flights %>%
                               mutate(date = lubridate::make_date(year, month, day),

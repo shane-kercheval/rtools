@@ -1041,6 +1041,8 @@ rt_explore_plot_time_series <- function(dataset,
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
+    dataset[, variable] <- as.Date(dataset[, variable])
+
     symbol_if_not_null <- function(x) {
         if (is.null(x)) {
 
