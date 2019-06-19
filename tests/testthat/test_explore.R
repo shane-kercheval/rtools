@@ -420,15 +420,28 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
     expected_totals <- rt_explore_value_totals(dataset=credit_data,
-                                            variable='purpose',
-                                            multi_value_delimiter=NULL)
+                                               variable='purpose',
+                                               multi_value_delimiter=NULL)
+    expect_equal(sum(expected_totals$percent), 1)
 
     # first test with a delimiter when none of the columns are delimited
     found_totals <- rt_explore_value_totals(dataset=credit_data,
-                                               variable='purpose',
-                                               multi_value_delimiter=', ')
+                                            variable='purpose',
+                                            multi_value_delimiter=', ')
     expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
 
+    expected_sum_by_variable <- credit_data %>%
+        count(purpose, wt = months_loan_duration, sort = TRUE)
+    expected_sum_by_variable <- expected_sum_by_variable %>%
+        rename(sum = n) %>%
+        mutate(percent = sum / sum(expected_sum_by_variable$n))
+    expect_equal(sum(expected_sum_by_variable$percent), 1)
+
+    expect_true(rt_are_dataframes_equal(expected_sum_by_variable,
+                                        rt_explore_value_totals(dataset=credit_data,
+                                                                variable='purpose',
+                                                                sum_by_variable='months_loan_duration',
+                                                                multi_value_delimiter=', ')))
 
     # now test with multi-value columns
     #expected_totals =
@@ -437,6 +450,15 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
                                  filter(purpose == 'car' | purpose == 'business') %>%
                                  mutate(purpose = paste0(purpose, '_test'))) %>%
         arrange(desc(count), purpose)
+    expect_true(sum(expected_totals$percent) > 1)
+
+
+    expected_sum_by_variable <- rbind(expected_sum_by_variable,
+                                      expected_sum_by_variable %>%
+                                          filter(purpose == 'car' | purpose == 'business') %>%
+                                          mutate(purpose = paste0(purpose, '_test'))) %>%
+        arrange(desc(sum), purpose)
+    expect_true(sum(expected_sum_by_variable$percent) > 1)
 
     expected_totals <- expected_totals %>%
         mutate(purpose = factor(purpose, levels=sort(as.character(expected_totals$purpose))))
@@ -455,6 +477,13 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
 
     expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
 
+    found_sums <- rt_explore_value_totals(dataset=credit_data,
+                                          variable='purpose',
+                                          sum_by_variable='months_loan_duration',
+                                          multi_value_delimiter=', ')
+
+    expect_true(rt_are_dataframes_equal(expected_sum_by_variable, found_sums))
+
     variable <- 'purpose'
     comparison_variable <- NULL
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purose_multivalue.png',
@@ -462,7 +491,6 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
                                                      variable=variable,
                                                      comparison_variable = NULL,
                                                      multi_value_delimiter=', '))
-
 })
 
 test_that("rt_explore_plot_boxplot", {
