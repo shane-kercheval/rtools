@@ -381,7 +381,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                                                      variable='cut',
                                                      sum_by_variable='price',
                                                      show_dual_axes = TRUE))
-    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_by_total_comparison__daul.png',
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_comparison__daul.png',
                    plot=rt_explore_plot_value_totals(dataset=diamonds,
                                                      variable='cut',
                                                      comparison_variable='color',
@@ -390,7 +390,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                                                      show_comparison_totals=FALSE,
                                                      show_dual_axes = TRUE))
 
-    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_by_total_comparison__no_dual.png',
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_comparison__no_dual.png',
                    plot=rt_explore_plot_value_totals(dataset=diamonds,
                                                      variable='cut',
                                                      comparison_variable='color',
