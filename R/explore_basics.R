@@ -198,7 +198,7 @@ rt_explore_plot_correlations <- function(dataset,
 
     ggplot(melted_correlations, aes(x=Var2, y=Var1)) +
         geom_tile(aes(fill = value)) +
-        geom_text(aes(label = value)) +
+        geom_text(aes(label = value), check_overlap=TRUE) +
         scale_fill_gradientn(colours=c('blue','white','red'),
                              breaks=c(-1, 0, 1),
                              labels=c("Perfect Neg Correlation", "No Correlation", "Perfect Pos Correlation"),
@@ -396,8 +396,10 @@ rt_explore_plot_value_totals <- function(dataset,
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = percent(percent), y = percent), vjust=-0.25) +
-                geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent), vjust=1.25)
+                geom_text(aes(label = percent(percent), y = percent), vjust=-0.25, check_overlap=TRUE) +
+                geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4,
+                                                scientific=FALSE), y = percent),
+                          vjust=1.25, check_overlap=TRUE)
         }
 
         return (
@@ -485,10 +487,10 @@ rt_explore_plot_value_totals <- function(dataset,
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
                           aes(x=!!symbol_variable, label = percent(percent), y = percent),
-                          vjust=-1.5) +
+                          vjust=-1.5, check_overlap=TRUE) +
                 geom_text(data = groups_by_variable,
                           aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent),
-                          vjust=-0.25)
+                          vjust=-0.25, check_overlap=TRUE)
         }
 
         if(show_comparison_totals && !stacked_comparison) {
@@ -500,14 +502,14 @@ rt_explore_plot_value_totals <- function(dataset,
                               label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
                               group = !!symbol_comparison_variable),
                           position = comparison_position,
-                          vjust=-0.25) +
+                          vjust=-0.25, check_overlap=TRUE) +
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = actual_percent,
                               label = percent(group_percent),
                               group = !!symbol_comparison_variable),
                           position = comparison_position,
-                          vjust=1.25)
+                          vjust=1.25, check_overlap=TRUE)
 
         } else if (show_comparison_totals && stacked_comparison) {
             #in this case, we don't want to show the totals of the main variable (they are all at 100%)
@@ -517,11 +519,13 @@ rt_explore_plot_value_totals <- function(dataset,
                               y = group_percent,
                               label = percent(group_percent),
                               group = !!symbol_comparison_variable),
-                          position = position_fill(reverse = TRUE, vjust = .5))
+                          position = position_fill(reverse = TRUE, vjust = .5),
+                          check_overlap=TRUE)
         }
 
         return (unique_values_plot +
             labs(title = plot_title,
+                 y=plot_y_axis_label,
                  fill = comparison_variable,
                  x = variable) +
             scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
