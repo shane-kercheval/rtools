@@ -345,7 +345,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc
-#' @importFrom scales percent_format percent pretty_breaks format_format
+#' @importFrom scales percent_format percent pretty_breaks format_format sec_axis
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
