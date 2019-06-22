@@ -337,6 +337,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
 #' @param show_variable_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
+#' @param show_dual_axes show a secondary axis for the Count or Sum
 #' @param stacked_comparison rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
