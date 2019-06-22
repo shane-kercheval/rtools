@@ -391,7 +391,7 @@ rt_explore_plot_value_totals <- function(dataset,
         unique_values_plot <- groups_by_variable %>%
             ggplot(aes(x=!!symbol_variable, y = percent, fill=!!symbol_variable)) +
                 geom_bar(stat = 'identity', alpha=0.75) +
-                scale_y_continuous(labels = percent_format())
+                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
 
         if(show_variable_totals) {
 
@@ -477,7 +477,8 @@ rt_explore_plot_value_totals <- function(dataset,
                          y = actual_percent,
                          fill = !!symbol_comparison_variable),
                      stat = 'identity',
-                     position = comparison_position)
+                     position = comparison_position) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
 
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
