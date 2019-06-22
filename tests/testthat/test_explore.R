@@ -197,10 +197,18 @@ test_that("rt_explore_value_totals_sums", {
     expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
     expect_true(is.na(value_sums$checking_balance[5]))
 
-    expected_sums <- c(1232346, 1023663, 868841, 137192, 1169)
+    expected_total_sum <- sum(credit_data$amount, na.rm = TRUE)
+    expected_unknown <- credit_data %>% filter(checking_balance == 'unknown') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
+    expected_1_200 <- credit_data %>% filter(checking_balance == '1 - 200 DM') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
+    expected_0 <- credit_data %>% filter(checking_balance == '< 0 DM') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
+    expected_200 <- credit_data %>% filter(checking_balance == '> 200 DM') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
+    expected_na <- credit_data %>% filter(is.na(checking_balance)) %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
+    expected_sums <- c(expected_unknown, expected_1_200, expected_0, expected_200, expected_na)
+
+    expect_equal(sum(value_sums$sum), expected_total_sum)
     expect_true(all(value_sums$sum == expected_sums))
     expect_true(all(value_sums$percent == expected_sums / sum(expected_sums)))
-    expect_true(sum(value_sums$percent) == 1)
+    expect_equal(sum(value_sums$percent), 1)
 
     # change to character
     credit_data$checking_balance <- as.character(credit_data$checking_balance)
@@ -209,11 +217,12 @@ test_that("rt_explore_value_totals_sums", {
     expect_true(all(colnames(value_sums) == c('checking_balance', 'sum', 'percent')))
     expect_true(all(levels(value_sums$checking_balance) == custom_levels))
 
+    expect_equal(sum(value_sums$sum), expected_total_sum)
     expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
     expect_true(is.na(value_sums$checking_balance[5]))
     expect_true(all(value_sums$sum == expected_sums))
     expect_true(all(value_sums$percent == expected_sums / sum(expected_sums)))
-    expect_true(sum(value_sums$percent) == 1)
+    expect_equal(sum(value_sums$percent), 1)
 })
 
 test_that("rt_explore_plot_value_counts", {
