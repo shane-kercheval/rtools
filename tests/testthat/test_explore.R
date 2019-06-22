@@ -357,6 +357,65 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       show_comparison_totals=FALSE))
 })
 
+test_that("rt_explore_plot_value_totals__daul_axes", {
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__cut__daul.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     show_dual_axes = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__comparison__dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     comparison_variable='color',
+                                                     show_dual_axes = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__comparison__no_dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     comparison_variable='color',
+                                                     show_dual_axes = FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_by_total__daul.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     sum_by_variable='price',
+                                                     show_dual_axes = TRUE))
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_by_total_comparison__daul.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     comparison_variable='color',
+                                                     sum_by_variable='price',
+                                                     show_variable_totals=FALSE,
+                                                     show_comparison_totals=FALSE,
+                                                     show_dual_axes = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__sum_by_total_comparison__no_dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     comparison_variable='color',
+                                                     sum_by_variable='price',
+                                                     show_variable_totals=FALSE,
+                                                     show_comparison_totals=FALSE,
+                                                     show_dual_axes = FALSE))
+
+    # STACK - should NOT show dual axes regardless if stacked (all percentages)
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__comparison_stacked__dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     comparison_variable='color',
+                                                     stacked_comparison = TRUE,
+                                                     show_dual_axes = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__comparison_sum_stacked__dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=diamonds,
+                                                     variable='cut',
+                                                     comparison_variable='color',
+                                                     sum_by_variable='price',
+                                                     stacked_comparison = TRUE,
+                                                     show_dual_axes = TRUE))
+})
+
 test_that("rt_explore_plot_value_counts_against_categorical_fill", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 

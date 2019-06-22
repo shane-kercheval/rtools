@@ -272,7 +272,6 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
         temp <- data.frame(value = values,
                            weight = weights,
                            stringsAsFactors = FALSE)
-
     }else {
 
         temp <- map2(values, weights,
@@ -288,6 +287,8 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
                            stringsAsFactors = FALSE)
 
     }
+    # sometimes, column names given to data.frame aren't being retained
+    colnames(temp) <- c('value', 'weight')
 
     # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
     # we can use `na.value = '#2A3132'` with scale_fill_manual
@@ -354,6 +355,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          order_by_count=TRUE,
                                          show_variable_totals=TRUE,
                                          show_comparison_totals=TRUE,
+                                         show_dual_axes=FALSE,
                                          stacked_comparison=FALSE,
                                          multi_value_delimiter=NULL,
                                          base_size=11) {
@@ -364,6 +366,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
         plot_title <- paste0('Value Counts - `', variable, '`')
         plot_y_axis_label <- 'Percent of Dataset Containing Value'
+        plot_y_second_axis_label <- "Count"
         groups_by_variable <- rt_explore_value_totals(dataset=dataset,
                                                       variable=variable,
                                                       multi_value_delimiter=multi_value_delimiter) %>%
@@ -373,6 +376,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
         plot_title <- paste0('Sum of `', sum_by_variable, '` by `', variable, '`')
         plot_y_axis_label <- 'Percent of Total Amount'
+        plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
         groups_by_variable <- rt_explore_value_totals(dataset=dataset,
                                                       variable=variable,
                                                       sum_by_variable=sum_by_variable,
@@ -389,9 +393,25 @@ rt_explore_plot_value_totals <- function(dataset,
         }
 
         unique_values_plot <- groups_by_variable %>%
-            ggplot(aes(x=!!symbol_variable, y = percent, fill=!!symbol_variable)) +
-                geom_bar(stat = 'identity', alpha=0.75) +
+            ggplot(aes(x=!!symbol_variable, y=percent, fill=!!symbol_variable)) +
+                geom_bar(stat = 'identity', alpha=0.75)
+
+        if(show_dual_axes) {
+
+            unique_values_plot <- unique_values_plot +
+                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
+                                   sec.axis = sec_axis(~.*sum(groups_by_variable$total),
+                                                       breaks=pretty_breaks(),
+                                                       labels = format_format(big.mark=",",
+                                                                              preserve.width="none",
+                                                                              digits=4,
+                                                                              scientific=FALSE),
+                                                       name=plot_y_second_axis_label))
+        } else {
+
+            unique_values_plot <- unique_values_plot +
                 scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+        }
 
         if(show_variable_totals) {
 
@@ -477,9 +497,24 @@ rt_explore_plot_value_totals <- function(dataset,
                          y = actual_percent,
                          fill = !!symbol_comparison_variable),
                      stat = 'identity',
-                     position = comparison_position) +
-            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+                     position = comparison_position)
 
+        if(show_dual_axes && !stacked_comparison) {
+
+            unique_values_plot <- unique_values_plot +
+                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
+                                   sec.axis = sec_axis(~.*sum(groups_by_variable$total),
+                                                       breaks=pretty_breaks(),
+                                                       labels = format_format(big.mark=",",
+                                                                              preserve.width="none",
+                                                                              digits=4,
+                                                                              scientific=FALSE),
+                                                       name=plot_y_second_axis_label))
+        } else {
+
+            unique_values_plot <- unique_values_plot +
+                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+        }
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
         #(i.e. all 100%)

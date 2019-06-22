@@ -7,8 +7,9 @@
 rt_explore_plot_value_totals(dataset, variable,
   comparison_variable = NULL, sum_by_variable = NULL,
   order_by_count = TRUE, show_variable_totals = TRUE,
-  show_comparison_totals = TRUE, stacked_comparison = FALSE,
-  multi_value_delimiter = NULL, base_size = 11)
+  show_comparison_totals = TRUE, show_dual_axes = FALSE,
+  stacked_comparison = FALSE, multi_value_delimiter = NULL,
+  base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
