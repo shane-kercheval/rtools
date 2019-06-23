@@ -8,8 +8,7 @@ rt_explore_plot_value_totals(dataset, variable,
   comparison_variable = NULL, sum_by_variable = NULL,
   order_by_count = TRUE, show_variable_totals = TRUE,
   show_comparison_totals = TRUE, show_dual_axes = FALSE,
-  stacked_comparison = FALSE, multi_value_delimiter = NULL,
-  base_size = 11)
+  view_type = "Bar", multi_value_delimiter = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -26,7 +25,15 @@ rt_explore_plot_value_totals(dataset, variable,
 
 \item{show_comparison_totals}{if TRUE (the default) the graph will display the totals for the comparison_variable}
 
-\item{stacked_comparison}{rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable}
+\item{show_dual_axes}{show a secondary axis for the Count or Sum}
+
+\item{view_type}{this setting describes the type/view of the graph
+Options are:
+    "Bar" - Default option, for either single variable or with comparison_variable, bar-chart
+    "Confidence Interval" - for either single variable or with comparison variable; when comparison_variable is not NULL, the denominator/count used is the same as faceting
+    "Facet by Comparison" - valid when comparison_variable is not NULL, facet based on comparison_variable
+    "Confidence Interval - within Variable" - valid when comparison_variable is not null, this provides confidence intervals similar to the "Stack" view
+    "Stack" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)}
 
 \item{multi_value_delimiter}{if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 this variable to the delimiter will cause the function to count seperate values}

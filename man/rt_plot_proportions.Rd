@@ -4,8 +4,10 @@
 \alias{rt_plot_proportions}
 \title{plots the proportions with confidence intervals according to prop.test}
 \usage{
-rt_plot_proportions(numerators, denominators, categories, text_size = 4,
-  line_size = 0.35, x_label = "", y_label = "", title = "")
+rt_plot_proportions(numerators, denominators, categories, groups = NULL,
+  confidence_level = 0.95, show_confidence_values = TRUE,
+  text_size = 4, line_size = 0.35, x_label = "", y_label = "",
+  group_name = "", title = "", subtitle = NULL)
 }
 \arguments{
 \item{numerators}{numerators}
@@ -13,6 +15,10 @@ rt_plot_proportions(numerators, denominators, categories, text_size = 4,
 \item{denominators}{denominators}
 
 \item{categories}{categories}
+
+\item{confidence_level}{the confidence level (e.g. 0.95) passed to prop.test}
+
+\item{show_confidence_values}{show the high/low confidence values}
 
 \item{text_size}{text size (proportion value)}
 
