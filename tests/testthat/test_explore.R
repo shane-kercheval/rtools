@@ -1624,5 +1624,13 @@ test_that('rt_plot_funnel', {
     test_save_plot(file_name='data/rt_plot_proportions__many.png',
                    rt_plot_proportions(numerators, denominators, categories,
                         text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
+    test_save_plot(file_name='data/rt_plot_proportions__many_no_confidence_values.png',
+                   rt_plot_proportions(numerators, denominators, categories,
+                                       show_confidence_values=FALSE,
+                                       text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
+    test_save_plot(file_name='data/rt_plot_proportions__many__90_conf.png',
+                   rt_plot_proportions(numerators, denominators, categories,
+                                       confidence_level = 0.90,
+                                       text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
 
 })

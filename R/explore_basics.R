@@ -1320,6 +1320,8 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param numerators numerators
 #' @param denominators denominators
 #' @param categories categories
+#' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
+#' @param show_confidence_values show the high/low confidence values
 #' @param text_size text size (proportion value)
 #' @param line_size the line size for the error bars
 #' @param x_label label for x-axis
@@ -1334,24 +1336,24 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 rt_plot_proportions <- function(numerators,
                                 denominators,
                                 categories,
+                                confidence_level = 0.95,
+                                show_confidence_values=TRUE,
                                 text_size=4,
                                 line_size=0.35,
                                 x_label="",
                                 y_label="",
                                 title="") {
 
-    results <- map2(numerators, denominators, ~ prop.test(x=.x, n=.y))
+    results <- map2(numerators, denominators, ~ prop.test(x=.x, n=.y, conf.level = confidence_level))
 
-    data.frame(categories=factor(categories,
-                            levels=categories,
-                            ordered = TRUE),
-               proportions=map_dbl(results, ~ .$estimate),
-               conf_low=map_dbl(results, ~ .$conf.int[1]),
-               conf_high=map_dbl(results, ~ .$conf.int[2])) %>%
+    plot_object <- data.frame(categories=factor(categories, levels=categories, ordered = TRUE),
+                              proportions=map_dbl(results, ~ .$estimate),
+                              conf_low=map_dbl(results, ~ .$conf.int[1]),
+                              conf_high=map_dbl(results, ~ .$conf.int[2])) %>%
     ggplot(aes(x=categories, y=proportions, color=categories)) +
         geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
         geom_point(size=line_size*2) +
-        geom_text(aes(label=percent(proportions)), size=text_size, vjust=-1, check_overlap = TRUE) +
+        geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
         expand_limits(y=0) +
         scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
         scale_color_manual(values=c(rt_colors(), rt_colors())) +
@@ -1360,5 +1362,15 @@ rt_plot_proportions <- function(numerators,
               axis.text.x = element_text(angle = 30, hjust = 1)) +
         labs(x=x_label,
              y=y_label,
-             title=title)
+             title=title,
+             caption = paste("\nConfidence Level:", confidence_level))
+
+    if(show_confidence_values) {
+
+        plot_object <- plot_object +
+            geom_text(aes(label=percent(conf_low), y=conf_low), size=text_size, vjust=1.1, check_overlap = TRUE) +
+            geom_text(aes(label=percent(conf_high), y=conf_high), size=text_size, vjust=-0.5, check_overlap = TRUE)
+    }
+
+    return (plot_object)
 }
