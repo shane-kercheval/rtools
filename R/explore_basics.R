@@ -398,6 +398,8 @@ rt_explore_plot_value_totals <- function(dataset,
 
             groups_by_variable[, variable] <- factor(groups_by_variable[, variable],
                                                      levels = groups_by_variable[, variable])
+        } else {
+            groups_by_variable <- groups_by_variable %>% arrange(!!symbol_variable)
         }
 
         stopifnot(view_type %in% c("Bar", "Confidence Interval"))

@@ -404,7 +404,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                    plot=rt_explore_plot_value_totals(dataset=diamonds,
                                                      variable='cut',
                                                      comparison_variable='color',
-                                                     stacked_comparison = TRUE,
+                                                     view_type="Stack",
                                                      show_dual_axes = TRUE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__comparison_sum_stacked__dual.png',
@@ -412,7 +412,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                                                      variable='cut',
                                                      comparison_variable='color',
                                                      sum_by_variable='price',
-                                                     stacked_comparison = TRUE,
+                                                     view_type="Stack",
                                                      show_dual_axes = TRUE))
 })
 
@@ -431,26 +431,36 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
     variable <- 'checking_balance'
 
     # plot with labels
-    rt_explore_plot_value_totals(dataset=credit_data,
-                                 variable=variable,
-                                 comparison_variable=NULL,
-                                 sum_by_variable=NULL,
-                                 order_by_count=TRUE,
-                                 show_variable_totals=TRUE,
-                                 show_comparison_totals=TRUE,
-                                 show_dual_axes=FALSE,
-                                 view_type = 'Bar')
+    # rt_explore_plot_value_totals(dataset=credit_data,
+    #                              variable=variable,
+    #                              comparison_variable=NULL,
+    #                              sum_by_variable=NULL,
+    #                              order_by_count=FALSE,
+    #                              show_variable_totals=TRUE,
+    #                              show_comparison_totals=TRUE,
+    #                              show_dual_axes=FALSE,
+    #                              view_type = 'Bar')
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable=NULL,
                                                      sum_by_variable=NULL,
-                                                     order_by_count=TRUE,
+                                                     order_by_count=FALSE,
                                                      show_variable_totals=TRUE,
-                                                     show_comparison_totals=TRUE,
                                                      view_type="Confidence Interval",
                                                      show_dual_axes=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int_order_count.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=NULL,
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     view_type="Confidence Interval",
+                                                     show_dual_axes=FALSE))
+
     test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int_no_vals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
@@ -512,7 +522,7 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE,
-                                                      stacked_comparison=TRUE))
+                                                      view_type="Stack"))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -522,7 +532,7 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
                                                      order_by_count=TRUE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
-                                                     stacked_comparison=TRUE))
+                                                     view_type="Stack"))
 })
 
 test_that("rt_explore_plot_value_totals_sums", {
