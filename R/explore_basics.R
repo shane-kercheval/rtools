@@ -338,16 +338,21 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #' @param show_variable_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
 #' @param show_dual_axes show a secondary axis for the Count or Sum
-#' @param stacked_comparison rather than side-by-side bars for the comparison variable, the bars are stacked within the main variable
+#' @param view_type this setting describes the type/view of the graph
+#'      Options are:
+#'          "Bar" - Default option, for either single variable or with comparison_variable, bar-chart
+#'          "Confidence Interval" - for either single variable or with comparison variable; when comparison_variable is not NULL, the denominator/count used is the same as faceting
+#'          "Facet by Comparison" - valid when comparison_variable is not NULL, facet based on comparison_variable
+#'          "Confidence Interval - within Variable" - valid when comparison_variable is not null, this provides confidence intervals similar to the "Stack" view
+#'          "Stack" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
-
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc
 #' @importFrom scales percent_format percent pretty_breaks format_format
-#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis
+#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
                                          variable,
@@ -357,9 +362,11 @@ rt_explore_plot_value_totals <- function(dataset,
                                          show_variable_totals=TRUE,
                                          show_comparison_totals=TRUE,
                                          show_dual_axes=FALSE,
-                                         stacked_comparison=FALSE,
+                                         view_type="Bar",
                                          multi_value_delimiter=NULL,
                                          base_size=11) {
+
+    stopifnot(view_type %in% c("Bar", "Confidence Interval", "Facet by Comparison", "Confidence Interval - within Variable", "Stack"))
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
@@ -393,46 +400,32 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      levels = groups_by_variable[, variable])
         }
 
-        unique_values_plot <- groups_by_variable %>%
-            ggplot(aes(x=!!symbol_variable, y=percent, fill=!!symbol_variable)) +
-                geom_bar(stat = 'identity', alpha=0.75)
+        stopifnot(view_type %in% c("Bar", "Confidence Interval"))
 
-        if(show_dual_axes) {
+        if(view_type == "Confidence Interval") {
 
-            unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
-                                   sec.axis = sec_axis(~.*sum(groups_by_variable$total),
-                                                       breaks=pretty_breaks(),
-                                                       labels = format_format(big.mark=",",
-                                                                              preserve.width="none",
-                                                                              digits=4,
-                                                                              scientific=FALSE),
-                                                       name=plot_y_second_axis_label))
+            rt_plot_proportions(numerators=groups_by_variable$total,
+                                denominators=rep(sum(groups_by_variable$total), nrow(groups_by_variable)),
+                                categories=as.character(groups_by_variable[, variable]),
+                                confidence_level = 0.95,
+                                show_confidence_values=show_variable_totals,
+                                text_size=4,
+                                line_size=0.35,
+                                x_label=variable,
+                                y_label="Percent of Dataset Containing Value",
+                                title=paste0("Percent of Dataset Containing `", variable, "` values."))
         } else {
 
-            unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+            private__create_bar_chart_single_var(groups_by_variable,
+                                                 variable,
+                                                 symbol_variable,
+                                                 show_dual_axes,
+                                                 plot_y_second_axis_label,
+                                                 show_variable_totals,
+                                                 plot_title,
+                                                 plot_y_axis_label,
+                                                 base_size)
         }
-
-        if(show_variable_totals) {
-
-            unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = percent(percent), y = percent), vjust=-0.25, check_overlap=TRUE) +
-                geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4,
-                                                scientific=FALSE), y = percent),
-                          vjust=1.25, check_overlap=TRUE)
-        }
-
-        return (
-            unique_values_plot +
-                labs(title=plot_title,
-                     y=plot_y_axis_label,
-                     x=variable) +
-                scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
-                theme_light(base_size = base_size) +
-                theme(legend.position = 'none',
-                      axis.text.x = element_text(angle = 30, hjust = 1))
-            )
 
     } else {
 
@@ -477,7 +470,119 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      levels = comparison_order)
         }
 
-        if(stacked_comparison) {
+        if(view_type %in% c("Confidence Interval", "Confidence Interval - within Variable")) {
+
+            if(view_type == "Confidence Interval") {
+
+                t <- groups_by_both %>%
+                    group_by(default) %>%
+                    mutate(group_sum = sum(total)) %>%
+                    ungroup()
+
+                y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
+                subtitle_label <- paste0("each (`", comparison_variable,"` value defines the sub-populations)")
+                title_label <- paste0("Distribution of `", variable,"` for each value of `", comparison_variable,"`")
+
+            } else {
+
+                t <- groups_by_both %>%
+                    group_by(checking_balance) %>%
+                    mutate(group_sum = sum(total)) %>%
+                    ungroup()
+
+                y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
+                subtitle_label <- paste0("(each `", variable,"` value defines the sub-populations)")
+                title_label <- paste0("Percent of `", comparison_variable,"` represented in each `", variable,"` value.")
+
+            }
+
+            rt_plot_proportions(numerators=t$total,
+                                denominators=t$group_sum,
+                                categories=t$checking_balance,
+                                groups=t$default,
+                                confidence_level = 0.95,
+                                show_confidence_values=FALSE,
+                                text_size=4,
+                                line_size=0.35,
+                                x_label=variable,
+                                y_label=y_axis_label,
+                                group_name=comparison_variable,
+                                subtitle=subtitle_label,
+                                title=title_label)
+        } else {
+
+            private__create_bar_chart_comparison_var(groups_by_variable,
+                                                     groups_by_both,
+                                                     variable,
+                                                     symbol_variable,
+                                                     comparison_variable,
+                                                     symbol_comparison_variable,
+                                                     view_type,
+                                                     show_dual_axes,
+                                                     show_variable_totals,
+                                                     show_comparison_totals,
+                                                     plot_y_second_axis_label,
+                                                     plot_title,
+                                                     plot_y_axis_label,
+                                                     base_size)
+        }
+    }
+}
+
+private__create_bar_chart_comparison_var <- function(groups_by_variable,
+                                                     groups_by_both,
+                                                     variable,
+                                                     symbol_variable,
+                                                     comparison_variable,
+                                                     symbol_comparison_variable,
+                                                     view_type,
+                                                     show_dual_axes,
+                                                     show_variable_totals,
+                                                     show_comparison_totals,
+                                                     plot_y_second_axis_label,
+                                                     plot_title,
+                                                     plot_y_axis_label,
+                                                     base_size) {
+
+    stopifnot(view_type %in% c("Bar", "Facet by Comparison", "Stack"))
+
+    if(view_type == "Facet by Comparison") {
+
+        facet_groups <- groups_by_both %>%
+            select(-actual_percent, -group_percent) %>%
+            group_by(!!symbol_comparison_variable) %>%
+            mutate(facet_percent = total / sum(total)) %>%
+            mutate(total_facet_percent = sum(facet_percent),
+                   facet_group_total = sum(total)) %>%
+            ungroup()
+        stopifnot(all(facet_groups$total_facet_percent == 1))
+
+        unique_values_plot <- ggplot(data=facet_groups, aes(x=!!symbol_variable, y=facet_percent, fill=!!symbol_variable)) +
+            geom_bar(stat = 'identity', alpha=0.75) +
+            facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1) +
+                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+
+        if(show_variable_totals) {
+
+            unique_values_plot <- unique_values_plot +
+                geom_text(aes(x=!!symbol_variable, label = percent(facet_percent), y = facet_percent),
+                          vjust=-0.25, check_overlap=TRUE) +
+                geom_text(aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = facet_percent),
+                          vjust=1.25, check_overlap=TRUE)
+        }
+
+        return (unique_values_plot +
+                    labs(title = plot_title,
+                         y=paste0("Percent of `", comparison_variable,"` Sub-Pop with Value"),
+                         fill = comparison_variable,
+                         x = variable) +
+                    scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+                    theme_light(base_size = base_size) +
+                    theme(legend.position = 'none',
+                          axis.text.x = element_text(angle = 30, hjust = 1)))
+    } else {
+
+        if(view_type == "Stack") {
 
             comparison_position <- position_fill(reverse = TRUE)
 
@@ -500,7 +605,7 @@ rt_explore_plot_value_totals <- function(dataset,
                      stat = 'identity',
                      position = comparison_position)
 
-        if(show_dual_axes && !stacked_comparison) {
+        if(show_dual_axes && view_type != "Stack") {
 
             unique_values_plot <- unique_values_plot +
                 scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
@@ -519,7 +624,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
         #(i.e. all 100%)
-        if(show_variable_totals && !stacked_comparison) {
+        if(show_variable_totals && view_type != "Stack") {
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
@@ -530,7 +635,7 @@ rt_explore_plot_value_totals <- function(dataset,
                           vjust=-0.25, check_overlap=TRUE)
         }
 
-        if(show_comparison_totals && !stacked_comparison) {
+        if(show_comparison_totals && view_type != "Stack") {
 
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_both,
@@ -548,7 +653,7 @@ rt_explore_plot_value_totals <- function(dataset,
                           position = comparison_position,
                           vjust=1.25, check_overlap=TRUE)
 
-        } else if (show_comparison_totals && stacked_comparison) {
+        } else if (show_comparison_totals && view_type == "Stack") {
             #in this case, we don't want to show the totals of the main variable (they are all at 100%)
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_both,
@@ -561,15 +666,67 @@ rt_explore_plot_value_totals <- function(dataset,
         }
 
         return (unique_values_plot +
-            labs(title = plot_title,
+                    labs(title = plot_title,
+                         y=plot_y_axis_label,
+                         fill = comparison_variable,
+                         x = variable) +
+                    scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+                    theme_light(base_size = base_size) +
+                    theme(#legend.position = 'none',
+                        axis.text.x = element_text(angle = 30, hjust = 1)))
+    }
+}
+
+private__create_bar_chart_single_var <- function(groups_by_variable,
+                                                 variable,
+                                                 symbol_variable,
+                                                 show_dual_axes,
+                                                 plot_y_second_axis_label,
+                                                 show_variable_totals,
+                                                 plot_title,
+                                                 plot_y_axis_label,
+                                                 base_size) {
+
+    unique_values_plot <- groups_by_variable %>%
+        ggplot(aes(x=!!symbol_variable, y=percent, fill=!!symbol_variable)) +
+        geom_bar(stat = 'identity', alpha=0.75)
+
+    if(show_dual_axes) {
+
+        unique_values_plot <- unique_values_plot +
+            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
+                               sec.axis = sec_axis(~.*sum(groups_by_variable$total),
+                                                   breaks=pretty_breaks(),
+                                                   labels = format_format(big.mark=",",
+                                                                          preserve.width="none",
+                                                                          digits=4,
+                                                                          scientific=FALSE),
+                                                   name=plot_y_second_axis_label))
+    } else {
+
+        unique_values_plot <- unique_values_plot +
+            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+    }
+
+    if(show_variable_totals) {
+
+        unique_values_plot <- unique_values_plot +
+            geom_text(aes(label = percent(percent), y = percent), vjust=-0.25, check_overlap=TRUE) +
+            geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4,
+                                            scientific=FALSE), y = percent),
+                      vjust=1.25, check_overlap=TRUE)
+    }
+
+    return (
+        unique_values_plot +
+            labs(title=plot_title,
                  y=plot_y_axis_label,
-                 fill = comparison_variable,
-                 x = variable) +
+                 x=variable) +
             scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
-            theme(#legend.position = 'none',
-                  axis.text.x = element_text(angle = 30, hjust = 1)))
-    }
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1))
+    )
 }
 
 #' returns a boxplot of `variable`, potentally grouped by `comparison_variable`
@@ -1336,40 +1493,74 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 rt_plot_proportions <- function(numerators,
                                 denominators,
                                 categories,
+                                groups=NULL,
                                 confidence_level = 0.95,
                                 show_confidence_values=TRUE,
                                 text_size=4,
                                 line_size=0.35,
                                 x_label="",
                                 y_label="",
-                                title="") {
+                                group_name="",
+                                title="",
+                                subtitle=NULL) {
 
     results <- map2(numerators, denominators, ~ prop.test(x=.x, n=.y, conf.level = confidence_level))
 
-    plot_object <- data.frame(categories=factor(categories, levels=categories, ordered = TRUE),
+    df <- data.frame(categories=factor(categories, levels=unique(categories), ordered = TRUE),
                               proportions=map_dbl(results, ~ .$estimate),
                               conf_low=map_dbl(results, ~ .$conf.int[1]),
-                              conf_high=map_dbl(results, ~ .$conf.int[2])) %>%
-    ggplot(aes(x=categories, y=proportions, color=categories)) +
-        geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
-        geom_point(size=line_size*2) +
-        geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
-        expand_limits(y=0) +
-        scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
-        scale_color_manual(values=c(rt_colors(), rt_colors())) +
-        theme_light() +
-        theme(legend.position = 'none',
-              axis.text.x = element_text(angle = 30, hjust = 1)) +
-        labs(x=x_label,
-             y=y_label,
-             title=title,
-             caption = paste("\nConfidence Level:", confidence_level))
+                              conf_high=map_dbl(results, ~ .$conf.int[2]))
+
+    if(is.null(groups)) {
+
+        plot_object <- ggplot(df, aes(x=categories, y=proportions, color=categories)) +
+            geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
+            geom_point(size=line_size*2) +
+            geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            expand_limits(y=0) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            theme_light() +
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1)) +
+            labs(x=x_label,
+                 y=y_label,
+                 title=title,
+                 caption=paste("\nConfidence Level:", confidence_level))
+    } else {
+
+        df$groups <- groups
+
+        plot_object <- ggplot(df, aes(x=categories, y=proportions, color=groups)) +
+            geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=groups),
+                          position=position_dodge(width=0.9),
+                          size=line_size) +
+            geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
+            geom_text(aes(label=percent(proportions)),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            expand_limits(y=0) +
+            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            theme_light() +
+            theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+            labs(x=x_label,
+                 y=y_label,
+                 title=title,
+                 subtitle=subtitle,
+                 color=group_name,
+                 caption = paste("\nConfidence Level:", confidence_level))
+    }
 
     if(show_confidence_values) {
 
         plot_object <- plot_object +
-            geom_text(aes(label=percent(conf_low), y=conf_low), size=text_size, vjust=1.1, check_overlap = TRUE) +
-            geom_text(aes(label=percent(conf_high), y=conf_high), size=text_size, vjust=-0.5, check_overlap = TRUE)
+            geom_text(aes(label=percent(conf_low), y=conf_low),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=1.1, check_overlap = TRUE) +
+            geom_text(aes(label=percent(conf_high), y=conf_high),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=-0.5, check_overlap = TRUE)
     }
 
     return (plot_object)

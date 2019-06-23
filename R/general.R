@@ -180,7 +180,7 @@ rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
         1, "tuplip_tree", '#EBB13E',
         1, "custom_green" , '#41B3A3',
         1, "crail", '#A65B50',
-        1, "granite", '#B7B8B6',
+        1, "dove_gray", '#7A7A7A',
         1, "custom_purple", '#C38D9E',
         1, "cadmium_orange", '#F28E2B',
 
@@ -204,7 +204,7 @@ rt_colors <- function(color_names=NULL, sets=NULL, return_named_vector=FALSE) {
         4, "gold", '#C99E10',
         4, "sunflower", '#3F681C',
         4, "crimson", '#8D230F',
-        4, "dove_gray", '#7A7A7A',
+        4, "granite", '#B7B8B6',
         4, "vivid_violet", '#932791',
         4, "petal", '#F98866',
 

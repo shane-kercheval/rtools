@@ -416,6 +416,87 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                                                      show_dual_axes = TRUE))
 })
 
+test_that("rt_explore_plot_value_totals__conf_intervals", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    ##########################################################################################################
+    # test with factor
+    # change the levels to verify that the original levels are retained if order_by_count==FALSE
+    ##########################################################################################################
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    variable <- 'checking_balance'
+
+    # plot with labels
+    rt_explore_plot_value_totals(dataset=credit_data,
+                                 variable=variable,
+                                 comparison_variable=NULL,
+                                 sum_by_variable=NULL,
+                                 order_by_count=TRUE,
+                                 show_variable_totals=TRUE,
+                                 show_comparison_totals=TRUE,
+                                 show_dual_axes=FALSE,
+                                 view_type = 'Bar')
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=NULL,
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE,
+                                                     view_type="Confidence Interval",
+                                                     show_dual_axes=FALSE))
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int_no_vals.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=NULL,
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=FALSE,
+                                                     show_comparison_totals=TRUE,
+                                                     view_type="Confidence Interval",
+                                                     show_dual_axes=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int_comp.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE,
+                                                     view_type="Confidence Interval",
+                                                     show_dual_axes=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__conf_int_within_var.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE,
+                                                     view_type="Confidence Interval - within Variable",
+                                                     show_dual_axes=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__facet.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=TRUE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE,
+                                                     view_type="Facet by Comparison",
+                                                     show_dual_axes=FALSE))
+    # Test: passing in sum_by_variable and show_conf_interval=TRUE should result in an error
+})
+
 test_that("rt_explore_plot_value_counts_against_categorical_fill", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
