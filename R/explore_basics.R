@@ -350,9 +350,10 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc
+#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select
 #' @importFrom scales percent_format percent pretty_breaks format_format
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
+#' @importFrom stats as.formula
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
                                          variable,
@@ -368,13 +369,17 @@ rt_explore_plot_value_totals <- function(dataset,
 
     stopifnot(view_type %in% c("Bar", "Confidence Interval", "Facet by Comparison", "Confidence Interval - within Variable", "Stack"))
 
+    # we can't do confidence intervals if we are suming by a variable.
+    # Confidence intervals are based on sample size, which come from the denominator of the proportion.
+    # But if e.g. we are summing across money, and we are adding 2 records that have a value of $1M, those very large numbers
+    # will result in a very small proportion confidence interval, even though it is based on only 2 records;
+    # so confidence intervals for weighted counts probably doesn't make sense in general.
+    rt_stopif(!is.null(sum_by_variable) && view_type %in% c("Confidence Interval", "Confidence Interval - within Variable"))
+
     symbol_variable <- sym(variable)  # because we are using string variables
 
     if(is.null(sum_by_variable)) {
 
-        plot_title <- paste0('Value Counts - `', variable, '`')
-        plot_y_axis_label <- 'Percent of Dataset Containing Value'
-        plot_y_second_axis_label <- "Count"
         groups_by_variable <- rt_explore_value_totals(dataset=dataset,
                                                       variable=variable,
                                                       multi_value_delimiter=multi_value_delimiter) %>%
@@ -382,9 +387,6 @@ rt_explore_plot_value_totals <- function(dataset,
 
     } else {
 
-        plot_title <- paste0('Sum of `', sum_by_variable, '` by `', variable, '`')
-        plot_y_axis_label <- 'Percent of Total Amount'
-        plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
         groups_by_variable <- rt_explore_value_totals(dataset=dataset,
                                                       variable=variable,
                                                       sum_by_variable=sum_by_variable,
@@ -414,9 +416,24 @@ rt_explore_plot_value_totals <- function(dataset,
                                 text_size=4,
                                 line_size=0.35,
                                 x_label=variable,
-                                y_label="Percent of Dataset Containing Value",
-                                title=paste0("Percent of Dataset Containing `", variable, "` values."))
+                                y_label="Percent of Dataset",
+                                subtitle = "",
+                                title=paste0("Percent of dataset containing `", variable, "` categories."))
         } else {
+
+            if(is.null(sum_by_variable)) {
+
+                plot_title <- paste0("Percent of dataset containing `", variable, "` categories.")
+                plot_y_axis_label <- 'Percent of Dataset'
+                plot_y_second_axis_label <- "Count"
+
+            } else {
+
+                plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable,'`')
+                #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
+                plot_y_axis_label <- plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
+                plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
+            }
 
             private__create_bar_chart_single_var(groups_by_variable,
                                                  variable,
@@ -428,11 +445,9 @@ rt_explore_plot_value_totals <- function(dataset,
                                                  plot_y_axis_label,
                                                  base_size)
         }
-
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-        plot_title <- paste0(plot_title, ' against `', comparison_variable, '`')
 
         if(is.null(sum_by_variable)) {
             # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
@@ -477,31 +492,31 @@ rt_explore_plot_value_totals <- function(dataset,
             if(view_type == "Confidence Interval") {
 
                 t <- groups_by_both %>%
-                    group_by(default) %>%
+                    group_by(!!symbol_comparison_variable) %>%
                     mutate(group_sum = sum(total)) %>%
                     ungroup()
 
                 y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
-                subtitle_label <- paste0("each (`", comparison_variable,"` value defines the sub-populations)")
-                title_label <- paste0("Distribution of `", variable,"` for each value of `", comparison_variable,"`")
+                subtitle_label <- paste0("(each `", comparison_variable,"` category defines the sub-populations)")
+                title_label <- paste0("Distribution of `", variable,"` for each category of `", comparison_variable,"`")
 
             } else {
 
                 t <- groups_by_both %>%
-                    group_by(checking_balance) %>%
+                    group_by(!!symbol_variable) %>%
                     mutate(group_sum = sum(total)) %>%
                     ungroup()
 
                 y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
-                subtitle_label <- paste0("(each `", variable,"` value defines the sub-populations)")
-                title_label <- paste0("Percent of `", comparison_variable,"` represented in each `", variable,"` value.")
+                subtitle_label <- paste0("(each `", variable,"` category defines the sub-populations)")
+                title_label <- paste0("Percent of `", comparison_variable,"` represented in each `", variable,"` category.")
 
             }
 
             rt_plot_proportions(numerators=t$total,
                                 denominators=t$group_sum,
-                                categories=t$checking_balance,
-                                groups=t$default,
+                                categories=t[[variable]],
+                                groups=t[[comparison_variable]],
                                 confidence_level = 0.95,
                                 show_confidence_values=FALSE,
                                 text_size=4,
@@ -512,6 +527,29 @@ rt_explore_plot_value_totals <- function(dataset,
                                 subtitle=subtitle_label,
                                 title=title_label)
         } else {
+
+            if(!is.null(sum_by_variable)) {
+
+                plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable,'`')
+                plot_subtitle <- ""
+                #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
+                plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
+                plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
+
+            } else if(view_type == "Facet by Comparison") {
+
+                plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
+                plot_subtitle <- ""
+                plot_y_axis_label <- paste0("Percent of Sub-population")
+                plot_y_second_axis_label <- "Count"
+
+            } else {
+
+                plot_title <- paste0("Percent `", comparison_variable, "` within each `", variable, "` category.")
+                plot_subtitle <- ""
+                plot_y_axis_label <- paste0("Percent of Dataset")
+                plot_y_second_axis_label <- "Count"
+            }
 
             private__create_bar_chart_comparison_var(groups_by_variable,
                                                      groups_by_both,
@@ -525,6 +563,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      show_comparison_totals,
                                                      plot_y_second_axis_label,
                                                      plot_title,
+                                                     plot_subtitle,
                                                      plot_y_axis_label,
                                                      base_size)
         }
@@ -543,6 +582,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      show_comparison_totals,
                                                      plot_y_second_axis_label,
                                                      plot_title,
+                                                     plot_subtitle,
                                                      plot_y_axis_label,
                                                      base_size) {
 
@@ -1519,6 +1559,7 @@ rt_plot_proportions <- function(numerators,
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
             geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            #geom_text(aes(label=paste), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             expand_limits(y=0) +
             scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
