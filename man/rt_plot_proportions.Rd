@@ -16,6 +16,8 @@ rt_plot_proportions(numerators, denominators, categories, groups = NULL,
 
 \item{categories}{categories}
 
+\item{groups}{vector of groups/categories to plot, seperated by color}
+
 \item{confidence_level}{the confidence level (e.g. 0.95) passed to prop.test}
 
 \item{show_confidence_values}{show the high/low confidence values}
@@ -28,7 +30,11 @@ rt_plot_proportions(numerators, denominators, categories, groups = NULL,
 
 \item{y_label}{label for y-axis}
 
+\item{group_name}{when using `groups`, used for the legend in the plot}
+
 \item{title}{title}
+
+\item{subtitle}{subtitle}
 }
 \description{
 plots the proportions with confidence intervals according to prop.test
