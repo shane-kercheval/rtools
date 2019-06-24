@@ -415,6 +415,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                 show_confidence_values=show_variable_totals,
                                 text_size=4,
                                 line_size=0.35,
+                                base_size=base_size,
                                 x_label=variable,
                                 y_label="Percent of Dataset",
                                 subtitle = "",
@@ -521,6 +522,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                 show_confidence_values=FALSE,
                                 text_size=4,
                                 line_size=0.35,
+                                base_size=base_size,
                                 x_label=variable,
                                 y_label=y_axis_label,
                                 group_name=comparison_variable,
@@ -1524,6 +1526,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param show_confidence_values show the high/low confidence values
 #' @param text_size text size (proportion value)
 #' @param line_size the line size for the error bars
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #' @param x_label label for x-axis
 #' @param y_label label for y-axis
 #' @param group_name when using `groups`, used for the legend in the plot
@@ -1543,6 +1546,7 @@ rt_plot_proportions <- function(numerators,
                                 show_confidence_values=TRUE,
                                 text_size=4,
                                 line_size=0.35,
+                                base_size=11,
                                 x_label="",
                                 y_label="",
                                 group_name="",
@@ -1566,7 +1570,7 @@ rt_plot_proportions <- function(numerators,
             expand_limits(y=0) +
             scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
-            theme_light() +
+            theme_light(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1)) +
             labs(x=x_label,
@@ -1588,7 +1592,7 @@ rt_plot_proportions <- function(numerators,
             expand_limits(y=0) +
             scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
-            theme_light() +
+            theme_light(base_size = base_size) +
             theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
             labs(x=x_label,
                  y=y_label,

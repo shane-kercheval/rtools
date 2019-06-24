@@ -6,8 +6,8 @@
 \usage{
 rt_plot_proportions(numerators, denominators, categories, groups = NULL,
   confidence_level = 0.95, show_confidence_values = TRUE,
-  text_size = 4, line_size = 0.35, x_label = "", y_label = "",
-  group_name = "", title = "", subtitle = NULL)
+  text_size = 4, line_size = 0.35, base_size = 11, x_label = "",
+  y_label = "", group_name = "", title = "", subtitle = NULL)
 }
 \arguments{
 \item{numerators}{numerators}
@@ -25,6 +25,8 @@ rt_plot_proportions(numerators, denominators, categories, groups = NULL,
 \item{text_size}{text size (proportion value)}
 
 \item{line_size}{the line size for the error bars}
+
+\item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 
 \item{x_label}{label for x-axis}
 
