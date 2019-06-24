@@ -1519,13 +1519,16 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param numerators numerators
 #' @param denominators denominators
 #' @param categories categories
+#' @param groups vector of groups/categories to plot, seperated by color 
 #' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
 #' @param show_confidence_values show the high/low confidence values
 #' @param text_size text size (proportion value)
 #' @param line_size the line size for the error bars
 #' @param x_label label for x-axis
 #' @param y_label label for y-axis
+#' @param group_name when using `groups`, used for the legend in the plot
 #' @param title title
+#' @param subtitle subtitle
 #'
 #' @importFrom magrittr "%>%"
 #' @imoprtFrom purrr map2 map_dbl
