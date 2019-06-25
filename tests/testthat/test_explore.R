@@ -1840,11 +1840,9 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
         filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-11'))
     # max(dataset_10$time_hour)
     # max(dataset_11$time_hour)
-
-        #                       mutate(date = lubridate::make_date(year, month, day),
-        #                              cohort = paste0(year, '-',
-        #                                              lubridate::week(date)))) %>%
-        # sselect(date, dep_delay, dep_time, origin, cohort)
+    # dataset_11 %>%
+    #     mutate(cohort = floor_date(time_hour, unit='weeks',week_start = 1)) %>%
+    #     count(cohort)
 
     variable <- 'time_hour'
     comparison_variable <- 'dep_delay'
@@ -1880,6 +1878,23 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
                                                     date_break_format = NULL,
                                                     date_breaks_width = NULL))
 
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_210_day.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_10,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = NULL))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_211_day.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_11,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = NULL))
     ##########################################################################################################
     # week/month/quarter/year widths
     ##########################################################################################################

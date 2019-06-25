@@ -1283,8 +1283,6 @@ rt_explore_plot_time_series <- function(dataset,
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
-    dataset[, variable] <- as.Date(dataset[, variable])
-
     symbol_if_not_null <- function(x) {
         if (is.null(x)) {
 
@@ -1298,14 +1296,20 @@ rt_explore_plot_time_series <- function(dataset,
 
     title_context <- NULL
     x_label_context <- NULL
-    if(!is.null(date_floor)) {
+
+    if(is.null(date_floor)) {
+
+        dataset[, variable] <- as.Date(dataset[, variable])
+
+    } else {
+
         title_context <- paste0(str_to_title(date_floor), "ly")
         if(title_context == "Dayly") {
             title_context <- "Daily"
         }
         x_label_context <- paste0("(", date_floor, ")")
 
-        dataset[, variable] <- floor_date(dataset[, variable], unit=date_floor, week_start = 1)
+        dataset[, variable] <- as.Date(floor_date(dataset[, variable], unit=date_floor, week_start = 1))
 
         if(is.null(date_breaks_width)) {
 
@@ -1521,7 +1525,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param numerators numerators
 #' @param denominators denominators
 #' @param categories categories
-#' @param groups vector of groups/categories to plot, seperated by color 
+#' @param groups vector of groups/categories to plot, seperated by color
 #' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
 #' @param show_confidence_values show the high/low confidence values
 #' @param text_size text size (proportion value)
