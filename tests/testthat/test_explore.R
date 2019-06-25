@@ -2,7 +2,7 @@ context('Exploratory Analysis')
 library(testthat)
 library(ggplot2)
 library(dplyr)
-# library(lubridate)
+library(lubridate)
 # library(scales)
 
 test_that("rt_explore_categoric_summary_NAs", {
