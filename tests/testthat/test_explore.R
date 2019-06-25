@@ -1833,6 +1833,120 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     date_floor = 'year'))
 })
 
+test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
+    dataset_10 <- data.frame(nycflights13::flights) %>%
+        filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-10'))
+    dataset_11 <- data.frame(nycflights13::flights) %>%
+        filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-11'))
+    # max(dataset_10$time_hour)
+    # max(dataset_11$time_hour)
+
+        #                       mutate(date = lubridate::make_date(year, month, day),
+        #                              cohort = paste0(year, '-',
+        #                                              lubridate::week(date)))) %>%
+        # sselect(date, dep_delay, dep_time, origin, cohort)
+
+    variable <- 'time_hour'
+    comparison_variable <- 'dep_delay'
+
+    comp_func_sum <- function(x) {
+        return (sum(x, na.rm=TRUE))
+    }
+    comp_func_mean <- function(x) {
+        return (mean(x, na.rm=TRUE))
+    }
+    comp_func_median <- function(x) {
+        return (median(x, na.rm=TRUE))
+    }
+
+    ##########################################################################################################
+    # week/month/quarter/year defaults
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_210.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_10,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = NULL))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_211.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_11,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = NULL))
+
+    ##########################################################################################################
+    # week/month/quarter/year widths
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_width_210.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_10,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 weeks'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_width_211.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_11,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 weeks'))
+
+    ##########################################################################################################
+    # week/month/quarter/year formats
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_format_210.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_10,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 weeks'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_week_format_211.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_11,
+                                                    variable=variable,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 weeks'))
+
+    ##########################################################################################################
+    # week/month/quarter/year other variables & options
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_sum_week_210.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_10,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_sum,
+                                                    comparison_function_name='Sum of',
+                                                    show_points = TRUE,
+                                                    show_labels = TRUE,
+                                                    date_floor = 'week'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series_datetime_sum_week_211.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset_11,
+                                                    variable=variable,
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function=comp_func_sum,
+                                                    comparison_function_name='Sum of',
+                                                    show_points = TRUE,
+                                                    show_labels = TRUE,
+                                                    date_floor = 'week'))
+
+})
+
 test_that('rt_plot_funnel', {
 
     steps <- c("Step Z", "Step Y", "Step X", "Step W")
