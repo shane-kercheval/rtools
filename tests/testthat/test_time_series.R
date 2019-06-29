@@ -19,7 +19,6 @@ test_that('rt_ts_is_multi_variable', {
     expect_true(rt_ts_is_multi_variable(elecdemand))   # classes: msts ts
 })
 
-
 test_that('rt_ts_get_time_period', {
 
     # monthly
@@ -40,6 +39,7 @@ test_that('rt_ts_get_time_period', {
     expect_true(all(rt_ts_get_time_period(eggs) == time(eggs)))
 
 })
+
 test_that('rt_ts_lm_build_formula', {
 
     reg_formula <- rt_ts_lm_build_formula(dependent_variable = 'data',
@@ -663,7 +663,6 @@ test_that('rt_ts_auto_regression - multi variable', {
     # END BUG FIX
     ##########################################################################################################
 })
-
 
 test_that('rt_ts_auto_regression - lambda', {
 
