@@ -1056,6 +1056,16 @@ test_that("rt_explore_plot_scatterplot", {
                                                  y_zoom_max=NULL,
                                                  base_size=11))
 
+        test_save_plot(file_name='data/rt_explore_plot_scatter_swap.png',
+                    plot=rt_explore_plot_scatter(dataset=dataset,
+                                                 variable=comparison_variable,
+                                                 comparison_variable=variable,
+                                                 alpha=0.3,
+                                                 x_zoom_min=NULL,
+                                                 x_zoom_max=NULL,
+                                                 y_zoom_min=NULL,
+                                                 y_zoom_max=NULL,
+                                                 base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter_pretty.png',
                    plot=rt_explore_plot_scatter(dataset=rt_pretty_dataset(dataset),
