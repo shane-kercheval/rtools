@@ -318,20 +318,3 @@ rt_plot_colors <- function(color_names=NULL, sets=NULL) {
               axis.ticks.x=element_blank()) +
         coord_flip()
 }
-
-#' Calculates the geometric mean of a vector of numbers
-#'
-#' @param values vector of numeric values
-#' @param na.rm if TRUE then remove NA values, if FALSE then return NA if any NA values exist
-#' @param add_subtract since the geometric mean takes the log of the values, a value/log of 0 will cause
-#'      problems; `add_subtract` adds the number to the values and then subtracts the value after taking the
-#'      mean (but before taking the exponent)
-#'
-#' @export
-rt_geometric_mean <- function(values, na.rm=TRUE, add_subtract=0.0001){
-    x <- mean(log(values + add_subtract), na.rm =na.rm) - add_subtract
-    if(is.infinite(x)) {
-        return (x)
-    }
-    return (exp(x))
-}

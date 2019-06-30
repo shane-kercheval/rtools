@@ -1010,7 +1010,8 @@ rt_explore_plot_scatter <- function(dataset,
     }
 
     scatter_plot <- scatter_plot +
-        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         theme_light(base_size = base_size) +
         labs(x=comparison_variable,
              y=variable)
