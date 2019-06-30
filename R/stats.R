@@ -15,9 +15,17 @@ rt_geometric_mean <- function(values, na.rm=TRUE, add_subtract=0.0001){
     return (exp(x))
 }
 
+#' Builds a (string) formula to pass to lm
+#'
+#' @param dependent_variable dependent_variable
+#' @param independent_variables independent_variables
+#' @param interaction_variables list with elements as character vectors. each element is an interaction
+#'
+#' @importFrom purrr map_chr
+#' @export
 rt_regression_build_formula <- function(dependent_variable,
-                                independent_variables=NULL,
-                                interaction_variables=NULL) {
+                                        independent_variables=NULL,
+                                        interaction_variables=NULL) {
 
     if(is.null(interaction_variables)) {
 
@@ -51,11 +59,18 @@ rt_regression_build_formula <- function(dependent_variable,
     return (formula)
 }
 
+#' Builds a (string) formula to pass to lm
+#'
+#' @param dataset dataset
+#' @param dependent_variable dependent_variable
+#' @param independent_variables independent_variables
+#' @param interaction_variables list with elements as character vectors. each element is an interaction
+#' 
+#' @export
 rt_regression <- function(dataset,
-                            dependent_variable,
-                            independent_variables,
-                            interaction_variables=NULL,
-                            polynomial=NULL) {
+                          dependent_variable,
+                          independent_variables,
+                          interaction_variables=NULL) {
 
     formula <- rt_regression_build_formula(dependent_variable,
                                            independent_variables,
@@ -90,6 +105,13 @@ rt_regression <- function(dataset,
     )
 }
 
+#' Actual vs. Predicted plot
+#'
+#' @param model model
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2 geom_line aes geom_smooth labs
+#' @export
 rt_regression_plot_actual_vs_predicted <- function(model) {
     actual_variable <- as.character(model$terms)[2]
 
@@ -104,14 +126,19 @@ rt_regression_plot_actual_vs_predicted <- function(model) {
              caption="Red line indicates perfect prediction.\nBlue line represets pattern of Prediction vs `", actual_variable,"`")
 }
 
+#' Residual vs. Predicted plot
+#'
+#' @param model model
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2 geom_hline geom_smooth labs
+#' @export
 rt_regression_plot_residual_vs_predicted <- function(model) {
     actual_variable <- as.character(model$terms)[2]
 
     data.frame(resid=model$residuals,
                pred=model$fitted.values) %>%
         rt_explore_plot_scatter(variable='resid', comparison_variable='pred') +
-        # ggplot(aes(x=pred, y=price)) +
-        # geom_point(alpha = 0.3) +
         geom_hline(yintercept = 0) +
         geom_smooth(method = 'auto') +
         labs(title='Residual vs Predicted (a.k.a Fitted)',
@@ -121,6 +148,13 @@ rt_regression_plot_residual_vs_predicted <- function(model) {
              caption='Red line indicates perfect prediction (no residual).\nBlue line represets pattern of Residual vs Predicted (i.e. pattern that is not captured by the model).')
 }
 
+#' Residual vs. Predicted plot
+#'
+#' @param model model
+#' @param original_dataset
+#' @param dependent_variable
+#'
+#' @export
 rt_regression_get_ind_var_options <- function(model, original_dataset, dependent_variable) {
 
     stopifnot(nrow(model$model) == nrow(original_dataset))
@@ -131,6 +165,16 @@ rt_regression_get_ind_var_options <- function(model, original_dataset, dependent
     return(options %>% rt_remove_val(dependent_variable) %>% rt_remove_val(dependent_variable_used))
 }
 
+#' Residual vs. Predicted plot
+#'
+#' @param model model
+#' @param predictor the predictor i.e. variable to use
+#' @param dataset the original dataset
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom ggplot2 geom_hline geom_smooth labs
+#' @importFrom modelr add_residuals
+#' @export
 rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 
     stopifnot(nrow(model$model) == nrow(dataset))
