@@ -120,7 +120,7 @@ test_that('rt_regression', {
     test_save_plot(file_name='data/rt_regression_plot_actual_vs_predicted__mtcars.png',
                    plot=rt_regression_plot_actual_vs_predicted(result$model))
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_predicted__mtcars.png',
-                   plot=rt_regression_plot_residual_vs_predicted(model))
+                   plot=rt_regression_plot_residual_vs_predicted(result$model))
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__mtcars__wt.png',
                    plot=rt_regression_plot_residual_vs_variable(result$model, 'wt', reg_data_orignal))
 })
