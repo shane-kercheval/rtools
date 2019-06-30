@@ -19,3 +19,4 @@ library(purrr)
 library(stringr)
 
 library(timeDate)
+library(modelr)
