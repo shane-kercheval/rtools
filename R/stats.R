@@ -177,6 +177,9 @@ rt_regression_get_ind_var_options <- function(model, dependent_variable, indepen
 #' @export
 rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 
+    # need to do this because the regression (lm) automatically removes NAs
+    dataset <- dataset[complete.cases(dataset), ]
+
     stopifnot(nrow(model$model) == nrow(dataset))
 
     transformed_columns <- base::setdiff(colnames(model$model), colnames(dataset))
