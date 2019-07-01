@@ -13,6 +13,7 @@ Imports:
     Hmisc,
     lubridate,
     magrittr,
+    modelr,
     moments,
     purrr,
     reshape2,

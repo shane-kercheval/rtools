@@ -10,7 +10,9 @@ rt_regression_get_ind_var_options(model, original_dataset,
 \arguments{
 \item{model}{model}
 
-\item{dependent_variable}{}
+\item{original_dataset}{original_dataset}
+
+\item{dependent_variable}{dependent_variable}
 }
 \description{
 Residual vs. Predicted plot
