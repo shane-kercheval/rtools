@@ -604,7 +604,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         unique_values_plot <- ggplot(data=facet_groups, aes(x=!!symbol_variable, y=facet_percent, fill=!!symbol_variable)) +
             geom_bar(stat = 'identity', alpha=0.75) +
             facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1) +
-                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
 
         if(show_variable_totals) {
 
@@ -652,9 +652,9 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         if(show_dual_axes && view_type != "Stack") {
 
             unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
+                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format(),
                                    sec.axis = sec_axis(~.*sum(groups_by_variable$total),
-                                                       breaks=pretty_breaks(),
+                                                       breaks=pretty_breaks(10),
                                                        labels = format_format(big.mark=",",
                                                                               preserve.width="none",
                                                                               digits=4,
@@ -663,7 +663,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         } else {
 
             unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
         }
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
@@ -738,9 +738,9 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     if(show_dual_axes) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format(),
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format(),
                                sec.axis = sec_axis(~.*sum(groups_by_variable$total),
-                                                   breaks=pretty_breaks(),
+                                                   breaks=pretty_breaks(10),
                                                    labels = format_format(big.mark=",",
                                                                           preserve.width="none",
                                                                           digits=4,
@@ -749,7 +749,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format())
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
     }
 
     if(show_variable_totals) {
@@ -800,7 +800,7 @@ rt_explore_plot_boxplot <- function(dataset,
 
         boxplot_plot <- ggplot(dataset, aes(y=!!symbol_variable, group=1)) +
             geom_boxplot() +
-            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             scale_x_discrete(breaks = NULL) +
             labs(caption = paste("\n", prettyNum(sum(!is.na(dataset[[variable]])),
                                                  big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
@@ -822,7 +822,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_comparison_variable)) +
-            scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             geom_boxplot() +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
@@ -1138,7 +1138,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
                                     label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
                       vjust=1.3,
                       check_overlap = TRUE) +
-            scale_x_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             labs(title=paste0("`", variable, "` grouped by `", comparison_variable, "`"),
                  caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
@@ -1153,7 +1153,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             summarise(agg_variable = aggregation_function(!!symbol_variable))
         aggregate_plot <- ggplot(t, aes(x=!!symbol_comparison_variable)) +
             geom_line(aes(y=agg_variable)) +
-            scale_x_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             expand_limits(y=0) +
             labs(title = paste0(aggregation_function_name, " of `", variable, "` by `", comparison_variable, "`"),
                  y = paste0(aggregation_function_name, " of `", variable, "`"),
@@ -1195,7 +1195,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
     }
 
     aggregate_plot <- aggregate_plot +
-        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         theme_light(base_size = base_size)
 
     x_zooms <- NULL
@@ -1402,7 +1402,7 @@ rt_explore_plot_time_series <- function(dataset,
     }
     ggplot_object <- ggplot_object +
         geom_line() +
-        scale_y_continuous(breaks=pretty_breaks(), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
@@ -1539,7 +1539,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param subtitle subtitle
 #'
 #' @importFrom magrittr "%>%"
-#' @imoprtFrom purrr map2 map_dbl
+#' @importFrom purrr map2 map_dbl
 #' @importFrom scales percent pretty_breaks percent_format
 #' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point expand_limits scale_y_continuous scale_color_manual
 #' @export
@@ -1573,7 +1573,7 @@ rt_plot_proportions <- function(numerators,
             geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             #geom_text(aes(label=paste), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             expand_limits(y=0) +
-            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(legend.position = 'none',
@@ -1595,7 +1595,7 @@ rt_plot_proportions <- function(numerators,
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=-0.5, check_overlap = TRUE) +
             expand_limits(y=0) +
-            scale_y_continuous(breaks=pretty_breaks(), labels = percent_format()) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(axis.text.x = element_text(angle = 30, hjust = 1)) +

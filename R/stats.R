@@ -151,8 +151,8 @@ rt_regression_plot_residual_vs_predicted <- function(model) {
 #' Residual vs. Predicted plot
 #'
 #' @param model model
-#' @param original_dataset
-#' @param dependent_variable
+#' @param original_dataset original_dataset
+#' @param dependent_variable dependent_variable
 #'
 #' @export
 rt_regression_get_ind_var_options <- function(model, original_dataset, dependent_variable) {
