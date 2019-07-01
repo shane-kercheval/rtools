@@ -113,8 +113,8 @@ test_that('rt_regression', {
     expect_equal(result$type, "Linear Regression")
     expect_true(setequal(independent_variables,
                          rt_regression_get_ind_var_options(result$model,
-                                                           original_dataset=reg_data_orignal,
-                                                           dependent_variable=dependent_variable)))
+                                                           dependent_variable,
+                                                           independent_variables)))
     result$model %>% save_lm_summary("data/rt_regression__mtcars__summary_1.txt")
 
     test_save_plot(file_name='data/rt_regression_plot_actual_vs_predicted__mtcars.png',
@@ -143,8 +143,8 @@ test_that('rt_regression', {
     expect_equal(result$type, "Linear Regression")
     expect_true(setequal(independent_variables,
                          rt_regression_get_ind_var_options(result$model,
-                                                           original_dataset=reg_data_orignal,
-                                                           dependent_variable=dependent_variable)))
+                                                           dependent_variable,
+                                                           independent_variables)))
     result$model %>% save_lm_summary("data/rt_regression__diamonds__summary_1.txt")
 
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
@@ -170,10 +170,14 @@ test_that('rt_regression', {
     expect_equal(result$type, "Linear Regression")
     expect_true(setequal(independent_variables,
                          rt_regression_get_ind_var_options(result$model,
-                                                           original_dataset=reg_data_orignal,
-                                                           dependent_variable=dependent_variable)))
+                                                           dependent_variable,
+                                                           independent_variables)))
     result$model %>% save_lm_summary("data/rt_regression__diamonds__summary_1.txt")
 
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
                    plot=rt_regression_plot_residual_vs_variable(result$model, 'cut', reg_data_orignal))
+
+
+    # TODO: test when model has NAs, rt_regression_plot_residual_vs_variable for example won't work
+    # because the $model (i.e. values used) has NAs removed. so I think I need to do "complete.cases"
 })

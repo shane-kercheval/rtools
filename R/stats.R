@@ -65,7 +65,7 @@ rt_regression_build_formula <- function(dependent_variable,
 #' @param dependent_variable dependent_variable
 #' @param independent_variables independent_variables
 #' @param interaction_variables list with elements as character vectors. each element is an interaction
-#' 
+#'
 #' @export
 rt_regression <- function(dataset,
                           dependent_variable,
@@ -151,15 +151,15 @@ rt_regression_plot_residual_vs_predicted <- function(model) {
 #' Residual vs. Predicted plot
 #'
 #' @param model model
-#' @param original_dataset original_dataset
 #' @param dependent_variable dependent_variable
+#' @param independent_variables independent_variables
 #'
 #' @export
-rt_regression_get_ind_var_options <- function(model, original_dataset, dependent_variable) {
+rt_regression_get_ind_var_options <- function(model, dependent_variable, independent_variables) {
 
-    stopifnot(nrow(model$model) == nrow(original_dataset))
-
-    options <- unique(colnames(model$model), colnames(original_dataset))
+    # these might not be the same if there were transformations
+    options <- unique(colnames(model$model), c(independent_variables))
+    # e.g. might have been logged transformed
     dependent_variable_used <- as.character(model$terms)[2]
 
     return(options %>% rt_remove_val(dependent_variable) %>% rt_remove_val(dependent_variable_used))
