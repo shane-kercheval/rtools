@@ -139,7 +139,7 @@ rt_regression_plot_residual_vs_predicted <- function(model) {
     data.frame(resid=model$residuals,
                pred=model$fitted.values) %>%
         rt_explore_plot_scatter(variable='resid', comparison_variable='pred') +
-        geom_hline(yintercept = 0) +
+        geom_hline(yintercept = 0, color='red') +
         geom_smooth(method = 'auto') +
         labs(title='Residual vs Predicted (a.k.a Fitted)',
              subtitle = 'Residual = Actual - Prediction; a positive Residual indicates the model is under-predicting.',

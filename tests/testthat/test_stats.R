@@ -123,4 +123,57 @@ test_that('rt_regression', {
                    plot=rt_regression_plot_residual_vs_predicted(result$model))
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__mtcars__wt.png',
                    plot=rt_regression_plot_residual_vs_variable(result$model, 'wt', reg_data_orignal))
+
+
+    reg_data <- diamonds
+    dependent_variable = 'price'
+    independent_variables = c('carat', 'cut', 'color', 'clarity')
+
+    reg_data_orignal <- reg_data %>% select(dependent_variable, independent_variables)
+    expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
+                                                    independent_variables = independent_variables)
+
+    result <- rt_regression(dataset = reg_data,
+                            dependent_variable = dependent_variable,
+                            independent_variables = independent_variables)
+    expect_equal(length(result$rows_excluded), 0)
+    compare_models(actual_model=result$model,
+                   expected_model=lm(price ~ carat + cut + color + clarity, diamonds))
+    expect_equal(result$formula, expected_formula)
+    expect_equal(result$type, "Linear Regression")
+    expect_true(setequal(independent_variables,
+                         rt_regression_get_ind_var_options(result$model,
+                                                           original_dataset=reg_data_orignal,
+                                                           dependent_variable=dependent_variable)))
+    result$model %>% save_lm_summary("data/rt_regression__diamonds__summary_1.txt")
+
+    test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
+                   plot=rt_regression_plot_residual_vs_variable(result$model, 'cut', reg_data_orignal))
+
+
+    reg_data <- diamonds
+    dependent_variable = 'price'
+    independent_variables = c('carat', 'cut', 'color', 'clarity')
+
+
+    reg_data_orignal <- reg_data %>% select(dependent_variable, independent_variables)
+    expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
+                                                    independent_variables = independent_variables)
+
+    result <- rt_regression(dataset = reg_data,
+                            dependent_variable = dependent_variable,
+                            independent_variables = independent_variables)
+    expect_equal(length(result$rows_excluded), 0)
+    compare_models(actual_model=result$model,
+                   expected_model=lm(price ~ carat + cut + color + clarity, diamonds))
+    expect_equal(result$formula, expected_formula)
+    expect_equal(result$type, "Linear Regression")
+    expect_true(setequal(independent_variables,
+                         rt_regression_get_ind_var_options(result$model,
+                                                           original_dataset=reg_data_orignal,
+                                                           dependent_variable=dependent_variable)))
+    result$model %>% save_lm_summary("data/rt_regression__diamonds__summary_1.txt")
+
+    test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
+                   plot=rt_regression_plot_residual_vs_variable(result$model, 'cut', reg_data_orignal))
 })

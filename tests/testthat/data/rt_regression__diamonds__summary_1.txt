@@ -1,0 +1,36 @@
+
+Call:
+lm(formula = formula, data = dataset, na.action = na.exclude)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-16813.5   -680.4   -197.6    466.4  10394.9 
+
+Coefficients:
+             Estimate Std. Error  t value Pr(>|t|)    
+(Intercept) -3710.603     13.980 -265.414  < 2e-16 ***
+carat        8886.129     12.034  738.437  < 2e-16 ***
+cut.L         698.907     20.335   34.369  < 2e-16 ***
+cut.Q        -327.686     17.911  -18.295  < 2e-16 ***
+cut.C         180.565     15.557   11.607  < 2e-16 ***
+cut^4          -1.207     12.458   -0.097    0.923    
+color.L     -1910.288     17.712 -107.853  < 2e-16 ***
+color.Q      -627.954     16.121  -38.952  < 2e-16 ***
+color.C      -171.960     15.070  -11.410  < 2e-16 ***
+color^4        21.678     13.840    1.566    0.117    
+color^5       -85.943     13.076   -6.572 5.00e-11 ***
+color^6       -49.986     11.889   -4.205 2.62e-05 ***
+clarity.L    4217.535     30.831  136.794  < 2e-16 ***
+clarity.Q   -1832.406     28.827  -63.565  < 2e-16 ***
+clarity.C     923.273     24.679   37.411  < 2e-16 ***
+clarity^4    -361.995     19.739  -18.339  < 2e-16 ***
+clarity^5     216.616     16.109   13.447  < 2e-16 ***
+clarity^6       2.105     14.037    0.150    0.881    
+clarity^7     110.340     12.383    8.910  < 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1157 on 53921 degrees of freedom
+Multiple R-squared:  0.9159,	Adjusted R-squared:  0.9159 
+F-statistic: 3.264e+04 on 18 and 53921 DF,  p-value: < 2.2e-16
+
