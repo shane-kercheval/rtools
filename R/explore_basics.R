@@ -953,6 +953,8 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param comparison_variable the additional numeric variable (x-axis)
 #' @param color_variable an optional variable (categoric or numeric) that allows points to be colored based on the values of the variable
 #' @param size_variable an optional variable (numeric) that allows points to be sized based on the values of the variable
+#' @param label_variable variable to show above each point
+#' @param label_size text size of the label corresponding to label_variable
 #' @param alpha controls transparency
 #' @param jitter enables/disables jittering
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
@@ -962,14 +964,17 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual
+#' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text
 #' @importFrom scales pretty_breaks format_format
+#' @importFrom dplyr arrange desc
 #' @export
 rt_explore_plot_scatter <- function(dataset,
                                     variable,
                                     comparison_variable,
                                     color_variable=NULL,
                                     size_variable=NULL,
+                                    label_variable=NULL,
+                                    label_size=4,
                                     alpha=0.3,
                                     jitter=FALSE,
                                     x_zoom_min=NULL,
@@ -994,6 +999,28 @@ rt_explore_plot_scatter <- function(dataset,
 
     symbol_color_variable <- symbol_if_not_null(color_variable)
     symbol_size_variable <- symbol_if_not_null(size_variable)
+    symbol_label_variable <- symbol_if_not_null(label_variable)
+
+    if(!is.null(label_variable)) {
+
+        # check_overlap shows the first labels that appear in the dataset;
+        # so, if we are going to label the points, then we want to sort the dataset so that the most
+        # important/interesting values show up; for now, we are going to guess
+        # first assumption: larger values are "more interesting"
+        # if size_variable is not null, then sort by that first; then sort by variable and
+        # comparision_variable
+        if(!is.null(size_variable)) {
+
+            dataset <- dataset %>%
+                arrange(desc(!!symbol_size_variable),
+                        desc(!!symbol_variable),
+                        desc(!!symbol_comparison_variable))
+
+        } else {
+
+            dataset <- dataset %>% arrange(desc(!!symbol_variable), desc(!!symbol_comparison_variable))
+        }
+    }
 
     scatter_plot <- ggplot(dataset, aes(x=!!symbol_comparison_variable,
                                         y=!!symbol_variable,
@@ -1020,6 +1047,16 @@ rt_explore_plot_scatter <- function(dataset,
             (is.character(dataset[, color_variable]) || is.factor(dataset[, color_variable]))) {
 
         scatter_plot <- scatter_plot + scale_color_manual(values=rt_colors())
+    }
+
+    if(!is.null(size_variable) && is.numeric(dataset[, size_variable])) {
+
+        scatter_plot <- scatter_plot +
+            scale_size_continuous(breaks=pretty_breaks(10),
+                                  labels = format_format(big.mark=",",
+                                                         preserve.width="none",
+                                                         digits=4,
+                                                         scientific=FALSE))
     }
 
     x_zooms <- NULL
@@ -1059,6 +1096,21 @@ rt_explore_plot_scatter <- function(dataset,
     }
     scatter_plot <- scatter_plot +
         coord_cartesian(xlim=x_zooms, ylim = y_zooms)
+
+    if(!is.null(label_variable)) {
+
+        if(is.numeric(dataset[, label_variable])) {
+
+            scatter_plot <- scatter_plot +
+                geom_text(aes(label = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)(!!symbol_label_variable)),
+                          vjust=-0.5, check_overlap=TRUE, size=label_size)
+        } else {
+
+            scatter_plot <- scatter_plot +
+                geom_text(aes(label = !!symbol_label_variable),
+                          vjust=-0.5, check_overlap=TRUE, size=label_size)
+        }
+    }
 
     return (scatter_plot)
 }
