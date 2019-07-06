@@ -9,12 +9,15 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
+    fpp2,
+    gapminder,
     ggplot2,
     Hmisc,
     lubridate,
     magrittr,
     modelr,
     moments,
+    nycflights13,
     purrr,
     reshape2,
     rsample,
@@ -22,6 +25,7 @@ Imports:
     stringr,
     timeDate,
     tidyr,
+    tidyverse,
     tibble,
 Suggests: testthat
 RoxygenNote: 6.1.1

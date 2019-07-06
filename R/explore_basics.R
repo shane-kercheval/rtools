@@ -87,7 +87,7 @@ rt_explore_categoric_summary <- function(dataset) {
         top=apply(dataset, 2, function(x) {
 
             value_counts <- rt_value_counts(x)
-            if(is.null(nrow(value_counts)) || is.na(value_counts)) {
+            if(is.null(nrow(value_counts)) || all(is.na(value_counts))) {
                 "NA"
             } else {
                 as.character(value_counts[1, 'values'])

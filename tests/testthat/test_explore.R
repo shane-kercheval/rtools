@@ -3,6 +3,8 @@ library(testthat)
 library(ggplot2)
 library(dplyr)
 library(lubridate)
+library(gapminder)
+library(nycflights13)
 # library(scales)
 
 test_that("rt_explore_categoric_summary_NAs", {
@@ -1410,7 +1412,7 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
 })
 
 test_that("rt_explore_plot_scatterplot_labels", {
-    dataset <- data.frame(gapminder::gapminder) %>%
+    dataset <- data.frame(gapminder) %>%
         filter(year == 2002)
     variable <- 'lifeExp'
     comparison_variable <- 'gdpPercap'
@@ -1481,7 +1483,7 @@ test_that("rt_explore_plot_scatterplot_labels", {
 })
 
 test_that('rt_explore_plot_time_series', {
-    dataset <- data.frame(nycflights13::flights %>%
+    dataset <- data.frame(flights %>%
                               mutate(date = lubridate::make_date(year, month, day),
                                      cohort = paste0(year, '-',
                                                      lubridate::week(date)))) %>%
@@ -1596,7 +1598,7 @@ test_that('rt_explore_plot_time_series', {
 })
 
 test_that('rt_explore_plot_time_series__POSIXct', {
-    dataset <- data.frame(nycflights13::flights %>%
+    dataset <- data.frame(flights %>%
                               mutate(date = lubridate::make_date(year, month, day),
                                      cohort = paste0(year, '-',
                                                      lubridate::week(date)))) %>%
@@ -1612,7 +1614,7 @@ test_that('rt_explore_plot_time_series__POSIXct', {
 })
 
 test_that('rt_explore_plot_time_series_breaks_floors', {
-    dataset <- data.frame(nycflights13::flights %>%
+    dataset <- data.frame(flights %>%
                               mutate(date = lubridate::make_date(year, month, day),
                                      cohort = paste0(year, '-',
                                                      lubridate::week(date)))) %>%
@@ -1926,9 +1928,9 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
 })
 
 test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
-    dataset_10 <- data.frame(nycflights13::flights) %>%
+    dataset_10 <- data.frame(flights) %>%
         filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-10'))
-    dataset_11 <- data.frame(nycflights13::flights) %>%
+    dataset_11 <- data.frame(flights) %>%
         filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-11'))
     # max(dataset_10$time_hour)
     # max(dataset_11$time_hour)

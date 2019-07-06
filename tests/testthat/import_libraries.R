@@ -21,3 +21,7 @@ library(stringr)
 
 library(timeDate)
 library(modelr)
+
+library(tidyverse)
+library(fpp2)
+library(gapminder)
