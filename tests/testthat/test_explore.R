@@ -1212,7 +1212,7 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           size_variable = 'default',
+                                           size_variable = 'ocean_proximity',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
