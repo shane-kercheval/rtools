@@ -1424,20 +1424,20 @@ test_that("rt_explore_plot_scatterplot_labels", {
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variable='country'))
+                                                label_variables='country'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__country_label__size.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variable='country',
+                                                label_variables='country',
                                                 size_variable='pop'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__country_label__zoom.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variable='country',
+                                                label_variables='country',
                                                 x_zoom_min = 25000,
                                                 x_zoom_max = 40000,
                                                 y_zoom_min = 75))
@@ -1446,7 +1446,7 @@ test_that("rt_explore_plot_scatterplot_labels", {
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variable='country',
+                                                label_variables='country',
                                                 size_variable = 'pop',
                                                 x_zoom_min = 25000,
                                                 x_zoom_max = 40000,
@@ -1456,23 +1456,28 @@ test_that("rt_explore_plot_scatterplot_labels", {
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variable='lifeExp'
-                                                #size_variable = 'pop',
-                                                # x_zoom_min = 25000,
-                                                # x_zoom_max = 40000,
-                                                # y_zoom_min = 75
-                                                ))
+                                                label_variables='lifeExp'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__pop_label.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variable='pop'
-                                                #size_variable = 'pop',
-                                                # x_zoom_min = 25000,
-                                                # x_zoom_max = 40000,
-                                                # y_zoom_min = 75
-                   ))
+                                                label_variables='pop'))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__multi_label.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                label_variables=c('country', 'year')))
+    test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__multi2_label.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                label_variables=c('year', 'country'),
+                                                size_variable = 'pop',
+                                                x_zoom_min = 25000,
+                                                x_zoom_max = 40000,
+                                                y_zoom_min = 75))
 })
 
 test_that('rt_explore_plot_time_series', {

@@ -5,10 +5,10 @@
 \title{returns a scatterplot of `variable` (numeric, x-axis) compared against `comparison_variable` (y-axis)}
 \usage{
 rt_explore_plot_scatter(dataset, variable, comparison_variable,
-  color_variable = NULL, size_variable = NULL, label_variable = NULL,
-  label_size = 4, alpha = 0.3, jitter = FALSE, x_zoom_min = NULL,
-  x_zoom_max = NULL, y_zoom_min = NULL, y_zoom_max = NULL,
-  base_size = 11)
+  color_variable = NULL, size_variable = NULL,
+  label_variables = NULL, label_size = 4, alpha = 0.3,
+  jitter = FALSE, x_zoom_min = NULL, x_zoom_max = NULL,
+  y_zoom_min = NULL, y_zoom_max = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -21,9 +21,9 @@ rt_explore_plot_scatter(dataset, variable, comparison_variable,
 
 \item{size_variable}{an optional variable (numeric) that allows points to be sized based on the values of the variable}
 
-\item{label_variable}{variable to show above each point}
+\item{label_variables}{variable to show above each point; if multiple variables, then the values are shown as e.g. `(x, y, z)`}
 
-\item{label_size}{text size of the label corresponding to label_variable}
+\item{label_size}{text size of the label corresponding to label_variables}
 
 \item{alpha}{controls transparency}
 

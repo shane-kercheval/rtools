@@ -953,8 +953,8 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param comparison_variable the additional numeric variable (x-axis)
 #' @param color_variable an optional variable (categoric or numeric) that allows points to be colored based on the values of the variable
 #' @param size_variable an optional variable (numeric) that allows points to be sized based on the values of the variable
-#' @param label_variable variable to show above each point
-#' @param label_size text size of the label corresponding to label_variable
+#' @param label_variables variable to show above each point; if multiple variables, then the values are shown as e.g. `(x, y, z)`
+#' @param label_size text size of the label corresponding to label_variables
 #' @param alpha controls transparency
 #' @param jitter enables/disables jittering
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
@@ -967,13 +967,14 @@ rt_explore_plot_histogram <- function(dataset,
 #' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text
 #' @importFrom scales pretty_breaks format_format
 #' @importFrom dplyr arrange desc
+#' @importFrom tidyr unite
 #' @export
 rt_explore_plot_scatter <- function(dataset,
                                     variable,
                                     comparison_variable,
                                     color_variable=NULL,
                                     size_variable=NULL,
-                                    label_variable=NULL,
+                                    label_variables=NULL,
                                     label_size=4,
                                     alpha=0.3,
                                     jitter=FALSE,
@@ -999,9 +1000,22 @@ rt_explore_plot_scatter <- function(dataset,
 
     symbol_color_variable <- symbol_if_not_null(color_variable)
     symbol_size_variable <- symbol_if_not_null(size_variable)
-    symbol_label_variable <- symbol_if_not_null(label_variable)
 
-    if(!is.null(label_variable)) {
+    if(!is.null(label_variables)) {
+
+        #ensure the new column i'm adding doesn't already exist; which would be a miracle
+        rt_stopif('custom_label_column_dtyqpdhjdemn' %in% colnames(dataset))
+        if(length(label_variables) > 1) {
+
+            label_values <- dataset[, label_variables] %>% unite('col', sep = ', ', remove = TRUE)
+            label_values <- paste0("(", label_values[[1]], ")")
+
+            dataset$custom_label_column_dtyqpdhjdemn <- label_values
+
+        } else {
+
+            dataset$custom_label_column_dtyqpdhjdemn <- dataset[, label_variables]
+        }
 
         # check_overlap shows the first labels that appear in the dataset;
         # so, if we are going to label the points, then we want to sort the dataset so that the most
@@ -1097,17 +1111,17 @@ rt_explore_plot_scatter <- function(dataset,
     scatter_plot <- scatter_plot +
         coord_cartesian(xlim=x_zooms, ylim = y_zooms)
 
-    if(!is.null(label_variable)) {
+    if(!is.null(label_variables)) {
 
-        if(is.numeric(dataset[, label_variable])) {
+        if(length(label_variables) == 1 && is.numeric(dataset[, label_variables])) {
 
             scatter_plot <- scatter_plot +
-                geom_text(aes(label = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)(!!symbol_label_variable)),
+                geom_text(aes(label = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)(custom_label_column_dtyqpdhjdemn)),
                           vjust=-0.5, check_overlap=TRUE, size=label_size)
         } else {
 
             scatter_plot <- scatter_plot +
-                geom_text(aes(label = !!symbol_label_variable),
+                geom_text(aes(label = custom_label_column_dtyqpdhjdemn),
                           vjust=-0.5, check_overlap=TRUE, size=label_size)
         }
     }
