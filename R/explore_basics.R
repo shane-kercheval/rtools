@@ -784,7 +784,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge
 #' @importFrom dplyr group_by summarise n
 #' @importFrom scales pretty_breaks format_format
 #' @export
@@ -843,7 +843,7 @@ rt_explore_plot_boxplot <- function(dataset,
             geom_boxplot(position=position_dodge(0.9)) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
-                                    ##x=!!symbol_comparison_variable,
+                                    x=!!symbol_comparison_variable,
                                     color=!!symbol_color_variable,
                                     label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
                       position=position_dodge(0.9),
