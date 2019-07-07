@@ -778,6 +778,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable from which to create a boxplot
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param color_variable if comparison_variable is used, then if color_variable is used the boxplots will be colored by this variable rather than each of the comparison_variable categories. `color_variable` must be categoric
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
@@ -790,6 +791,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 rt_explore_plot_boxplot <- function(dataset,
                                     variable,
                                     comparison_variable=NULL,
+                                    color_variable=NULL,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
@@ -813,36 +815,64 @@ rt_explore_plot_boxplot <- function(dataset,
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
 
-            aggregations <- dataset %>%
-                group_by(!!symbol_comparison_variable) %>%
-                summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
-                          count = n())
+        if(is.null(color_variable)) {
+
+            symbol_color_variable <- symbol_comparison_variable
+            aggregations <- suppressWarnings(
+                dataset %>%
+                    group_by(!!symbol_comparison_variable) %>%
+                    summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
+                              count = n()) %>% as.data.frame())
+
+        } else {
+
+            symbol_color_variable <- sym(color_variable)
+
+            aggregations <- suppressWarnings(
+                    dataset %>%
+                    group_by(!!symbol_comparison_variable, !!symbol_color_variable) %>%
+                    summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
+                              count = n()) %>% as.data.frame())
+        }
 
         boxplot_plot <- ggplot(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
-                                   color=!!symbol_comparison_variable)) +
+                                   color=!!symbol_color_variable)) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
-            geom_boxplot() +
+            geom_boxplot(position=position_dodge(0.9)) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
-                                    x=!!symbol_comparison_variable,
+                                    ##x=!!symbol_comparison_variable,
+                                    color=!!symbol_color_variable,
                                     label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                      position=position_dodge(0.9),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
                                     label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                      position=position_dodge(0.9),
                       vjust=1.3,
                       check_overlap = TRUE) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             labs(caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
                  y=variable) +
-            theme_light(base_size = base_size) +
-            theme(legend.position = 'none',
-                  axis.text.x = element_text(angle = 30, hjust = 1))
+            theme_light(base_size = base_size)
+
+        if(is.null(color_variable)) {
+
+            boxplot_plot <- boxplot_plot +
+                theme(legend.position = 'none',
+                      axis.text.x = element_text(angle = 30, hjust = 1))
+
+        } else {
+
+            boxplot_plot <- boxplot_plot +
+                theme(axis.text.x = element_text(angle = 30, hjust = 1))
+        }
     }
 
     # zoom in on graph is parameters are set

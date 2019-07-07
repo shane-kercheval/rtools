@@ -870,6 +870,60 @@ test_that("rt_explore_plot_boxplot", {
                                                   y_zoom_max=NULL,
                                                   base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__defualt.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset <- dataset
+    temp_dataset[1, 'default'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset[1, 'checking_balance'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs2.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset[2, 'checking_balance'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs3.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset[3, 'default'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs4.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_pretty.png',
                    plot=rt_explore_plot_boxplot(dataset=rt_pretty_dataset(dataset),
                                                 variable=rt_pretty_text(variable),
