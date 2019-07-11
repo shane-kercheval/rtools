@@ -230,11 +230,12 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 #' @param group_name when using `groups`, used for the legend in the plot
 #' @param title title
 #' @param subtitle subtitle
+#' @param caption caption
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map2 map_dbl
 #' @importFrom scales percent pretty_breaks percent_format
-#' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point expand_limits scale_y_continuous scale_color_manual
+#' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point scale_y_continuous scale_color_manual coord_cartesian coord_flip
 #' @export
 rt_plot_proportions <- function(numerators,
                                 denominators,
@@ -251,7 +252,8 @@ rt_plot_proportions <- function(numerators,
                                 y_label="",
                                 group_name="",
                                 title="",
-                                subtitle=NULL) {
+                                subtitle=NULL,
+                                caption=NULL) {
 
     results <- map2(numerators, denominators, ~ prop.test(x=.x, n=.y, conf.level = confidence_level))
 
@@ -260,6 +262,10 @@ rt_plot_proportions <- function(numerators,
                               conf_low=map_dbl(results, ~ .$conf.int[1]),
                               conf_high=map_dbl(results, ~ .$conf.int[2]))
 
+    if(is.null(caption)) {
+
+        caption <- paste("\nConfidence Level:", confidence_level)
+    }
 
     if(is.null(groups)) {
 
@@ -267,7 +273,6 @@ rt_plot_proportions <- function(numerators,
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
             geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
-            #geom_text(aes(label=paste), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
             scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
@@ -276,7 +281,7 @@ rt_plot_proportions <- function(numerators,
             labs(x=x_label,
                  y=y_label,
                  title=title,
-                 caption=paste("\nConfidence Level:", confidence_level))
+                 caption=caption)
 
     } else {
 
@@ -299,7 +304,7 @@ rt_plot_proportions <- function(numerators,
                  title=title,
                  subtitle=subtitle,
                  color=group_name,
-                 caption = paste("\nConfidence Level:", confidence_level))
+                 caption=caption)
     }
 
     if(axes_flip) {
@@ -340,8 +345,8 @@ rt_plot_proportions <- function(numerators,
 
 #' plots the proportions with confidence intervals according to prop.test
 #'
-#' @param numerators numerators
-#' @param denominators denominators
+#' @param prop_1 vector with two values c(numerator, denominator)
+#' @param prop_2 vector with two values c(numerator, denominator)
 #' @param categories categories
 #' @param groups vector of groups/categories to plot, seperated by color
 #' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
@@ -354,13 +359,10 @@ rt_plot_proportions <- function(numerators,
 #' @param x_label label for x-axis
 #' @param y_label label for y-axis
 #' @param group_name when using `groups`, used for the legend in the plot
-#' @param title title
+#' @param title overwrites default title of "Confidence Intervals of Two Proportions"
 #' @param subtitle subtitle
+#' @param caption expands on default caption giving p-value
 #'
-#' @importFrom magrittr "%>%"
-#' @importFrom purrr map2 map_dbl
-#' @importFrom scales percent pretty_breaks percent_format
-#' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point expand_limits scale_y_continuous scale_color_manual
 #' @export
 rt_plot_2_proportions_test <- function(prop_1,
                                        prop_2,
@@ -377,9 +379,30 @@ rt_plot_2_proportions_test <- function(prop_1,
                                        y_label="",
                                        group_name="",
                                        title="",
-                                       subtitle=NULL) {
+                                       subtitle=NULL,
+                                       caption=NULL) {
 
-    
+    stopifnot(length(prop_1) == 2)
+    stopifnot(length(prop_2) == 2)
+
+    numerators <- c(prop_1[1], prop_2[1])
+    denominators <- c(prop_1[2], prop_2[2])
+
+    prop_test_results <- prop.test(numerators, denominators, conf.level = confidence_level)
+    stat_sig_message <- ifelse(prop_test_results$p.value <= 1 - confidence_level,
+                               paste('"Stat Sig" @', confidence_level,'Conf Level; p-value of', round(prop_test_results$p.value, 3)),
+                               paste('NOT "Stat Sig" @', confidence_level,'Conf Level; p-value of', round(prop_test_results$p.value, 3)))
+
+    if(is.null(title) || title == "") {
+        title = "Confidence Intervals of Two Proportions"
+    }
+
+    final_caption = stat_sig_message
+
+    if(!is.null(caption)) {
+
+        final_caption <- paste0(final_caption, "\n", caption)
+    }
 
     plot_object <- rt_plot_proportions(numerators=numerators,
                                        denominators=denominators,
@@ -396,9 +419,9 @@ rt_plot_2_proportions_test <- function(prop_1,
                                        y_label=y_label,
                                        group_name=group_name,
                                        title=title,
-                                       subtitle=subtitle)
+                                       subtitle=subtitle,
+                                       caption=final_caption)
 
-    
     return (plot_object)
 }
 

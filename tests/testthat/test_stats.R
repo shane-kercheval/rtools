@@ -262,3 +262,96 @@ test_that('rt_plot_funnel:axes_flip', {
                                        text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
 
 })
+
+test_that('rt_plot_2_proportions_test', {
+
+    prop_1 = c(197, 14600)
+    prop_2 = c(135, 7700)
+    # prop_test_results <- prop.test(c(197, 135), c(14600, 7700))
+    # prop_test_results$p.value
+    categories <- c('Old', 'New')
+    test_save_plot(file_name='data/rt_plot_2_proportions_test.png',
+                   rt_plot_2_proportions_test(prop_1, prop_2, categories,
+                                              #confidence_level=0.95,
+                                              axes_flip = FALSE,
+                                              title=NULL,
+                                              caption=NULL
+                                              ))
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__90_conf.png',
+                   rt_plot_2_proportions_test(prop_1, prop_2, categories,
+                                              confidence_level=0.90,
+                                              axes_flip = FALSE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__title_caption.png',
+                   rt_plot_2_proportions_test(prop_1, prop_2, categories,
+                                              confidence_level=0.90,
+                                              axes_flip = FALSE,
+                                              title="My Title",
+                                              caption="My caption"
+                   ))
+
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__not_stat_sig.png',
+                   rt_plot_2_proportions_test(c(15, 100), c(20, 100), categories,
+                                              confidence_level=0.95,
+                                              axes_flip = FALSE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__flip.png',
+                   rt_plot_2_proportions_test(prop_1, prop_2, categories,
+                                              #confidence_level=0.95,
+                                              axes_flip = TRUE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__90_conf__flip.png',
+                   rt_plot_2_proportions_test(prop_1, prop_2, categories,
+                                              confidence_level=0.90,
+                                              axes_flip = TRUE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__title_caption__flip.png',
+                   rt_plot_2_proportions_test(prop_1, prop_2, categories,
+                                              confidence_level=0.90,
+                                              axes_flip = TRUE,
+                                              title="My Title",
+                                              caption="My caption"
+                   ))
+
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__not_stat_sig__flip.png',
+                   rt_plot_2_proportions_test(c(15, 100), c(20, 100), categories,
+                                              confidence_level=0.95,
+                                              axes_flip = TRUE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+
+    # should NOT be stat sig at .95 conf-level
+    #prop.test(c(15, 26), c(100, 100))
+    categories <- c("Category A", "Category B")
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__check_stat_sig__false.png',
+                   rt_plot_2_proportions_test(c(15, 100), c(26, 100), categories,
+                                              confidence_level=0.95,
+                                              axes_flip = TRUE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+    # should be stat sig at .90 conf-level
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__check_stat_sig__true.png',
+                   rt_plot_2_proportions_test(c(15, 100), c(26, 100), categories,
+                                              confidence_level=0.90,
+                                              axes_flip = TRUE,
+                                              title=NULL,
+                                              caption=NULL
+                   ))
+})
