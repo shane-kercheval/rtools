@@ -2132,39 +2132,3 @@ test_that('rt_plot_funnel', {
     test_save_plot(file_name='data/rt_plot_funnel_2_proportionate_TRUE.png',
                    plot=rt_funnel_plot(step_names=steps, step_values=values, proportionate=TRUE))
 })
-
-test_that('rt_plot_funnel', {
-
-    numerators <- c(197, 135)
-    denominators <- c(14600, 7700)
-    categories <- c('Old', 'New')
-    test_save_plot(file_name='data/rt_plot_proportions__2a.png',
-                   rt_plot_proportions(numerators, denominators, categories))
-
-    numerators <- c(110, 1000)
-    denominators <- c(1000, 10000)
-    categories <- c('A', 'B')
-    test_save_plot(file_name='data/rt_plot_proportions__2b.png',
-                   rt_plot_proportions(numerators, denominators, categories))
-    set.seed(42)
-    numerators <- rbinom(20, 500, 0.5)
-    set.seed(42)
-    denominators <- round(rnorm(20, 500, 5))
-    set.seed(42)
-    numerators <- c(numerators, rbinom(20, 100, 0.5))
-    set.seed(42)
-    denominators <- c(denominators, round(rnorm(20, 100, 5)))
-    categories <- paste('category', 1:40)
-    test_save_plot(file_name='data/rt_plot_proportions__many.png',
-                   rt_plot_proportions(numerators, denominators, categories,
-                        text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
-    test_save_plot(file_name='data/rt_plot_proportions__many_no_confidence_values.png',
-                   rt_plot_proportions(numerators, denominators, categories,
-                                       show_confidence_values=FALSE,
-                                       text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
-    test_save_plot(file_name='data/rt_plot_proportions__many__90_conf.png',
-                   rt_plot_proportions(numerators, denominators, categories,
-                                       confidence_level = 0.90,
-                                       text_size=2, x_label = "Categories", y_label = 'Proportions', title="Test"))
-
-})

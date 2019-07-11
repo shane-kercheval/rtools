@@ -211,3 +211,194 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
                  x=paste0("Predictor (`", predictor,"`)"))
     }
 }
+
+#' plots the proportions with confidence intervals according to prop.test
+#'
+#' @param numerators numerators
+#' @param denominators denominators
+#' @param categories categories
+#' @param groups vector of groups/categories to plot, seperated by color
+#' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
+#' @param show_confidence_values show the high/low confidence values
+#' @param axes_flip flip axes
+#' @param axis_limits custom limits for the corresponding axis (x if not axes_flip, y if axes_flip)
+#' @param text_size text size (proportion value)
+#' @param line_size the line size for the error bars
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#' @param x_label label for x-axis
+#' @param y_label label for y-axis
+#' @param group_name when using `groups`, used for the legend in the plot
+#' @param title title
+#' @param subtitle subtitle
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map2 map_dbl
+#' @importFrom scales percent pretty_breaks percent_format
+#' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point expand_limits scale_y_continuous scale_color_manual
+#' @export
+rt_plot_proportions <- function(numerators,
+                                denominators,
+                                categories,
+                                groups=NULL,
+                                confidence_level = 0.95,
+                                show_confidence_values=TRUE,
+                                axes_flip=FALSE,
+                                axis_limits=NULL,
+                                text_size=4,
+                                line_size=0.35,
+                                base_size=11,
+                                x_label="",
+                                y_label="",
+                                group_name="",
+                                title="",
+                                subtitle=NULL) {
+
+    results <- map2(numerators, denominators, ~ prop.test(x=.x, n=.y, conf.level = confidence_level))
+
+    df <- data.frame(categories=factor(categories, levels=unique(categories), ordered = TRUE),
+                              proportions=map_dbl(results, ~ .$estimate),
+                              conf_low=map_dbl(results, ~ .$conf.int[1]),
+                              conf_high=map_dbl(results, ~ .$conf.int[2]))
+
+
+    if(is.null(groups)) {
+
+        plot_object <- ggplot(df, aes(x=categories, y=proportions, color=categories)) +
+            geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
+            geom_point(size=line_size*2) +
+            geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            #geom_text(aes(label=paste), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            theme_light(base_size = base_size) +
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1)) +
+            labs(x=x_label,
+                 y=y_label,
+                 title=title,
+                 caption=paste("\nConfidence Level:", confidence_level))
+
+    } else {
+
+        df$groups <- groups
+
+        plot_object <- ggplot(df, aes(x=categories, y=proportions, color=groups)) +
+            geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=groups),
+                          position=position_dodge(width=0.9),
+                          size=line_size) +
+            geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
+            geom_text(aes(label=percent(proportions)),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            theme_light(base_size = base_size) +
+            theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+            labs(x=x_label,
+                 y=y_label,
+                 title=title,
+                 subtitle=subtitle,
+                 color=group_name,
+                 caption = paste("\nConfidence Level:", confidence_level))
+    }
+
+    if(axes_flip) {
+
+        plot_object <- plot_object +
+            coord_flip(ylim = axis_limits)
+
+    } else if (!is.null(axis_limits)) {
+
+        plot_object <- plot_object +
+            coord_cartesian(ylim = axis_limits)
+    }
+
+    if(show_confidence_values) {
+
+        if(axes_flip) {
+
+            # bottom / top
+            vjust_values <- c(2, -2.5)
+
+        } else {
+
+            # bottom / top
+            vjust_values <- c(1.1, -0.5)
+        }
+
+        plot_object <- plot_object +
+            geom_text(aes(label=percent(conf_low), y=conf_low),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=vjust_values[1], check_overlap = TRUE) +
+            geom_text(aes(label=percent(conf_high), y=conf_high),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=vjust_values[2], check_overlap = TRUE)
+    }
+
+    return (plot_object)
+}
+
+#' plots the proportions with confidence intervals according to prop.test
+#'
+#' @param numerators numerators
+#' @param denominators denominators
+#' @param categories categories
+#' @param groups vector of groups/categories to plot, seperated by color
+#' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
+#' @param show_confidence_values show the high/low confidence values
+#' @param axes_flip flip axes
+#' @param axis_limits custom limits for the corresponding axis (x if not axes_flip, y if axes_flip)
+#' @param text_size text size (proportion value)
+#' @param line_size the line size for the error bars
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#' @param x_label label for x-axis
+#' @param y_label label for y-axis
+#' @param group_name when using `groups`, used for the legend in the plot
+#' @param title title
+#' @param subtitle subtitle
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map2 map_dbl
+#' @importFrom scales percent pretty_breaks percent_format
+#' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point expand_limits scale_y_continuous scale_color_manual
+#' @export
+rt_plot_2_proportions_test <- function(prop_1,
+                                       prop_2,
+                                       categories,
+                                       groups=NULL,
+                                       confidence_level = 0.95,
+                                       show_confidence_values=TRUE,
+                                       axes_flip=FALSE,
+                                       axis_limits=NULL,
+                                       text_size=4,
+                                       line_size=0.35,
+                                       base_size=11,
+                                       x_label="",
+                                       y_label="",
+                                       group_name="",
+                                       title="",
+                                       subtitle=NULL) {
+
+    
+
+    plot_object <- rt_plot_proportions(numerators=numerators,
+                                       denominators=denominators,
+                                       categories=categories,
+                                       groups=groups,
+                                       confidence_level=confidence_level,
+                                       show_confidence_values=show_confidence_values,
+                                       axes_flip=axes_flip,
+                                       axis_limits=axis_limits,
+                                       text_size=text_size,
+                                       line_size=line_size,
+                                       base_size=base_size,
+                                       x_label=x_label,
+                                       y_label=y_label,
+                                       group_name=group_name,
+                                       title=title,
+                                       subtitle=subtitle)
+
+    
+    return (plot_object)
+}
+
