@@ -9,6 +9,7 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
+    forcats,
     fpp2,
     gapminder,
     ggplot2,
