@@ -5,6 +5,7 @@ library(dplyr)
 library(lubridate)
 library(gapminder)
 library(nycflights13)
+library(forcats)
 # library(scales)
 
 test_that("rt_explore_categoric_summary_NAs", {
@@ -178,6 +179,48 @@ test_that("rt_explore_value_totals_counts", {
     expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
 })
 
+test_that("rt_get_colors_from_values", {
+
+    dataset <- diamonds
+    custom_colors <- rt_colors()[1:5]
+
+    ###################
+    # TEST AS CHARACTER
+    ####################
+    returned_colors <- rt_get_colors_from_values(as.character(dataset[['cut']]))
+    expect_identical(custom_colors, returned_colors)
+
+    ###################
+    # TEST AS FACTOR
+    ####################
+    returned_colors <- rt_get_colors_from_values(dataset[['cut']])
+    expect_identical(custom_colors[c(1, 2, 5, 4, 3)], returned_colors)
+
+    ##################################################
+    # TEST WITH NA
+    ##################################################
+    dataset[1, 'cut'] <- NA
+    ###################
+    # TEST AS CHARACTER
+    ####################
+    returned_colors <- rt_get_colors_from_values(as.character(dataset[['cut']]))
+    expect_identical(custom_colors, returned_colors)
+
+    ###################
+    # TEST AS FACTOR
+    ####################
+    returned_colors <- rt_get_colors_from_values(dataset[['cut']])
+    expect_identical(custom_colors[c(1, 2, 5, 4, 3)], returned_colors)
+
+    temp_dataset <- dataset
+    # Ideal < Premium < Very Good < Good < Fair
+    # "Fair"      "Good"      "Ideal"     "Premium"   "Very Good"
+    expected_order <- c(3, 4, 5, 2, 1)
+    temp_dataset$cut <- fct_infreq(temp_dataset$cut, ordered = TRUE)
+    returned_colors <- rt_get_colors_from_values(temp_dataset[['cut']])
+    expect_identical(custom_colors[expected_order], returned_colors)
+})
+
 test_that("rt_explore_value_totals_sums", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'checking_balance'
@@ -236,10 +279,37 @@ test_that("rt_explore_plot_value_counts", {
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order.png',
-                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                   plot=rt_explore_plot_value_totals(dataset=credit_data %>%
+                                                         mutate(checking_balance = as.character(checking_balance)),
                                                       variable=variable,
                                                       order_by_count=FALSE,
                                                       base_size=11))
+
+    # plot without order
+    temp_dataset <- credit_data
+    temp_dataset <- temp_dataset %>%
+        mutate(checking_balance = factor(as.character(checking_balance),
+                                         levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
+                                         ordered = TRUE))
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__factor.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp_dataset,
+                                                     variable=variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    # plot without order
+    temp_dataset$checking_balance <- fct_infreq(temp_dataset$checking_balance, ordered = TRUE)
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__ordered.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp_dataset,
+                                                     variable=variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__ordered2.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     order_by_count=TRUE,
+                                                     base_size=11))
 
     t <- credit_data %>% mutate(checking_balance = ifelse(checking_balance == 'unknown', NA, as.character(checking_balance)))
     # plot without order

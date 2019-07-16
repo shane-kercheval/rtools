@@ -601,7 +601,8 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             ungroup()
         stopifnot(all(facet_groups$total_facet_percent == 1))
 
-        unique_values_plot <- ggplot(data=facet_groups, aes(x=!!symbol_variable, y=facet_percent, fill=!!symbol_variable)) +
+        unique_values_plot <- ggplot(data=facet_groups,
+                                     aes(x=!!symbol_variable, y=facet_percent, fill=!!symbol_variable)) +
             geom_bar(stat = 'identity', alpha=0.75) +
             facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1) +
                 scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
@@ -730,6 +731,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
                                                  plot_title,
                                                  plot_y_axis_label,
                                                  base_size) {
+    custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
 
     unique_values_plot <- groups_by_variable %>%
         ggplot(aes(x=!!symbol_variable, y=percent, fill=!!symbol_variable)) +
@@ -766,7 +768,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
             labs(title=plot_title,
                  y=plot_y_axis_label,
                  x=variable) +
-            scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
@@ -814,7 +816,8 @@ rt_explore_plot_boxplot <- function(dataset,
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-
+        custom_colors <- c(rt_colors(), rt_colors())
+        
         if(is.null(color_variable)) {
 
             symbol_color_variable <- symbol_comparison_variable
@@ -823,6 +826,8 @@ rt_explore_plot_boxplot <- function(dataset,
                     group_by(!!symbol_comparison_variable) %>%
                     summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
                               count = n()) %>% as.data.frame())
+
+            custom_colors <- rt_get_colors_from_values(dataset[[comparison_variable]])
 
         } else {
 
@@ -856,7 +861,7 @@ rt_explore_plot_boxplot <- function(dataset,
                       position=position_dodge(0.9),
                       vjust=1.3,
                       check_overlap = TRUE) +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             labs(caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
                  y=variable) +

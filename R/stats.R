@@ -274,7 +274,7 @@ rt_plot_proportions <- function(numerators,
             geom_point(size=line_size*2) +
             geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            scale_color_manual(values=rt_get_colors_from_values(df$categories), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1)) +

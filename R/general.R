@@ -318,3 +318,31 @@ rt_plot_colors <- function(color_names=NULL, sets=NULL) {
               axis.ticks.x=element_blank()) +
         coord_flip()
 }
+
+#' Returns the colors based on the alphabetical order of the values. E.g. if you plot a graph alphabetically
+#' and then plot it based on it's factor order the colors should be retained for each category.
+#'
+#' @param x a character or factor vector
+#'
+#' @export
+rt_get_colors_from_values <- function(x) {
+
+    custom_colors <- c(rt_colors(), rt_colors(), rt_colors())
+    sorted_values <- sort(as.character(unique(x)))
+
+    stopifnot(length(custom_colors) >= length(sorted_values))
+
+    if(is.character(x)) {
+
+        return (custom_colors[1:length(sorted_values)])
+
+    } else if (is.factor(x)) {
+
+        found_values <- as.character(sort(unique(x)))
+        color_index <- match(found_values, sorted_values)
+        return (custom_colors[color_index])
+    } else {
+
+        stopifnot(FALSE)
+    }
+}
