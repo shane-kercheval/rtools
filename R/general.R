@@ -332,7 +332,7 @@ rt_get_colors_from_values <- function(x) {
 
     stopifnot(length(custom_colors) >= length(sorted_values))
 
-    if(is.character(x)) {
+    if(is.character(x) || is.logical(x)) {
 
         return (custom_colors[1:length(sorted_values)])
 

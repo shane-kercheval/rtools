@@ -360,6 +360,66 @@ test_that("rt_explore_plot_value_counts", {
                                                       base_size=11))
 })
 
+test_that("rt_explore_plot_value_counts: logical", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data[1, 'default'] <- NA
+    credit_data_logical <- credit_data %>%
+        mutate(default = ifelse(default == 'yes', TRUE, FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__logical.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data_logical,
+                                                     variable='default',
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__logical_comparison.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data_logical,
+                                                     variable='checking_balance',
+                                                     comparison_variable='default',
+                                                     base_size=11))
+})
+
+test_that("rt_explore_plot_boxplot: logical", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data[1, 'default'] <- NA
+    credit_data_logical <- credit_data %>%
+        mutate(default = ifelse(default == 'yes', TRUE, FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot__logical.png',
+                   plot=rt_explore_plot_boxplot(dataset=credit_data_logical,
+                                                variable='amount',
+                                                comparison_variable='default'))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot__logical_color.png',
+                   plot=rt_explore_plot_boxplot(dataset=credit_data_logical,
+                                                variable='amount',
+                                                comparison_variable='checking_balance',
+                                                color_variable = 'default'))
+})
+
+test_that("rt_explore_plot_scatter: logical", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data_logical <- credit_data %>%
+        mutate(default = ifelse(default == 'yes', TRUE, FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter__logical_size.png',
+                   plot=rt_explore_plot_scatter(dataset=credit_data_logical,
+                                                variable='amount',
+                                                comparison_variable='months_loan_duration',
+                                                size_variable = 'default'))
+
+    credit_data_logical[1, 'default'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_scatter__logical.png',
+                   plot=rt_explore_plot_scatter(dataset=credit_data_logical,
+                                                variable='amount',
+                                                comparison_variable='months_loan_duration'))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter__logical_color.png',
+                   plot=rt_explore_plot_scatter(dataset=credit_data_logical,
+                                                variable='amount',
+                                                comparison_variable='months_loan_duration',
+                                                color_variable = 'default'))
+})
+
 test_that("rt_explore_plot_value_counts_against_categorical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 

@@ -817,7 +817,7 @@ rt_explore_plot_boxplot <- function(dataset,
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
         custom_colors <- c(rt_colors(), rt_colors())
-        
+
         if(is.null(color_variable)) {
 
             symbol_color_variable <- symbol_comparison_variable
@@ -1036,6 +1036,12 @@ rt_explore_plot_scatter <- function(dataset,
     symbol_color_variable <- symbol_if_not_null(color_variable)
     symbol_size_variable <- symbol_if_not_null(size_variable)
 
+    if(!is.null(size_variable)) {
+
+        # ggplot gives error if any size values are NA
+        rt_stopif(any(is.na(dataset[[size_variable]])))
+    }
+
     if(!is.null(label_variables)) {
 
         #ensure the new column i'm adding doesn't already exist; which would be a miracle
@@ -1093,7 +1099,9 @@ rt_explore_plot_scatter <- function(dataset,
              y=variable)
 
     if(!is.null(color_variable) &&
-            (is.character(dataset[, color_variable]) || is.factor(dataset[, color_variable]))) {
+            (is.character(dataset[, color_variable]) ||
+                is.factor(dataset[, color_variable]) ||
+                is.logical(dataset[, color_variable]))) {
 
         scatter_plot <- scatter_plot + scale_color_manual(values=rt_colors())
     }
