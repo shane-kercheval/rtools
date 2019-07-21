@@ -698,10 +698,18 @@ rt_ts_plot_time_series <- function(dataset,
             expand_limits(y=0) +
             scale_y_continuous(breaks=pretty_breaks(10),
                                labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             labs(y=NULL,
                  x=NULL)
+
+    if(rt_ts_is_multi_variable(dataset)) {
+
+        ggplot_object <- ggplot_object +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132')
+    } else {
+        ggplot_object <- ggplot_object +
+            scale_color_manual(values='black', na.value = '#2A3132')
+    }
 
     if(show_values) {
         ggplot_object <- ggplot_object +
