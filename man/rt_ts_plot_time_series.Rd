@@ -6,7 +6,8 @@
 \usage{
 rt_ts_plot_time_series(dataset, show_values = FALSE,
   show_points = FALSE, show_dates = FALSE, y_zoom_min = NA,
-  y_zoom_max = NA, facet_multi_variables = FALSE, base_size = 11)
+  y_zoom_max = NA, facet_multi_variables = FALSE, text_size = 4,
+  base_size = 11)
 }
 \arguments{
 \item{dataset}{ts dataset}
@@ -23,7 +24,9 @@ rt_ts_plot_time_series(dataset, show_values = FALSE,
 
 \item{facet_multi_variables}{if TRUE each variable gets it's own section}
 
-\item{base_size}{sets the base/text size}
+\item{text_size}{sets the text size}
+
+\item{base_size}{sets the base size}
 }
 \description{
 plots a time-series dataset

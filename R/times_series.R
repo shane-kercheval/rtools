@@ -650,7 +650,8 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param facet_multi_variables if TRUE each variable gets it's own section
-#' @param base_size sets the base/text size
+#' @param text_size sets the text size
+#' @param base_size sets the base size
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom tidyr gather
@@ -667,6 +668,7 @@ rt_ts_plot_time_series <- function(dataset,
                                    y_zoom_min=NA,
                                    y_zoom_max=NA,
                                    facet_multi_variables=FALSE,
+                                   text_size=4,
                                    base_size=11) {
 
     df_dataset <- as.data.frame(dataset)
@@ -705,7 +707,7 @@ rt_ts_plot_time_series <- function(dataset,
         ggplot_object <- ggplot_object +
             geom_text(aes(label = pretty_value),
                       check_overlap = TRUE,
-                      vjust=-0.5, size=3, na.rm = TRUE)
+                      vjust=-0.5, size=text_size, na.rm = TRUE)
     }
 
     if(show_dates) {
@@ -722,7 +724,7 @@ rt_ts_plot_time_series <- function(dataset,
         ggplot_object <- ggplot_object +
             geom_text(aes(label = friendly_ticks),
                       check_overlap = TRUE,
-                      vjust=--0.5, hjust=show_values_hjust, size=3, na.rm = TRUE, angle=90)
+                      vjust=--0.5, hjust=show_values_hjust, size=text_size, na.rm = TRUE, angle=90)
     }
 
     if(show_points) {
