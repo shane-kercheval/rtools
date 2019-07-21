@@ -1402,7 +1402,7 @@ test_that('rt_ts_plot_time_series', {
     test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__defaults__36_q_facet.png',
                    plot=ggplot_object)
 
-     <- rt_ts_plot_time_series(window(dataset, start=c(1981, 1), end=c(1990, 1)),
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1981, 1), end=c(1990, 1)),
                                             show_values=TRUE,
                                             show_points=TRUE,
                                             y_zoom_min=NA,
