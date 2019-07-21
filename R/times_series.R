@@ -608,3 +608,158 @@ rt_ts_auto_regression <- function(dataset,
                  plot_residuals_vs_period=ggplot_residual_vs_period,
                  plot_residuals_vs_season=ggplot_residual_vs_season))
 }
+
+#' Returns friendly axis ticks. e.g. for monthly it returns a factor with values c("2019-01", "2019-02").
+#' If the frequency of the dataset is anything other than 52, 12, 4, it returns the raw time() values.
+#'
+#' @param dataset ts dataset
+#' @importForm stats time
+#' @importFrom timeDate frequency
+#' @importFrom stringr str_pad
+#' @export
+rt_ts_get_friendly_time_ticks <- function(dataset) {
+
+    time_ticks <- as.numeric(time(dataset))
+    num_periods <- frequency(dataset)
+
+    if(num_periods == 52 || num_periods == 12 || num_periods == 4) {
+
+        years <- floor(time_ticks)
+        time_minor <- time_ticks - years
+        friendly_minor <- (num_periods * time_minor) + 1
+        num_zeros_to_pad <- nchar(trunc(max(friendly_minor)))
+        friendly_ticks <- paste0(years,
+                                 '-',
+                                 str_pad(string=round(friendly_minor),
+                                         width=num_zeros_to_pad, pad="0", side='left'))
+        friendly_ticks <- factor(friendly_ticks, levels=friendly_ticks, ordered=TRUE)
+        return (friendly_ticks)
+
+    } else {
+
+        return (time_ticks)
+    }
+}
+
+#' plots a time-series dataset
+#'
+#' @param dataset ts dataset
+#' @param show_values show text value above each point in time
+#' @param show_points show points
+#' @param show_dates show dates above each point in time
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param facet_multi_variables if TRUE each variable gets it's own section
+#' @param base_size sets the base/text size
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom tidyr gather
+#' @importFrom purrr map_chr
+#' @importFrom ggplot2 ggplot aes geom_line expand_limits scale_y_continuous scale_color_manual theme_light labs geom_text geom_point theme element_text coord_cartesian facet_wrap
+#' @importFrom scales pretty_breaks format_format
+#' @importForm stats time
+#' @importFrom timeDate frequency
+#' @export
+rt_ts_plot_time_series <- function(dataset,
+                                   show_values=FALSE,
+                                   show_points=FALSE,
+                                   show_dates=FALSE,
+                                   y_zoom_min=NA,
+                                   y_zoom_max=NA,
+                                   facet_multi_variables=FALSE,
+                                   base_size=11) {
+
+    df_dataset <- as.data.frame(dataset)
+    num_periods <- frequency(dataset)
+
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+
+    # 36 to allow for 3 years of monthly
+    if(is.factor(friendly_ticks) && length(friendly_ticks) > 36) {
+
+        df_dataset$ticks <- as.numeric(time(dataset))
+
+    } else {
+
+        df_dataset$ticks <- friendly_ticks
+    }
+    df_dataset$friendly_ticks <- friendly_ticks
+
+    df_dataset <- df_dataset %>%
+        gather(key, value, -c(ticks, friendly_ticks))
+    df_dataset$pretty_value <- map_chr(df_dataset$value,
+                                       ~ prettyNum(., big.mark=",", preserve.width="none", digits=4, scientific=FALSE))
+
+    ggplot_object <- df_dataset %>%
+        ggplot(aes(x=ticks, y=value, color=key, group=key)) +
+            geom_line() +
+            expand_limits(y=0) +
+            scale_y_continuous(breaks=pretty_breaks(10),
+                               labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            theme_light(base_size = base_size) +
+            labs(y=NULL,
+                 x=NULL)
+
+    if(show_values) {
+        ggplot_object <- ggplot_object +
+            geom_text(aes(label = pretty_value),
+                      check_overlap = TRUE,
+                      vjust=-0.5, size=3, na.rm = TRUE)
+    }
+
+    if(show_dates) {
+
+        if(show_values) {
+
+            show_values_hjust <- -0.5
+
+        } else {
+
+            show_values_hjust <- -0.1
+        }
+
+        ggplot_object <- ggplot_object +
+            geom_text(aes(label = friendly_ticks),
+                      check_overlap = TRUE,
+                      vjust=--0.5, hjust=show_values_hjust, size=3, na.rm = TRUE, angle=90)
+    }
+
+    if(show_points) {
+
+        ggplot_object <- ggplot_object + geom_point(size=1)
+    }
+
+    if(is.factor(df_dataset$ticks)) {
+
+        ggplot_object <- ggplot_object + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+    }
+
+    if(length(unique(df_dataset$key)) == 1) {
+
+        ggplot_object <- ggplot_object + theme(legend.position = "none")
+    }
+
+    if(!is.na(y_zoom_min) || !is.na(y_zoom_max)) {
+
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+        if(is.na(y_zoom_min)) {
+
+            y_zoom_min <- min(dataset, na.rm = TRUE)
+        }
+
+        if(is.na(y_zoom_max)) {
+
+            y_zoom_max <- max(dataset, na.rm = TRUE)
+        }
+
+        ggplot_object <- ggplot_object + coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+    }
+
+    if(facet_multi_variables && rt_ts_is_multi_variable(dataset)) {
+
+        ggplot_object <- ggplot_object + facet_wrap(~ key, ncol=1, scales = 'free_y')
+    }
+
+    return (ggplot_object)
+}

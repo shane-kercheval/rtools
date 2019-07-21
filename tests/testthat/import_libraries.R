@@ -23,6 +23,8 @@ library(timeDate)
 library(modelr)
 
 library(tidyverse)
+library(tidyr)
+
 library(fpp2)
 library(gapminder)
 library(forcats)

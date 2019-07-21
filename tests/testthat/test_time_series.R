@@ -688,3 +688,764 @@ test_that('rt_ts_auto_regression - lambda', {
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_lambda_trend.png', plot = results$plot_residuals_vs_season)
 
 })
+
+test_that('rt_ts_get_friendly_time_ticks', {
+
+    ##########################################################################################################
+    # Single Var Dataset - Daily
+    ##########################################################################################################
+    dataset <- goog
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.numeric(friendly_ticks))
+    days <- seq(start(dataset)[1], end(dataset)[1])
+    expect_true(all(days == friendly_ticks))
+
+    ##########################################################################################################
+    # Single Var Dataset - Weekly
+    ##########################################################################################################
+    dataset <- ts(data=as.numeric(melsyd[, 'First.Class']),
+                  start = c(1987, 26),
+                  end = c(1992, 48),
+                  frequency = 52)
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.factor(friendly_ticks))
+    expect_true(is.ordered(friendly_ticks))
+
+    years <- seq(start(dataset)[1], end(dataset)[1])
+    weeks <- str_pad(string=seq(1, 52), width=2, side='left', pad="0")
+    expected_values <- sort(apply(expand.grid(years, weeks), 1, paste, collapse="-"))
+    expected_values <- expected_values[26: 308]
+    expect_identical(expected_values, as.character(friendly_ticks))
+    ##########################################################################################################
+    # Single Var Dataset - Monthly
+    ##########################################################################################################
+    dataset <- a10
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.factor(friendly_ticks))
+    expect_true(is.ordered(friendly_ticks))
+
+    years <- seq(start(dataset)[1], end(dataset)[1])
+    months <- str_pad(string=seq(1, 12), width=2, side='left', pad="0")
+    expected_values <- sort(apply(expand.grid(years, months), 1, paste, collapse="-"))
+    expected_values <- expected_values[7:210]
+    expect_identical(expected_values, as.character(friendly_ticks))
+
+    ##########################################################################################################
+    # Single Var Dataset - Quarterly
+    ##########################################################################################################
+    dataset <- ausbeer
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.factor(friendly_ticks))
+    expect_true(is.ordered(friendly_ticks))
+
+    years <- seq(start(dataset)[1], end(dataset)[1])
+    quarters <- seq(1, 4)
+    expected_values <- sort(apply(expand.grid(years, quarters), 1, paste, collapse="-"))
+    expected_values <- expected_values[1:218]
+    expect_identical(expected_values, as.character(friendly_ticks))
+
+    ##########################################################################################################
+    # Single Var Dataset - Yearly
+    ##########################################################################################################
+    dataset <- ausair
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.numeric(friendly_ticks))
+    years <- seq(start(dataset)[1], end(dataset)[1])
+    expect_true(all(years == friendly_ticks))
+
+    ##########################################################################################################
+    # Multi- Var Dataset - Weekly
+    ##########################################################################################################
+    dataset <- melsyd
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.factor(friendly_ticks))
+    expect_true(is.ordered(friendly_ticks))
+
+    years <- seq(start(dataset)[1], end(dataset)[1])
+    weeks <- str_pad(string=seq(1, 52), width=2, side='left', pad="0")
+    expected_values <- sort(apply(expand.grid(years, weeks), 1, paste, collapse="-"))
+    expected_values <- expected_values[26: 308]
+    expect_identical(expected_values, as.character(friendly_ticks))
+
+
+    ##########################################################################################################
+    # Multi- Var Dataset - Quarterly
+    ##########################################################################################################
+    dataset <- arrivals
+    friendly_ticks <- rt_ts_get_friendly_time_ticks(dataset)
+    expect_true(is.factor(friendly_ticks))
+    expect_true(is.ordered(friendly_ticks))
+
+    years <- seq(start(dataset)[1], end(dataset)[1])
+    quarters <- seq(1, 4)
+    expected_values <- sort(apply(expand.grid(years, quarters), 1, paste, collapse="-"))
+    expected_values <- expected_values[1:length(expected_values) - 1]
+    expect_identical(expected_values, as.character(friendly_ticks))
+
+    ##########################################################################################################
+    # Multi- Var Dataset - Misc
+    ##########################################################################################################
+    # TBD
+})
+
+test_that('rt_ts_plot_time_series', {
+
+    ##########################################################################################################
+    # Single Var Dataset - Daily
+    ##########################################################################################################
+    dataset <- goog
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__points.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=300,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__zoom_min.png',
+                   plot=ggplot_object)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__zoom_max.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=400,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__zoom_both.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=8)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__size.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Single Var Dataset - Weekly
+    ##########################################################################################################
+    dataset <- ts(data=as.numeric(melsyd[, 'First.Class']),
+                  start = c(1987, 26),
+                  end = c(1992, 48),
+                  frequency = 52)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,  # shouldn't do anything
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1990, 1), end=c(1990, 36)),
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__defaults__36_weeks.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__points.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1990, 1), end=c(1990, 36)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__custom.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=300,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__zoom_min.png',
+                   plot=ggplot_object)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__zoom_max.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=400,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__zoom_both.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=8)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__size.png',
+                   plot=ggplot_object)
+
+    ##########################################################################################################
+    # Single Var Dataset - Monthly
+    ##########################################################################################################
+    dataset <- a10
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,  # shouldn't do anything
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1991, 7), end=c(1994, 6)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__defaults__36_months.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1991, 7), end=c(1994, 7)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__defaults__37_months.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__points.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__show_dates.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__show_dates_values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=10,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__zoom_min.png',
+                   plot=ggplot_object)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__zoom_max.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=10,
+                                            y_zoom_max=30,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__zoom_both.png',
+                   plot=ggplot_object)
+
+    ##########################################################################################################
+    # Single Var Dataset - Quarterly
+    ##########################################################################################################
+    dataset <- ausbeer
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,  # shouldn't do anything
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1956, 1), end=c(1964, 4)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__defaults__36_quarters.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1956, 1), end=c(1965, 1)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__defaults__37_quarters.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__show_dates.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__show_dates_values.png',
+                   plot=ggplot_object)
+
+    ##########################################################################################################
+    # Single Var Dataset - Yearly
+    ##########################################################################################################
+    dataset <- ausair
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,  # shouldn't do anything
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=1970, end=2006),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__defaults__36_years.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=1970, end=2007),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__defaults__37_years.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__show_dates.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__show_dates_values.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Multi- Var Dataset - Weekly
+    ##########################################################################################################
+    dataset <- melsyd
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__points.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=300,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__zoom_min.png',
+                   plot=ggplot_object)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__zoom_max.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=400,
+                                            y_zoom_max=500,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__zoom_both.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            #y_zoom_min=400,
+                                            #y_zoom_max=500,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__facet.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            #y_zoom_min=400,
+                                            #y_zoom_max=500,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__facet_values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=8)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__size.png',
+                   plot=ggplot_object)
+
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1991, 1), end=c(1991, 36)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__defaults__36_weekly.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1991, 1), end=c(1991, 36)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__defaults__36_weekly_facet.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1991, 1), end=c(1991, 37)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__defaults__37_weekly.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__show_dates.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__show_dates_values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__show_dates_values_facet.png',
+                   plot=ggplot_object)
+
+
+    ##########################################################################################################
+    # Multi- Var Dataset - Quarterly
+    ##########################################################################################################
+    dataset <- arrivals
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__defaults.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__values_points.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            #y_zoom_min=400,
+                                            #y_zoom_max=500,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__facet.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            #y_zoom_min=400,
+                                            #y_zoom_max=500,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__facet_values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1981, 1), end=c(1989, 4)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__defaults__36_quarterly.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(window(dataset, start=c(1981, 1), end=c(1989, 4)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__defaults__36_q_facet.png',
+                   plot=ggplot_object)
+
+     <- rt_ts_plot_time_series(window(dataset, start=c(1981, 1), end=c(1990, 1)),
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__defaults__37_quarterly.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=FALSE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__show_dates.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__show_dates_values.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=TRUE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=TRUE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__show_dates_values_facet.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Multi- Var Dataset - Misc
+    ##########################################################################################################
+    # TBD
+})
