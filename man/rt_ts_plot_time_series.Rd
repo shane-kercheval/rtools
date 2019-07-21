@@ -5,9 +5,9 @@
 \title{plots a time-series dataset}
 \usage{
 rt_ts_plot_time_series(dataset, show_values = FALSE,
-  show_points = FALSE, show_dates = FALSE, y_zoom_min = NA,
-  y_zoom_max = NA, facet_multi_variables = FALSE, text_size = 4,
-  base_size = 11)
+  show_points = FALSE, show_dates = FALSE, include_last_point = TRUE,
+  y_zoom_min = NA, y_zoom_max = NA, facet_multi_variables = FALSE,
+  text_size = 4, base_size = 11)
 }
 \arguments{
 \item{dataset}{ts dataset}
@@ -17,6 +17,9 @@ rt_ts_plot_time_series(dataset, show_values = FALSE,
 \item{show_points}{show points}
 
 \item{show_dates}{show dates above each point in time}
+
+\item{include_last_point}{default TRUE; if FALSE, removes the last (most recent) point; if float (0 < include_last_point < 1) then the value represents how far into the time period it is and projects accordingly;
+e.g. if the last point has a value of `100` and include_last_point is `0.25` (i.e. 25% of the way through the current period), then `100` will be adjusted to `400`.}
 
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 

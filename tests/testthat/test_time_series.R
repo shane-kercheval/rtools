@@ -1449,3 +1449,204 @@ test_that('rt_ts_plot_time_series', {
     ##########################################################################################################
     # TBD
 })
+
+test_that('rt_ts_plot_time_series: project_last_point', {
+
+    ##########################################################################################################
+    # Single Var Dataset - Daily
+    ##########################################################################################################
+    dataset <- goog
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=FALSE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_daily__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Single Var Dataset - Weekly
+    ##########################################################################################################
+    dataset <- ts(data=as.numeric(melsyd[, 'First.Class']),
+                  start = c(1987, 26),
+                  end = c(1992, 48),
+                  frequency = 52)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_weekly__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Single Var Dataset - Monthly
+    ##########################################################################################################
+    dataset <- a10
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_monthly__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Single Var Dataset - Quarterly
+    ##########################################################################################################
+    dataset <- ausbeer
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_quarterly__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Single Var Dataset - Yearly
+    ##########################################################################################################
+    dataset <- ausair
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__single_var_yearly__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Multi- Var Dataset - Weekly
+    ##########################################################################################################
+    dataset <- window(melsyd, start=1992)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_weekly__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Multi- Var Dataset - Quarterly
+    ##########################################################################################################
+    dataset <- window(arrivals, start=2004)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__include_last_false.png',
+                   plot=ggplot_object)
+
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            show_values=TRUE,
+                                            show_points=TRUE,
+                                            show_dates=FALSE,
+                                            include_last_point=0.5,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__multi_var_quarterly__include_last_project.png',
+                   plot=ggplot_object)
+    ##########################################################################################################
+    # Multi- Var Dataset - Misc
+    ##########################################################################################################
+    # TBD
+
+})

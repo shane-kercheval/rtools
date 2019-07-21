@@ -647,6 +647,8 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #' @param show_values show text value above each point in time
 #' @param show_points show points
 #' @param show_dates show dates above each point in time
+#' @param include_last_point default TRUE; if FALSE, removes the last (most recent) point; if float (0 < include_last_point < 1) then the value represents how far into the time period it is and projects accordingly;
+#'             e.g. if the last point has a value of `100` and include_last_point is `0.25` (i.e. 25% of the way through the current period), then `100` will be adjusted to `400`.
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param facet_multi_variables if TRUE each variable gets it's own section
@@ -655,6 +657,7 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom tidyr gather
+#' @importFrom dplyr filter mutate
 #' @importFrom purrr map_chr
 #' @importFrom ggplot2 ggplot aes geom_line expand_limits scale_y_continuous scale_color_manual theme_light labs geom_text geom_point theme element_text coord_cartesian facet_wrap
 #' @importFrom scales pretty_breaks format_format
@@ -665,11 +668,23 @@ rt_ts_plot_time_series <- function(dataset,
                                    show_values=FALSE,
                                    show_points=FALSE,
                                    show_dates=FALSE,
+                                   include_last_point=TRUE,
                                    y_zoom_min=NA,
                                    y_zoom_max=NA,
                                    facet_multi_variables=FALSE,
                                    text_size=4,
                                    base_size=11) {
+
+    if(include_last_point == FALSE) {
+        # remove last point
+        if(rt_ts_is_single_variable(dataset)) {
+
+            dataset <- head(dataset, length(dataset) - 1)
+        } else {
+
+            dataset <- head(dataset, nrow(dataset) - 1)
+        }
+    }
 
     df_dataset <- as.data.frame(dataset)
     num_periods <- frequency(dataset)
@@ -701,6 +716,27 @@ rt_ts_plot_time_series <- function(dataset,
             theme_light(base_size = base_size) +
             labs(y=NULL,
                  x=NULL)
+
+    if (is.numeric(include_last_point)) {
+        # keep last point but project it.
+        rt_stopif(include_last_point <= 0)
+        rt_stopif(include_last_point >= 1)
+
+        projections <- df_dataset %>%
+            filter(ticks == max(ticks)) %>%
+            mutate(value = value / include_last_point)
+
+        projections$pretty_value <- map_chr(projections$value,
+                                          ~ prettyNum(., big.mark=",", preserve.width="none", digits=4, scientific=FALSE))
+
+        ggplot_object <- ggplot_object +
+            geom_point(data = projections, aes(x=ticks, y=value), color="red", size=2.2) +
+            geom_point(data = projections, aes(x=ticks, y=value), size=1.3) +
+            geom_text(data = projections,
+                      aes(x=ticks, y=value, label=pretty_value),
+                      color="red", vjust=-0.5, size=text_size, check_overlap = TRUE) +
+            labs(caption='Point with Red outline is projection based on how far into the time period we are.')
+    }
 
     if(rt_ts_is_multi_variable(dataset)) {
 
