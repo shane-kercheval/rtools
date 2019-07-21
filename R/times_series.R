@@ -613,7 +613,7 @@ rt_ts_auto_regression <- function(dataset,
 #' If the frequency of the dataset is anything other than 52, 12, 4, it returns the raw time() values.
 #'
 #' @param dataset ts dataset
-#' @importForm stats time
+#' @importFrom stats time
 #' @importFrom timeDate frequency
 #' @importFrom stringr str_pad
 #' @export
@@ -658,7 +658,7 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #' @importFrom purrr map_chr
 #' @importFrom ggplot2 ggplot aes geom_line expand_limits scale_y_continuous scale_color_manual theme_light labs geom_text geom_point theme element_text coord_cartesian facet_wrap
 #' @importFrom scales pretty_breaks format_format
-#' @importForm stats time
+#' @importFrom stats time
 #' @importFrom timeDate frequency
 #' @export
 rt_ts_plot_time_series <- function(dataset,
