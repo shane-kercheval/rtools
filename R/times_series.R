@@ -221,6 +221,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 rt_ts_auto_regression <- function(dataset,
                                   dependent_variable=NULL,
                                   independent_variables=NULL,
+                                  ignore_last_x_periods=NULL,
                                   lambda=NULL,
                                   num_lags=NULL,
                                   include_dependent_variable_lag=TRUE,
@@ -263,7 +264,6 @@ rt_ts_auto_regression <- function(dataset,
 
         dependent_variable <- 'data'
     }
-
 
     # add lags to dataset
     if(!is.null(num_lags)) {
@@ -323,6 +323,17 @@ rt_ts_auto_regression <- function(dataset,
     # but will also remove the NAs at the end of the dataset which is needed to we restrict the training to the
     # original time horizon i.e. ending period
     training_data <- na.omit(dataset)
+
+    if(!is.null(ignore_last_x_periods)) {
+        if(rt_ts_is_single_variable(training_data)) {
+
+            training_data <- head(training_data, length(training_data) - ignore_last_x_periods)
+
+        } else {
+
+            training_data <- head(training_data, nrow(training_data) - ignore_last_x_periods)
+        }
+    }
     ts_model <- tslm(formula=reg_formula, data=training_data, lambda=lambda)
 
     ts_forecast <- NULL
@@ -344,7 +355,6 @@ rt_ts_auto_regression <- function(dataset,
 
             # it is possible that we stripped out all but one variable i.e. it is now single-var dataset
             temp <- na.omit(dataset[, independent_vars_used_from_dataset])
-
 
             # i want to verify that the end() of temp is exactly `ex_ante_forecast_horizon` periods after the
             # last period we trained on
@@ -469,6 +479,23 @@ rt_ts_auto_regression <- function(dataset,
         ######################################################################################################
         # build plot; use data before it was striped of NAs (`dataset`) so when we plot the regression points,
         # we can see what the model used or did not use
+
+        # final_dataset <- ts.union(actual=dependent_values,
+        #          fitted=ts_forecast$fitted,
+        #          forecast=as.ts(ts_forecast))
+        # colnames(final_dataset)
+        #
+        # rt_ts_plot_time_series(dataset=ts.union(actual=dependent_values,
+        #                                 fitted=ts_forecast$fitted,
+        #                                 forecast=as.ts(ts_forecast)[,'Point Forecast']),
+        #                        line_colors = c('black', 'blue', 'red'),
+        #                        show_points=FALSE,
+        #                        show_values=FALSE)
+        #
+        #
+        #  #= rt_ts_plot_time_series(as.ts(ts_forecast))
+
+
         ggplot_fit <- autoplot(dependent_values) +
             autolayer(fitted(ts_model), series='Regression')
 
@@ -651,6 +678,7 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param facet_multi_variables if TRUE each variable gets it's own section
+#' @param line_colors if NULL then black for single-var and rt_colors for multi-var
 #' @param text_size sets the text size
 #' @param base_size sets the base size
 #'
@@ -671,6 +699,7 @@ rt_ts_plot_time_series <- function(dataset,
                                    y_zoom_min=NA,
                                    y_zoom_max=NA,
                                    facet_multi_variables=FALSE,
+                                   line_colors=NULL,
                                    text_size=4,
                                    base_size=11) {
 
@@ -708,13 +737,14 @@ rt_ts_plot_time_series <- function(dataset,
 
     ggplot_object <- df_dataset %>%
         ggplot(aes(x=ticks, y=value, color=key, group=key)) +
-            geom_line() +
+            geom_line(na.rm = TRUE) +
             expand_limits(y=0) +
             scale_y_continuous(breaks=pretty_breaks(10),
                                labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             theme_light(base_size = base_size) +
             labs(y=NULL,
-                 x=NULL)
+                 x=NULL,
+                 color=NULL)
 
     if (is.numeric(include_last_point)) {
         # keep last point but project it.
@@ -739,11 +769,17 @@ rt_ts_plot_time_series <- function(dataset,
 
     if(rt_ts_is_multi_variable(dataset)) {
 
+        if(is.null(line_colors)) {
+            line_colors <- c(rt_colors(), rt_colors())
+        }
         ggplot_object <- ggplot_object +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132')
+            scale_color_manual(values=line_colors, na.value = '#2A3132')
     } else {
+        if(is.null(line_colors)) {
+            line_colors <- 'black'
+        }
         ggplot_object <- ggplot_object +
-            scale_color_manual(values='black', na.value = '#2A3132')
+            scale_color_manual(values=line_colors, na.value = '#2A3132')
     }
 
     if(show_values) {
@@ -772,7 +808,7 @@ rt_ts_plot_time_series <- function(dataset,
 
     if(show_points) {
 
-        ggplot_object <- ggplot_object + geom_point(size=1)
+        ggplot_object <- ggplot_object + geom_point(size=1, na.rm = TRUE)
     }
 
     if(is.factor(df_dataset$ticks)) {

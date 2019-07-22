@@ -7,7 +7,7 @@
 rt_ts_plot_time_series(dataset, show_values = FALSE,
   show_points = FALSE, show_dates = FALSE, include_last_point = TRUE,
   y_zoom_min = NA, y_zoom_max = NA, facet_multi_variables = FALSE,
-  text_size = 4, base_size = 11)
+  line_colors = NULL, text_size = 4, base_size = 11)
 }
 \arguments{
 \item{dataset}{ts dataset}
@@ -25,6 +25,8 @@ rt_ts_plot_time_series(dataset, show_values = FALSE,
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
 
 \item{facet_multi_variables}{if TRUE each variable gets it's own section}
+
+\item{line_colors}{if NULL then black for single-var and rt_colors for multi-var}
 
 \item{text_size}{sets the text size}
 
