@@ -6,6 +6,8 @@
 \usage{
 rt_ts_plot_time_series(dataset, show_values = FALSE,
   show_points = FALSE, show_dates = FALSE, include_last_point = TRUE,
+  fitted_dataset = NULL, show_fit_points_values = FALSE,
+  forecasted_dataset = NULL, show_forecasted_points_values = TRUE,
   y_zoom_min = NA, y_zoom_max = NA, facet_multi_variables = FALSE,
   line_colors = NULL, text_size = 4, base_size = 11)
 }
@@ -19,6 +21,14 @@ rt_ts_plot_time_series(dataset, show_values = FALSE,
 \item{show_dates}{show dates above each point in time}
 
 \item{include_last_point}{default TRUE; if FALSE, removes the last (most recent) point; if float (0 < include_last_point < 1) then the value represents how far into the time period it is and projects accordingly; e.g. if the last point has a value of `100` and include_last_point is `0.25` (i.e. 25 percent of the way through the current period), then `100` will be adjusted to `400`.}
+
+\item{fitted_dataset}{adds a fit line based on the dataset passed in}
+
+\item{show_fit_points_values}{shows the fitted points and values if fitted_dataset is not null}
+
+\item{forecasted_dataset}{adds forecasted line points and}
+
+\item{show_forecasted_points_values}{shows the fitted points and values if forecasted_dataset is not null}
 
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 

@@ -471,60 +471,24 @@ rt_ts_auto_regression <- function(dataset,
                 na.omit() %>%
                 as.data.frame() %>%
                 mutate(Season=as.factor(Season))
-
         }
-
         ######################################################################################################
         # FIT GRAPH (AND FORECAST IF APPLICABLE)
         ######################################################################################################
         # build plot; use data before it was striped of NAs (`dataset`) so when we plot the regression points,
         # we can see what the model used or did not use
 
-        # final_dataset <- ts.union(actual=dependent_values,
-        #          fitted=ts_forecast$fitted,
-        #          forecast=as.ts(ts_forecast))
-        # colnames(final_dataset)
-        #
-        # rt_ts_plot_time_series(dataset=ts.union(actual=dependent_values,
-        #                                 fitted=ts_forecast$fitted,
-        #                                 forecast=as.ts(ts_forecast)[,'Point Forecast']),
-        #                        line_colors = c('black', 'blue', 'red'),
-        #                        show_points=FALSE,
-        #                        show_values=FALSE)
-        #
-        #
-        #  #= rt_ts_plot_time_series(as.ts(ts_forecast))
-
-
-        ggplot_fit <- autoplot(dependent_values) +
-            autolayer(fitted(ts_model), series='Regression')
-
-        if(!is.null(ex_ante_forecast_horizon)) {
-
-            ggplot_fit <- ggplot_fit +
-                autolayer(ts_forecast, series = 'Regression')
-
-            if(show_forecast_labels) {
-
-                forecast_start <- start(ts_forecast$mean)
-                forecast_end <- end(ts_forecast$mean)
-                forecast_freq <- frequency(ts_forecast$mean)
-
-                ts_forecast_data <- ts(as.data.frame(ts_forecast)$`Point Forecast`,
-                                       start = forecast_start,
-                                       end=forecast_end,
-                                       frequency = forecast_freq)
-                ggplot_fit <- ggplot_fit +
-                    geom_point(data=ts_forecast_data) +
-                    geom_text(data=ts_forecast_data,
-                              aes(label=rt_pretty_numerics(as.numeric(ts_forecast_data))),
-                              size=3.1,
-                              check_overlap=TRUE,
-                              vjust=-0.2,
-                              hjust=-0.2)
-            }
+        forecasted_dataset <- NULL
+        if(!is.null(ts_forecast)) {
+            forecasted_dataset <- as.ts(ts_forecast)
         }
-
+        ggplot_fit <- rt_ts_plot_time_series(dataset=dependent_values,
+                                             fitted_dataset=ts_model$fitted.values,
+                                             forecasted_dataset=forecasted_dataset,
+                                             show_values=show_dataset_labels,
+                                             show_points=show_dataset_labels,
+                                             show_fit_points_values = FALSE,
+                                             show_forecasted_points_values = show_forecast_labels)
         ggplot_fit <- ggplot_fit + labs(y=dependent_variable)
 
         ######################################################################################################
@@ -675,6 +639,10 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #' @param show_points show points
 #' @param show_dates show dates above each point in time
 #' @param include_last_point default TRUE; if FALSE, removes the last (most recent) point; if float (0 < include_last_point < 1) then the value represents how far into the time period it is and projects accordingly; e.g. if the last point has a value of `100` and include_last_point is `0.25` (i.e. 25 percent of the way through the current period), then `100` will be adjusted to `400`.
+#' @param fitted_dataset adds a fit line based on the dataset passed in
+#' @param show_fit_points_values shows the fitted points and values if fitted_dataset is not null
+#' @param forecasted_dataset adds forecasted line points and
+#' @param show_forecasted_points_values shows the fitted points and values if forecasted_dataset is not null
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param facet_multi_variables if TRUE each variable gets it's own section
@@ -696,6 +664,10 @@ rt_ts_plot_time_series <- function(dataset,
                                    show_points=FALSE,
                                    show_dates=FALSE,
                                    include_last_point=TRUE,
+                                   fitted_dataset=NULL,
+                                   show_fit_points_values=FALSE,
+                                   forecasted_dataset=NULL,
+                                   show_forecasted_points_values=TRUE,
                                    y_zoom_min=NA,
                                    y_zoom_max=NA,
                                    facet_multi_variables=FALSE,
@@ -714,6 +686,8 @@ rt_ts_plot_time_series <- function(dataset,
         }
     }
 
+    # if fitted_dataset and/or forecasted_dataset is NULL then they should be ignored in ts.union
+    dataset <- ts.union(dataset, fitted_dataset, forecasted_dataset)
     df_dataset <- as.data.frame(dataset)
     num_periods <- frequency(dataset)
 
@@ -730,8 +704,50 @@ rt_ts_plot_time_series <- function(dataset,
     }
     df_dataset$friendly_ticks <- friendly_ticks
 
-    df_dataset <- df_dataset %>%
-        gather(key, value, -c(ticks, friendly_ticks))
+    if(!is.null(fitted_dataset) || !is.null(forecasted_dataset)) {
+
+        ignore_columns <- c('ticks', 'friendly_ticks')
+
+        if(!is.null(fitted_dataset)) {
+
+            df_dataset <- df_dataset %>%
+                rename(Fitted=fitted_dataset)
+
+            ignore_columns <- c(ignore_columns, 'Fitted')
+        }
+
+        if(!is.null(forecasted_dataset)) {
+            df_dataset <- df_dataset %>%
+                rename(Forecast=`forecasted_dataset.Point Forecast`)
+
+            ignore_columns <- c(ignore_columns,
+                                "Forecast",
+                                "forecasted_dataset.Lo 80",
+                                "forecasted_dataset.Hi 80",
+                                "forecasted_dataset.Lo 95",
+                                "forecasted_dataset.Hi 95")
+        }
+
+        df_dataset <- df_dataset %>%
+            rename(Actual=dataset) %>%
+            gather(key, value, -ignore_columns)
+
+        if(!is.null(fitted_dataset)) {
+            df_dataset$pretty_fitted <- map_chr(df_dataset$Fitted,
+                                                  ~ prettyNum(., big.mark=",", preserve.width="none", digits=4, scientific=FALSE))
+        }
+
+        if(!is.null(forecasted_dataset)) {
+            df_dataset$pretty_forecast <- map_chr(df_dataset$Forecast,
+                                                  ~ prettyNum(., big.mark=",", preserve.width="none", digits=4, scientific=FALSE))
+        }
+    } else {
+
+        df_dataset <- df_dataset %>%
+            gather(key, value, -c(ticks, friendly_ticks))
+
+    }
+
     df_dataset$pretty_value <- map_chr(df_dataset$value,
                                        ~ prettyNum(., big.mark=",", preserve.width="none", digits=4, scientific=FALSE))
 
@@ -746,6 +762,38 @@ rt_ts_plot_time_series <- function(dataset,
                  x=NULL,
                  color=NULL)
 
+    if(!is.null(fitted_dataset)) {
+        ggplot_object <- ggplot_object +
+            geom_line(aes(y=Fitted, color="Fitted"), na.rm = TRUE)
+
+        if(show_fit_points_values) {
+
+            ggplot_object <- ggplot_object +
+                geom_point(aes(y=Fitted, color="Fitted"), na.rm = TRUE, show.legend = FALSE) +
+                geom_text(aes(y=Fitted, label=pretty_fitted, color="Fitted"), na.rm = TRUE,
+                          vjust=-0.5, size=text_size, check_overlap = TRUE, show.legend = FALSE)
+        }
+    }
+
+    if(!is.null(forecasted_dataset)) {
+        ggplot_object <- ggplot_object +
+            geom_line(aes(y=Forecast, color="Forecast"), na.rm = TRUE)
+
+        ggplot_object <- ggplot_object +
+            geom_ribbon(aes(ymin=`forecasted_dataset.Lo 80`, ymax=`forecasted_dataset.Hi 80`, color=NULL),
+                        fill="red", alpha=0.4, show.legend=FALSE, na.rm = TRUE) +
+            geom_ribbon(aes(ymin=`forecasted_dataset.Lo 95`, ymax=`forecasted_dataset.Hi 95`, color=NULL),
+                        fill="red", alpha=0.25, show.legend=FALSE, na.rm = TRUE)
+
+        if(show_forecasted_points_values) {
+
+            ggplot_object <- ggplot_object +
+                geom_point(aes(y=Forecast, color="Forecast"), na.rm = TRUE, show.legend = FALSE) +
+                geom_text(aes(y=Forecast, label=pretty_forecast, color="Forecast"), na.rm = TRUE,
+                          vjust=-0.5, size=text_size, check_overlap = TRUE, show.legend = FALSE)
+        }
+    }
+
     if (is.numeric(include_last_point)) {
         # keep last point but project it.
         rt_stopif(include_last_point <= 0)
@@ -756,37 +804,42 @@ rt_ts_plot_time_series <- function(dataset,
             mutate(value = value / include_last_point)
 
         projections$pretty_value <- map_chr(projections$value,
-                                          ~ prettyNum(., big.mark=",", preserve.width="none", digits=4, scientific=FALSE))
+                                          ~ prettyNum(., big.mark=",", preserve.width="none", digits=4,
+                                                      scientific=FALSE))
 
         ggplot_object <- ggplot_object +
-            geom_point(data = projections, aes(x=ticks, y=value), color="red", size=2.2) +
-            geom_point(data = projections, aes(x=ticks, y=value), size=1.3) +
+            geom_point(data = projections, aes(x=ticks, y=value), color="red", size=2.2, show.legend = FALSE) +
+            geom_point(data = projections, aes(x=ticks, y=value), size=1.3, show.legend = FALSE) +
             geom_text(data = projections,
                       aes(x=ticks, y=value, label=pretty_value),
-                      color="red", vjust=-0.5, size=text_size, check_overlap = TRUE) +
+                      color="red", vjust=-0.5, size=text_size, check_overlap = TRUE, show.legend = FALSE) +
             labs(caption='Point with Red outline is projection based on how far into the time period we are.')
     }
 
-    if(rt_ts_is_multi_variable(dataset)) {
+    if(!is.null(fitted_dataset) || !is.null(forecasted_dataset)) {
 
-        if(is.null(line_colors)) {
+        line_colors <- 'black'
+
+        if(!is.null(fitted_dataset)) {
+            line_colors <- c(line_colors, 'blue')
+        }
+        if(!is.null(forecasted_dataset)) {
+            line_colors <- c(line_colors, 'red')
+        }
+    } else if(rt_ts_is_multi_variable(dataset) && is.null(line_colors)) {
+
             line_colors <- c(rt_colors(), rt_colors())
-        }
-        ggplot_object <- ggplot_object +
-            scale_color_manual(values=line_colors, na.value = '#2A3132')
-    } else {
-        if(is.null(line_colors)) {
+    } else if (is.null(line_colors)) {
             line_colors <- 'black'
-        }
-        ggplot_object <- ggplot_object +
-            scale_color_manual(values=line_colors, na.value = '#2A3132')
     }
+
+    ggplot_object <- ggplot_object +
+        scale_color_manual(values=line_colors, na.value = '#2A3132')
 
     if(show_values) {
         ggplot_object <- ggplot_object +
             geom_text(aes(label = pretty_value),
-                      check_overlap = TRUE,
-                      vjust=-0.5, size=text_size, na.rm = TRUE)
+                      check_overlap = TRUE, vjust=-0.5, size=text_size, na.rm = TRUE, show.legend = FALSE)
     }
 
     if(show_dates) {
@@ -802,13 +855,13 @@ rt_ts_plot_time_series <- function(dataset,
 
         ggplot_object <- ggplot_object +
             geom_text(aes(label = friendly_ticks),
-                      check_overlap = TRUE,
-                      vjust=--0.5, hjust=show_values_hjust, size=text_size, na.rm = TRUE, angle=90)
+                      check_overlap = TRUE, vjust=--0.5, hjust=show_values_hjust, size=text_size,
+                      na.rm = TRUE, angle=90, show.legend = FALSE)
     }
 
     if(show_points) {
 
-        ggplot_object <- ggplot_object + geom_point(size=1, na.rm = TRUE)
+        ggplot_object <- ggplot_object + geom_point(size=1, na.rm = TRUE, show.legend = FALSE)
     }
 
     if(is.factor(df_dataset$ticks)) {
@@ -816,7 +869,7 @@ rt_ts_plot_time_series <- function(dataset,
         ggplot_object <- ggplot_object + theme(axis.text.x = element_text(angle = 30, hjust = 1))
     }
 
-    if(length(unique(df_dataset$key)) == 1) {
+    if(length(unique(df_dataset$key)) == 1 && is.null(fitted_dataset) && is.null(forecasted_dataset)) {
 
         ggplot_object <- ggplot_object + theme(legend.position = "none")
     }
