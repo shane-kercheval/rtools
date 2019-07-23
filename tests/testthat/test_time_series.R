@@ -1708,3 +1708,22 @@ test_that('rt_ts_plot_time_series: project_last_point', {
     # TBD
 
 })
+
+test_that('rt_ts_plot_time_series: forecasted',  {
+
+    dataset <- goog
+    forecast_model <- forecast(dataset, h=100)
+    ggplot_object <- rt_ts_plot_time_series(dataset,
+                                            forecasted_dataset = as.ts(forecast_model),
+                                            show_forecasted_points_values = FALSE,
+                                            show_values=FALSE,
+                                            show_points=FALSE,
+                                            show_dates=FALSE,
+                                            include_last_point=FALSE,
+                                            y_zoom_min=NA,
+                                            y_zoom_max=NA,
+                                            facet_multi_variables=FALSE,
+                                            base_size=11)
+    test_save_plot(file_name='data/rt_ts_plot_time_series__forecasted_dataset.png',
+                   plot=ggplot_object)
+})

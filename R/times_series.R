@@ -674,6 +674,7 @@ rt_ts_get_friendly_time_ticks <- function(dataset) {
 #' @importFrom dplyr filter mutate
 #' @importFrom purrr map_chr
 #' @importFrom ggplot2 ggplot aes geom_line expand_limits scale_y_continuous scale_color_manual theme_light labs geom_text geom_point theme element_text coord_cartesian facet_wrap
+#' @importFrom stringr str_remove
 #' @importFrom scales pretty_breaks format_format
 #' @importFrom stats time
 #' @importFrom timeDate frequency
@@ -706,7 +707,17 @@ rt_ts_plot_time_series <- function(dataset,
     }
 
     # if fitted_dataset and/or forecasted_dataset is NULL then they should be ignored in ts.union
-    dataset <- ts.union(dataset, fitted_dataset, forecasted_dataset)
+    if(!is.null(fitted_dataset) || !is.null(forecasted_dataset)) {
+
+        stopifnot(rt_ts_is_single_variable(dataset))
+
+        dataset <- ts.union(dataset, fitted_dataset, forecasted_dataset)
+        current_col_names <- colnames(dataset)
+        colnames(dataset) <- current_col_names %>%
+            str_remove(pattern = 'fitted_dataset.') %>%
+            str_remove(pattern = 'forecasted_dataset.')
+    }
+
     df_dataset <- as.data.frame(dataset)
     num_periods <- frequency(dataset)
 
@@ -737,14 +748,14 @@ rt_ts_plot_time_series <- function(dataset,
 
         if(!is.null(forecasted_dataset)) {
             df_dataset <- df_dataset %>%
-                rename(Forecast=`forecasted_dataset.Point Forecast`)
+                rename(Forecast=`Point Forecast`)
 
             ignore_columns <- c(ignore_columns,
                                 "Forecast",
-                                "forecasted_dataset.Lo 80",
-                                "forecasted_dataset.Hi 80",
-                                "forecasted_dataset.Lo 95",
-                                "forecasted_dataset.Hi 95")
+                                "Lo 80",
+                                "Hi 80",
+                                "Lo 95",
+                                "Hi 95")
         }
 
         df_dataset <- df_dataset %>%
@@ -799,9 +810,9 @@ rt_ts_plot_time_series <- function(dataset,
             geom_line(aes(y=Forecast, color="Forecast"), na.rm = TRUE)
 
         ggplot_object <- ggplot_object +
-            geom_ribbon(aes(ymin=`forecasted_dataset.Lo 80`, ymax=`forecasted_dataset.Hi 80`, color=NULL),
+            geom_ribbon(aes(ymin=`Lo 80`, ymax=`Hi 80`, color=NULL),
                         fill="red", alpha=0.25, show.legend=FALSE, na.rm = TRUE) +
-            geom_ribbon(aes(ymin=`forecasted_dataset.Lo 95`, ymax=`forecasted_dataset.Hi 95`, color=NULL),
+            geom_ribbon(aes(ymin=`Lo 95`, ymax=`Hi 95`, color=NULL),
                         fill="red", alpha=0.15, show.legend=FALSE, na.rm = TRUE)
 
         if(show_forecasted_points_values) {
