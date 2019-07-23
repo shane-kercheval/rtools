@@ -205,6 +205,7 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
 #'
 #' single-variable & multi-variable datasets can also include `trend` and/or `season` values
 #'
+#' @param ignore_last_x_periods exclude last x periods from model
 #' @param lambda (simply passes value to `tslm`); according to their docs: "Box-Cox transformation parameter. If lambda="auto", then a transformation is automatically selected using BoxCox.lambda. The transformation is ignored if NULL. Otherwise, data transformed before model is estimated."
 #' @param num_lags if specified, adds lag variables for all the independent_variables
 #' @param include_dependent_variable_lag if num_lags >= 1 *and* a multi-variable dataset, then this indicates whether or not we should lag the dependent_variable and include it in the model (if the data is single-variable, then this is ignored, because the only thing to lag is the dependent_variable)
@@ -781,9 +782,9 @@ rt_ts_plot_time_series <- function(dataset,
 
         ggplot_object <- ggplot_object +
             geom_ribbon(aes(ymin=`forecasted_dataset.Lo 80`, ymax=`forecasted_dataset.Hi 80`, color=NULL),
-                        fill="red", alpha=0.4, show.legend=FALSE, na.rm = TRUE) +
+                        fill="red", alpha=0.25, show.legend=FALSE, na.rm = TRUE) +
             geom_ribbon(aes(ymin=`forecasted_dataset.Lo 95`, ymax=`forecasted_dataset.Hi 95`, color=NULL),
-                        fill="red", alpha=0.25, show.legend=FALSE, na.rm = TRUE)
+                        fill="red", alpha=0.15, show.legend=FALSE, na.rm = TRUE)
 
         if(show_forecasted_points_values) {
 

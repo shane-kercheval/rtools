@@ -22,6 +22,8 @@ rt_ts_auto_regression(dataset, dependent_variable = NULL,
 
 single-variable & multi-variable datasets can also include `trend` and/or `season` values}
 
+\item{ignore_last_x_periods}{exclude last x periods from model}
+
 \item{lambda}{(simply passes value to `tslm`); according to their docs: "Box-Cox transformation parameter. If lambda="auto", then a transformation is automatically selected using BoxCox.lambda. The transformation is ignored if NULL. Otherwise, data transformed before model is estimated."}
 
 \item{num_lags}{if specified, adds lag variables for all the independent_variables}

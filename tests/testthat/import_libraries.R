@@ -28,3 +28,12 @@ library(tidyr)
 library(fpp2)
 library(gapminder)
 library(forcats)
+
+
+library(testthat)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(gapminder)
+library(nycflights13)
+library(forcats)
