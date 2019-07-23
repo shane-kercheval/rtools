@@ -162,7 +162,6 @@ test_that('rt_ts_auto_regression - single variable', {
     expect_error(rt_ts_auto_regression(a10, ex_ante_forecast_horizon=10))
     expect_error(rt_ts_auto_regression(a10))
 
-
     results <- rt_ts_auto_regression(dataset=a10,
                                      independent_variables = 'trend',
                                      num_lags=NULL,
@@ -369,7 +368,6 @@ test_that('rt_ts_auto_regression - multi variable', {
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_no_lag.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_no_lag.png', plot = results$plot_residuals_vs_season)
 
-
     # shouldn't work because ex_ante_forecast_horizon=3 will remove all non-lagged vars and no independent vars will be left
     expect_error(rt_ts_auto_regression(dataset=melsyd,
                                        dependent_variable = 'First.Class',
@@ -449,7 +447,6 @@ test_that('rt_ts_auto_regression - multi variable', {
     expect_null(results$plot_residuals_vs_predictors)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_residuals_vs_period)
     test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_forecast_trend_season_lag_3.png', plot = results$plot_residuals_vs_season)
-
 
     ##############
     # Now, we are not using Business.Class, which has many NAs, so the regression should use most of the dataset, confirm with plot
@@ -544,7 +541,7 @@ test_that('rt_ts_auto_regression - multi variable', {
     # ensure the formula used matches our expectations
     expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
     # ensure the model's R-Squared is expected
-    expect_equal(summary(results$model)$adj.r.squared, 0.2264676, tolerance=1e-7)
+    expect_equal(summary(results$model)$adj.r.squared, 0.2961733, tolerance=1e-7)
     # check that we corecasted the correct periods
     expect_true(all(rownames(as.data.frame(results$forecast)) == c("1992.923", "1992.942", "1992.962")))
 
@@ -642,7 +639,7 @@ test_that('rt_ts_auto_regression - multi variable', {
                                      num_lags=1,
                                      include_dependent_variable_lag=TRUE,
                                      ex_ante_forecast_horizon=1)
-    expected_formula <- 'First.Class ~ trend + season + First.Class_lag_1'
+    expected_formula <- 'original_data ~ trend + season + data_lag_1'
     expect_equal(results$formula, expected_formula)
     # ensure the formula used matches our expectations
     expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
@@ -662,6 +659,67 @@ test_that('rt_ts_auto_regression - multi variable', {
     ##########################################################################################################
     # END BUG FIX
     ##########################################################################################################
+})
+
+test_that('rt_ts_auto_regression - ignore_last_x', {
+
+    results <- rt_ts_auto_regression(dataset=window(melsyd, start=1991),
+                                     dependent_variable = 'First.Class',
+                                     independent_variables=c('trend', 'season'),  # should be the same as NULL
+                                     num_lags=NULL,
+                                     ignore_last_x_periods=5,
+                                     include_dependent_variable_lag=FALSE,
+                                     ex_ante_forecast_horizon=6)
+    expected_formula <- "data ~ trend + season"
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectations
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$r.squared, 0.8060852, tolerance=1e-7)
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_lag__ignore_last_x.png',
+                   plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_lag__ignore_last_x_zoom.png',
+                   plot = results$plot_fit + coord_cartesian(xlim=c(1992.75,1993)))
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_no_lag__ignore_last_x.png',
+                   plot = results$plot_actual_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_no_lag__ignore_last_x.png',
+                   plot = results$plot_residuals_vs_fitted)
+    # test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_no_lag__ignore_last_x.png',
+    #                plot = results$plot_residuals_vs_predictors)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_no_lag__ignore_last_x.png',
+                   plot = results$plot_residuals_vs_period)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_no_lag__ignore_last_x.png',
+                   plot = results$plot_residuals_vs_season)
+
+    results <- rt_ts_auto_regression(dataset=window(melsyd, start=1991),
+                                     dependent_variable = 'First.Class',
+                                     independent_variables=c('trend', 'season'),  # should be the same as NULL
+                                     num_lags=7,
+                                     ignore_last_x_periods=5,
+                                     include_dependent_variable_lag=FALSE,
+                                     ex_ante_forecast_horizon=6)
+    expected_formula <- "original_data ~ trend + season + data_lag_6 + data_lag_7"
+    expect_equal(results$formula, expected_formula)
+    # ensure the formula used matches our expectations
+    expect_equal(as.character(formula(results$model))[3], str_split(expected_formula, ' ~ ', simplify = TRUE)[, 2])
+    # ensure the model's R-Squared is expected
+    expect_equal(summary(results$model)$r.squared, 0.8932137, tolerance=1e-7)
+    # save plot
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_lag__ignore_last_x_lags.png',
+                   plot = results$plot_fit)
+    test_save_plot(file_name = 'data/ts_regression/regression_melsyd_no_lag__ignore_last_x_lags_zoom.png',
+                   plot = results$plot_fit + coord_cartesian(xlim=c(1992.75,1993)))
+    test_save_plot(file_name = 'data/ts_regression/actual_vs_fit_melsyd_no_lag__ignore_last_x_lags.png',
+                   plot = results$plot_actual_vs_fitted)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_fit_melsyd_no_lag__ignore_last_x_lags.png',
+                   plot = results$plot_residuals_vs_fitted)
+    # test_save_plot(file_name = 'data/ts_regression/residuals_vs_pred_melsyd_no_lag__ignore_last_x_lags.png',
+    #                plot = results$plot_residuals_vs_predictors)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_period_melsyd_no_lag__ignore_last_x_lags.png',
+                   plot = results$plot_residuals_vs_period)
+    test_save_plot(file_name = 'data/ts_regression/residuals_vs_season_melsyd_no_lag__ignore_last_x_lags.png',
+                   plot = results$plot_residuals_vs_season)
 })
 
 test_that('rt_ts_auto_regression - lambda', {

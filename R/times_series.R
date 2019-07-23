@@ -190,7 +190,10 @@ rt_ts_create_lagged_dataset <- function(dataset, num_lags=1, lag_variables=NULL,
         }
     }
 
-    colnames(lagged_dataset) <- new_columns
+    if(rt_ts_is_multi_variable(lagged_dataset)) {
+
+        colnames(lagged_dataset) <- new_columns
+    }
 
     return (lagged_dataset)
 }
@@ -230,6 +233,20 @@ rt_ts_auto_regression <- function(dataset,
                                   build_graphs=TRUE,
                                   show_dataset_labels=FALSE,
                                   show_forecast_labels=TRUE) {
+
+    if(rt_ts_is_multi_variable(dataset)) {
+
+        if(is.null(independent_variables)) {
+            independent_variables <- colnames(dataset) %>% rt_remove_val(dependent_variable)
+        }
+        dataset <- dataset[, unique(c(dependent_variable, independent_variables) %>% rt_remove_val(c('trend', 'season')))]
+
+        # might have filtered dataset so it is now only a single-var; in which case we have to change the dependent variable
+        if(rt_ts_is_single_variable(dataset)) {
+
+            dependent_variable <- NULL
+        }
+    }
 
     if(!is.null(num_lags)) {
 
@@ -359,34 +376,34 @@ rt_ts_auto_regression <- function(dataset,
 
             # i want to verify that the end() of temp is exactly `ex_ante_forecast_horizon` periods after the
             # last period we trained on
-            period_add_duration <- function(period, data_frequency, periods_to_add) {
-
-                years_to_add <- floor((period[2] + periods_to_add - 1) / data_frequency)
-                ending_period <- (period[2] + periods_to_add) %% data_frequency
-
-                if(ending_period == 0) {
-                    ending_period <- data_frequency
-                }
-
-                period[1] <- period[1] + years_to_add
-                period[2] <- ending_period
-
-                return (period)
-            }
-
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=5)
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=6)
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=7)
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24)
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 5)
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 6)
-            # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 7)
-
-            # need to "add" a period plus a "duration"
-            expected_end <- period_add_duration(period=end(training_data),
-                                                data_frequency=frequency(training_data),
-                                                periods_to_add=ex_ante_forecast_horizon)
-            stopifnot(all(expected_end == end(temp)))
+            # period_add_duration <- function(period, data_frequency, periods_to_add) {
+            #
+            #     years_to_add <- floor((period[2] + periods_to_add - 1) / data_frequency)
+            #     ending_period <- (period[2] + periods_to_add) %% data_frequency
+            #
+            #     if(ending_period == 0) {
+            #         ending_period <- data_frequency
+            #     }
+            #
+            #     period[1] <- period[1] + years_to_add
+            #     period[2] <- ending_period
+            #
+            #     return (period)
+            # }
+            #
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=5)
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=6)
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=7)
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24)
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 5)
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 6)
+            # # period_add_duration(period=c(2008, 6), data_frequency=12, periods_to_add=24 + 7)
+            #
+            # # need to "add" a period plus a "duration"
+            # expected_end <- period_add_duration(period=end(training_data),
+            #                                     data_frequency=frequency(training_data),
+            #                                     periods_to_add=ex_ante_forecast_horizon)
+            #stopifnot(all(expected_end == end(temp)))
 
             if(rt_ts_is_single_variable(temp)) {
 
@@ -421,6 +438,7 @@ rt_ts_auto_regression <- function(dataset,
             stopifnot(nrow(new_data) == ex_ante_forecast_horizon)
 
             ts_forecast <- forecast(ts_model, newdata=new_data)
+
         }
     }
 
