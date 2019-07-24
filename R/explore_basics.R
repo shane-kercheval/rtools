@@ -1366,7 +1366,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr count group_by summarise rename
+#' @importFrom dplyr count group_by summarise rename filter
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date
 #' @importFrom lubridate floor_date
 #' @importFrom stringr str_to_title str_trim
@@ -1392,6 +1392,9 @@ rt_explore_plot_time_series <- function(dataset,
         (is.null(comparison_function) || is.null(comparison_function_name))))
 
     symbol_variable <- sym(variable)  # because we are using string variables
+
+    # if there are many NAs, it will mess up the count scale, and we can't plot them anyway
+    dataset <- dataset %>% filter(!is.na(!!symbol_variable))
 
     symbol_if_not_null <- function(x) {
         if (is.null(x)) {

@@ -2262,3 +2262,25 @@ test_that('rt_plot_funnel', {
     test_save_plot(file_name='data/rt_plot_funnel_2_proportionate_TRUE.png',
                    plot=rt_funnel_plot(step_names=steps, step_values=values, proportionate=TRUE))
 })
+
+test_that('rt_explore_plot_time_series__many_nas', {
+
+    dataset <- data.frame(flights %>% mutate(date = lubridate::make_date(year, month, day))) %>%
+        select(date, dep_delay, dep_time, origin)
+
+    update_indexes <- which(dataset$date < ymd('2013-09-01'))
+    dataset$date[update_indexes] <- NA
+
+    variable <- 'date'
+    color_variable <- 'origin'
+
+    # if there are many NAs, it will mess up the count scale, and we can't plot them anyway
+    test_save_plot(file_name='data/rt_explore_plot_time_series__many_nas.png',
+                   plot=rt_explore_plot_time_series(dataset,
+                                                    variable = variable,
+                                                    color_variable = NULL))
+    test_save_plot(file_name='data/rt_explore_plot_time_series__many_nas__color.png',
+                   plot=rt_explore_plot_time_series(dataset,
+                                                    variable = variable,
+                                                    color_variable = color_variable))
+})
