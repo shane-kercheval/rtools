@@ -146,6 +146,49 @@ rt_difftime_numeric <- function(date_last, date_first, units='days') {
     return (as.numeric(difftime(date_last, date_first, units=units)))
 }
 
+#' returns an ordered factor of the date vector
+#'
+#' date_floor: `week` gives `YYYY-MM-DD` with the `Monday` as the date when week_start is `1`
+#' date_floor: `month` gives `YYYY-MM`
+#' date_floor: `quarter` gives `YYYY-QX`
+#' date_floor: `year` gives `YYYY`
+#'
+#' @param date_vector the date vector
+#' @param date_floor `week`, `month`, `quarter`, `year`
+#' @param week_start same values of floor_date, defaults to `1` which starts the week on Monday
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom lubridate floor_date
+#' @importFrom stringr str_replace
+#'
+#' @export
+rt_floor_date_factor <- function(date_vector, date_floor='week', week_start=1) {
+
+    date_vector <- as.character(floor_date(x=date_vector, unit=date_floor, week_start=week_start))
+
+    if(date_floor == 'month') {
+
+        date_vector <- substr(date_vector, 1, 7)
+
+    } else if (date_floor == 'quarter') {
+
+        date_vector <- date_vector %>%
+            str_replace('-01-01', '-Q1') %>%
+            str_replace('-04-01', '-Q2') %>%
+            str_replace('-07-01', '-Q3') %>%
+            str_replace('-10-01', '-Q4')
+
+    } else if(date_floor == 'year') {
+
+        date_vector <- substr(date_vector, 1, 4)
+
+    }
+
+    date_vector <- factor(date_vector, levels = sort(unique(date_vector)), ordered = TRUE)
+
+    return (date_vector)
+}
+
 #' Returnes the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
 #'
 #' @param y the value

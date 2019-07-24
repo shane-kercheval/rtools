@@ -352,3 +352,35 @@ test_that("rt_difftime_numeric", {
     test_units <- c("weeks")
     expect_equal(rt_difftime_numeric(first_date, second_date, units=test_units), as.numeric(difftime(first_date, second_date, units=test_units)))
 })
+
+test_that("rt_floor_date_factor", {
+
+    start_date <- ymd_hms("2019-01-01 23:59:59")
+    all_dates <- start_date + days(0:366)
+
+    week_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='week')
+    expect_true(is.factor(week_vector))
+    expect_true(is.ordered(week_vector))
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1 = table(week_vector) %>% as.data.frame(),
+                                      rds_file = 'data/rt_floor_date_factor__week.RDS'))
+
+    month_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='month')
+    expect_true(is.factor(month_vector))
+    expect_true(is.ordered(month_vector))
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1 = table(month_vector) %>% as.data.frame(),
+                                      rds_file = 'data/rt_floor_date_factor__month.RDS'))
+
+    quarter_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='quarter')
+    expect_true(is.factor(quarter_vector))
+    expect_true(is.ordered(quarter_vector))
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1 = table(quarter_vector) %>% as.data.frame(),
+                                      rds_file = 'data/rt_floor_date_factor__quarter.RDS'))
+
+    year_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='year')
+    expect_true(is.factor(year_vector))
+    expect_true(is.ordered(year_vector))
+    freq_df <- table(year_vector) %>% as.data.frame()
+    expect_identical(as.character(freq_df$year_vector), c('2019', '2020'))
+    expect_identical(levels(freq_df$year_vector), c('2019', '2020'))
+    expect_true(all(freq_df$Freq == c(365, 2)))
+})
