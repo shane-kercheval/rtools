@@ -321,3 +321,34 @@ test_that("rt_colors_good_bad", {
     test_save_plot(file_name='data/rt_colors_bad_good.png',
                    plot=all_colors)
 })
+
+test_that("rt_difftime_numeric", {
+
+    first_date <- ymd_hms("2019-01-01 00:00:00")
+    second_date <- ymd_hms("2019-01-02 00:00:13")
+
+    expect_error(rt_difftime_numeric(date_last=second_date, date_first=first_date, units='auto'))
+    expect_error(rt_difftime_numeric(date_last=second_date, date_first=first_date, units=c('secs', 'mins')))
+
+    test_units <- c("secs")
+    expect_equal(rt_difftime_numeric(second_date, first_date, units=test_units), as.numeric(difftime(second_date, first_date, units=test_units)))
+    test_units <- c("mins")
+    expect_equal(rt_difftime_numeric(second_date, first_date, units=test_units), as.numeric(difftime(second_date, first_date, units=test_units)))
+    test_units <- c("hours")
+    expect_equal(rt_difftime_numeric(second_date, first_date, units=test_units), as.numeric(difftime(second_date, first_date, units=test_units)))
+    test_units <- c("days")
+    expect_equal(rt_difftime_numeric(second_date, first_date, units=test_units), as.numeric(difftime(second_date, first_date, units=test_units)))
+    test_units <- c("weeks")
+    expect_equal(rt_difftime_numeric(second_date, first_date, units=test_units), as.numeric(difftime(second_date, first_date, units=test_units)))
+
+    test_units <- c("secs")
+    expect_equal(rt_difftime_numeric(first_date, second_date, units=test_units), as.numeric(difftime(first_date, second_date, units=test_units)))
+    test_units <- c("mins")
+    expect_equal(rt_difftime_numeric(first_date, second_date, units=test_units), as.numeric(difftime(first_date, second_date, units=test_units)))
+    test_units <- c("hours")
+    expect_equal(rt_difftime_numeric(first_date, second_date, units=test_units), as.numeric(difftime(first_date, second_date, units=test_units)))
+    test_units <- c("days")
+    expect_equal(rt_difftime_numeric(first_date, second_date, units=test_units), as.numeric(difftime(first_date, second_date, units=test_units)))
+    test_units <- c("weeks")
+    expect_equal(rt_difftime_numeric(first_date, second_date, units=test_units), as.numeric(difftime(first_date, second_date, units=test_units)))
+})

@@ -133,6 +133,18 @@ rt_remove_val <- function(vec, val) {
     return (vec[!vec %in% val])
 }
 
+#' returns numeric value of difftime (date_last - date_first)
+#'
+#' @param date_last the date to subtract from
+#' @param date_first the date to subtract
+#' @param units same values of difftime, defaults to `days`
+#'
+#' @export
+rt_difftime_numeric <- function(date_last, date_first, units='days') {
+    rt_stopif(length(units) > 1)
+    rt_stopif(units == 'auto')  # since we are returning a numeric, we wouldn't know the units if using auto
+    return (as.numeric(difftime(date_last, date_first, units=units)))
+}
 
 #' Returnes the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
 #'
