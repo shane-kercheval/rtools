@@ -624,7 +624,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                          y=paste0("Percent of `", comparison_variable,"` Sub-Pop with Value"),
                          fill = comparison_variable,
                          x = variable) +
-                    scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+                    scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
                     theme_light(base_size = base_size) +
                     theme(legend.position = 'none',
                           axis.text.x = element_text(angle = 30, hjust = 1)))
@@ -822,7 +822,6 @@ rt_explore_plot_boxplot <- function(dataset,
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-        custom_colors <- c(rt_colors(), rt_colors())
 
         if(is.null(color_variable)) {
 
@@ -844,6 +843,8 @@ rt_explore_plot_boxplot <- function(dataset,
                     group_by(!!symbol_comparison_variable, !!symbol_color_variable) %>%
                     summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
                               count = n()) %>% as.data.frame())
+
+            custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
         }
 
         boxplot_plot <- ggplot(dataset,
@@ -1109,7 +1110,8 @@ rt_explore_plot_scatter <- function(dataset,
                 is.factor(dataset[, color_variable]) ||
                 is.logical(dataset[, color_variable]))) {
 
-        scatter_plot <- scatter_plot + scale_color_manual(values=rt_colors())
+        custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
+        scatter_plot <- scatter_plot + scale_color_manual(values=custom_colors)
     }
 
     if(!is.null(size_variable) && is.numeric(dataset[, size_variable])) {
