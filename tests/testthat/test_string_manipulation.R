@@ -48,27 +48,39 @@ test_that('rt_pretty_text', {
     expect_true(all(results == expected))
 
     # factors
-    checking_balance_vector <- c('< 0 DM', '> 200 DM', '1 - 200 DM', 'unknown')
+    checking_balance_vector <- c('< 0 dm', '> 200 DM', '1 - 200_dm', 'unknown')
     # give factor different order, just to test
-    checking_balance <- factor(checking_balance_vector, levels=c(checking_balance_vector[1],
-                                                                 checking_balance_vector[3],
-                                                                 checking_balance_vector[2],
-                                                                 checking_balance_vector[4]))
-    expected_checking_balance <- c('< 0 DM', '> 200 DM', '1 - 200 DM', 'Unknown')
+    factor_levels=c(checking_balance_vector[1],
+                    checking_balance_vector[3],
+                    checking_balance_vector[2],
+                    checking_balance_vector[4])
+    checking_balance <- factor(checking_balance_vector, levels=factor_levels, ordered=TRUE)
+    expected_checking_balance <- c('< 0 Dm', '> 200 DM', '1 - 200 Dm', 'Unknown')
+    expected_factor_levels <- c("< 0 Dm", "1 - 200 Dm", "> 200 DM", "Unknown")
+
     expect_true(is.factor(checking_balance))  # make sure we are testing a factor
+    expect_true(is.ordered(checking_balance))
     results <- rt_pretty_text(checking_balance)
-    expect_true(all(results == expected_checking_balance))
+
+    expect_identical(as.character(results), expected_checking_balance)
+    expect_true(is.factor(results))
+    expect_true(is.ordered(results))
+    expect_identical(levels(results), expected_factor_levels)
 
     checking_balance_chars <- checking_balance_vector  # ensure no difference between character/factor
     expect_false(is.factor(checking_balance_chars))  # make sure we are NOT testing a factor
     results <- rt_pretty_text(checking_balance_chars)
-    expect_true(all(results == expected_checking_balance))  # should still give the same thing as before
+    expect_identical(results, expected_checking_balance)  # should still give the same thing as before
+    expect_false(is.factor(results))
 
     purpose_vector <- c('business', 'car', 'car0', 'education', 'furniture/appliances', 'renovations')
     purpose <- factor(purpose_vector)
     expect_true(is.factor(purpose))  # make sure we are testing a factor
     results <- rt_pretty_text(purpose)
-    expect_true(all(results == c('Business', 'Car', 'Car0', 'Education', 'Furniture / Appliances', 'Renovations')))
+    expect_true(is.factor(results))  # make sure we are testing a factor
+    expect_false(is.ordered(results))
+    expect_identical(as.character(results),
+                     c('Business', 'Car', 'Car0', 'Education', 'Furniture / Appliances', 'Renovations'))
 })
 
 test_that('rt_pretty_dataset', {

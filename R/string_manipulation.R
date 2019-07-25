@@ -17,6 +17,13 @@ rt_pretty_text <- function(values) {
         return (values)
 
     } else {
+        factor_levels <- NULL
+        if(is.factor(values)) {
+
+            factor_levels <- levels(values)
+            factor_levels <- rt_pretty_text(factor_levels)
+            factor_ordered <- is.ordered(values)
+        }
 
         values <- str_replace_all(values, '_', ' ')
         values <- str_replace_all(values, '(?<=\\S)(?=\\S)\\/(?=\\S)', ' / ')  # `x/y`` -> `x / y``
@@ -33,6 +40,12 @@ rt_pretty_text <- function(values) {
             }
             return (word)
         })
+
+        if(!is.null(factor_levels)) {
+
+            values <- factor(values, levels=factor_levels, ordered=factor_ordered)
+        }
+
         return (values)
     }
 }
