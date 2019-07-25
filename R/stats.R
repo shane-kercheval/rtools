@@ -255,6 +255,17 @@ rt_plot_proportions <- function(numerators,
                                 subtitle=NULL,
                                 caption=NULL) {
 
+    
+    # if we use groups, the colors will be based on the groups variable, otherwise on the categories
+    if(is.null(groups)) {
+
+        custom_colors <- rt_get_colors_from_values(categories)
+
+    } else {
+
+        custom_colors <- rt_get_colors_from_values(groups)
+    }
+
     results <- map2(numerators, denominators, ~ prop.test(x=.x, n=.y, conf.level = confidence_level))
 
     df <- data.frame(categories=factor(categories, levels=unique(categories), ordered = TRUE),
@@ -296,7 +307,7 @@ rt_plot_proportions <- function(numerators,
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
             labs(x=x_label,

@@ -592,6 +592,9 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
     if(view_type == "Facet by Comparison") {
 
+        # if we Facet, the colors will be based on the primary variable
+        custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
+
         facet_groups <- groups_by_both %>%
             select(-actual_percent, -group_percent) %>%
             group_by(!!symbol_comparison_variable) %>%
@@ -626,6 +629,9 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     theme(legend.position = 'none',
                           axis.text.x = element_text(angle = 30, hjust = 1)))
     } else {
+
+        # if we Stack/Bar, the colors will be based on the comparison variable
+        custom_colors <- rt_get_colors_from_values(groups_by_both[[comparison_variable]])
 
         if(view_type == "Stack") {
 
@@ -715,7 +721,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                          y=plot_y_axis_label,
                          fill = comparison_variable,
                          x = variable) +
-                    scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+                    scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
                     theme_light(base_size = base_size) +
                     theme(#legend.position = 'none',
                         axis.text.x = element_text(angle = 30, hjust = 1)))

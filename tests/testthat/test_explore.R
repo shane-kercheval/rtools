@@ -487,6 +487,73 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                       order_by_count=FALSE,
                                                       show_variable_totals=FALSE,
                                                       show_comparison_totals=FALSE))
+
+    ##########################################################################################################
+    # ORDERED FACTORS
+    ##########################################################################################################
+    credit_data$checking_balance <- factor(credit_data$checking_balance,
+                                           levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
+                                           ordered=TRUE)
+    credit_data$default <- factor(credit_data$default,
+                                           levels=c("no", "yes"),
+                                           ordered=TRUE)
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Stack",
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Confidence Interval",
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf2.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Confidence Interval - within Variable",
+                                                     order_by_count=FALSE))
+
+    # change the order of the secondary/comparison variable
+    credit_data$default <- factor(credit_data$default,
+                                  levels=c("yes", "no"),
+                                  ordered=TRUE)
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor__swapped_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     order_by_count=FALSE))
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked__swapped_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Stack",
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf__swapped_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Confidence Interval",
+                                                     order_by_count=FALSE))
+
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf2__swapped_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Confidence Interval - within Variable",
+                                                     order_by_count=FALSE))
 })
 
 test_that("rt_explore_plot_value_totals__daul_axes", {
