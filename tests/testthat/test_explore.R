@@ -2307,6 +2307,34 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
 
 })
 
+test_that('rt_explore_plot_time_series', {
+    dataset <- data.frame(flights %>%
+                              mutate(date = lubridate::make_date(year, month, day),
+                                     cohort = paste0(year, '-',
+                                                     lubridate::week(date)))) %>%
+        select(date, dep_delay, dep_time, origin, cohort) %>%
+        mutate(origin = factor(origin, levels = c("JFK", "LGA", "EWR"), ordered=TRUE))
+
+    variable <- 'date'
+    comparison_variable <- 'dep_delay'
+    comp_func_sum <- function(x) {
+        return (sum(x, na.rm=TRUE))
+    }
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series__colors.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    color_variable='origin'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series__colors__comp.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    color_variable='origin',
+                                                    comparison_variable=comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'Sum'))
+})
+
 test_that('rt_plot_funnel', {
 
     steps <- c("Step Z", "Step Y", "Step X", "Step W")

@@ -1479,6 +1479,15 @@ rt_explore_plot_time_series <- function(dataset,
     sym_comparison_variable <- symbol_if_not_null(comparison_variable)
     sym_color_variable <- symbol_if_not_null(color_variable)
 
+    if(is.null(color_variable)) {
+    
+        custom_colors <- NULL
+
+    } else {
+
+        custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
+    }
+
     if(is.null(sym_comparison_variable)) {
 
         if(is.null(sym_color_variable)) {
@@ -1491,7 +1500,7 @@ rt_explore_plot_time_series <- function(dataset,
         }
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             labs(title=str_trim(paste(title_context, 'Count of Records')),
                  x=str_trim(paste(variable, x_label_context)),
                  y='Count')
@@ -1510,7 +1519,7 @@ rt_explore_plot_time_series <- function(dataset,
         }
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
+            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             labs(title=str_trim(paste(title_context,
                                       paste(comparison_function_name,
                                             'of', comparison_variable,
