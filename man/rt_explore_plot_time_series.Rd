@@ -7,9 +7,9 @@
 rt_explore_plot_time_series(dataset, variable,
   comparison_variable = NULL, comparison_function = NULL,
   comparison_function_name = NULL, color_variable = NULL,
-  y_zoom_min = NULL, y_zoom_max = NULL, show_points = FALSE,
-  show_labels = FALSE, date_floor = NULL, date_break_format = NULL,
-  date_breaks_width = NULL, base_size = 11)
+  facet_variable = NULL, y_zoom_min = NULL, y_zoom_max = NULL,
+  show_points = FALSE, show_labels = FALSE, date_floor = NULL,
+  date_break_format = NULL, date_breaks_width = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -24,6 +24,8 @@ rt_explore_plot_time_series(dataset, variable,
 
 \item{color_variable}{an optional variable (categoric) that seperates the time series}
 
+\item{facet_variable}{an optional variable (categoric) that seperates the time series by facet}
+
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
@@ -34,7 +36,7 @@ rt_explore_plot_time_series(dataset, variable,
 
 \item{date_floor}{options are e.g. "week", "month", "quarter"}
 
-\item{date_break_format}{format of date breaks}
+\item{date_break_format}{format of date breaks e.g. `'\%Y-\%m-\%d'`}
 
 \item{date_breaks_width}{the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"}
 

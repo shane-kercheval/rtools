@@ -1370,7 +1370,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param show_points if TRUE adds points to the graph
 #' @param show_labels if TRUE adds labels to each point
 #' @param date_floor options are e.g. "week", "month", "quarter"
-#' @param date_break_format format of date breaks e.g. `'%Y-%m-%d'`
+#' @param date_break_format format of date breaks e.g. `'\%Y-\%m-\%d'`
 #' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
