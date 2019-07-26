@@ -1364,18 +1364,19 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param comparison_function if a comparison variable is supplied, a function must be given so the plot knows how to graph it (e.g. sum, mean, median)
 #' @param comparison_function_name name of the function so that it can be plotted on the Y-axis label
 #' @param color_variable an optional variable (categoric) that seperates the time series
+#' @param facet_variable an optional variable (categoric) that seperates the time series by facet
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param show_points if TRUE adds points to the graph
 #' @param show_labels if TRUE adds labels to each point
 #' @param date_floor options are e.g. "week", "month", "quarter"
-#' @param date_break_format format of date breaks
+#' @param date_break_format format of date breaks e.g. `'%Y-%m-%d'`
 #' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename filter
-#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date
+#' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date facet_wrap
 #' @importFrom lubridate floor_date
 #' @importFrom stringr str_to_title str_trim
 #' @importFrom scales date_format pretty_breaks format_format
@@ -1386,6 +1387,7 @@ rt_explore_plot_time_series <- function(dataset,
                                         comparison_function=NULL,
                                         comparison_function_name=NULL,
                                         color_variable=NULL,
+                                        facet_variable=NULL,
                                         y_zoom_min=NULL,
                                         y_zoom_max=NULL,
                                         show_points=FALSE,
@@ -1420,7 +1422,7 @@ rt_explore_plot_time_series <- function(dataset,
 
     if(is.null(date_floor)) {
 
-        dataset[, variable] <- as.Date(dataset[, variable])
+        dataset[[variable]] <- as.Date(dataset[[variable]])
 
     } else {
 
@@ -1430,7 +1432,7 @@ rt_explore_plot_time_series <- function(dataset,
         }
         x_label_context <- paste0("(", date_floor, ")")
 
-        dataset[, variable] <- as.Date(floor_date(dataset[, variable], unit=date_floor, week_start = 1))
+        dataset[[variable]] <- as.Date(floor_date(dataset[[variable]], unit=date_floor, week_start = 1))
 
         if(is.null(date_breaks_width)) {
 
@@ -1480,9 +1482,10 @@ rt_explore_plot_time_series <- function(dataset,
 
     sym_comparison_variable <- symbol_if_not_null(comparison_variable)
     sym_color_variable <- symbol_if_not_null(color_variable)
+    sym_facet_variable <- symbol_if_not_null(facet_variable)
 
     if(is.null(color_variable)) {
-    
+
         custom_colors <- NULL
 
     } else {
@@ -1491,15 +1494,35 @@ rt_explore_plot_time_series <- function(dataset,
     }
 
     if(is.null(sym_comparison_variable)) {
+        # if no comparison_variable, we are just counting records
+        # either have to aggregate by variable, or variable and/or color/facet
 
-        if(is.null(sym_color_variable)) {
+        # COLOR | FACET
+        # NULL  | NULL
+        # NULL  | NOT
+        # NOT   | NULL
+        # NOT   | NOT
+        if(is.null(sym_color_variable) && is.null(sym_facet_variable)) {
 
             dataset <- dataset %>% count(!!symbol_variable) %>% rename(total=n)
 
-        } else {
+        } else if (is.null(sym_color_variable) && !is.null(sym_facet_variable)) {
+
+
+            dataset <- dataset %>% count(!!symbol_variable, !!sym_facet_variable) %>% rename(total=n)
+
+
+        } else if (!is.null(sym_color_variable) && is.null(sym_facet_variable)) {
 
             dataset <- dataset %>% count(!!symbol_variable, !!sym_color_variable) %>% rename(total=n)
+
+        } else {
+
+            dataset <- dataset %>%
+                count(!!symbol_variable, !!sym_color_variable, !!sym_facet_variable) %>%
+                rename(total=n)
         }
+
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
             scale_color_manual(values=custom_colors, na.value = '#2A3132') +
@@ -1508,17 +1531,40 @@ rt_explore_plot_time_series <- function(dataset,
                  y='Count')
 
     } else {
-        if(is.null(sym_color_variable)) {
+        # if we have a comparison_variable, we are have to aggregate by a given aggregation function
+        # either have to aggregate by variable, or variable and/or color/facet
+
+        # COLOR | FACET
+        # NULL  | NULL
+        # NULL  | NOT
+        # NOT   | NULL
+        # NOT   | NOT
+        if(is.null(sym_color_variable) && is.null(sym_facet_variable)) {
+
             dataset <- dataset %>%
                 group_by(!!symbol_variable) %>%
+                summarise(total=comparison_function(!!sym_comparison_variable))
+
+        } else if (is.null(sym_color_variable) && !is.null(sym_facet_variable)) {
+
+            dataset <- dataset %>%
+                group_by(!!symbol_variable, !!sym_facet_variable) %>%
+                summarise(total=comparison_function(!!sym_comparison_variable))
+
+
+        } else if (!is.null(sym_color_variable) && is.null(sym_facet_variable)) {
+
+            dataset <- dataset %>%
+                group_by(!!symbol_variable, !!sym_color_variable) %>%
                 summarise(total=comparison_function(!!sym_comparison_variable))
 
         } else {
 
             dataset <- dataset %>%
-                group_by(!!symbol_variable, !!sym_color_variable) %>%
+                group_by(!!symbol_variable, !!sym_color_variable, !!sym_facet_variable,) %>%
                 summarise(total=comparison_function(!!sym_comparison_variable))
         }
+
         ggplot_object <- dataset %>%
             ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
             scale_color_manual(values=custom_colors, na.value = '#2A3132') +
@@ -1545,6 +1591,12 @@ rt_explore_plot_time_series <- function(dataset,
     if(show_labels) {
         ggplot_object <- ggplot_object +
             geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)), check_overlap = TRUE, vjust=-0.5)
+    }
+
+    if(!is.null(facet_variable)) {
+        ggplot_object <- ggplot_object +
+            facet_wrap(facets = facet_variable , ncol = 1, scales = 'free_y', strip.position = "right") +
+            theme(strip.text.y = element_text(size = 11))
     }
 
     # zoom in on graph is parameters are set

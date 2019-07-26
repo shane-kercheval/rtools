@@ -2307,6 +2307,181 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
 
 })
 
+test_that('rt_explore_plot_time_facet_yoy', {
+    # bike_traffic <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-04-02/bike_traffic.csv")
+    # bike_traffic <- bike_traffic %>% mutate(date = mdy_hms(date))
+    dataset <- readRDS('data/bike_traffic.RDS')
+    set.seed(42)
+    dataset <- dataset %>% sample_n(10000)
+    dataset <- dataset %>% mutate(crossing = fct_lump(crossing, 1))
+    dataset %>% count(crossing)
+
+    variable <- 'date'
+    comparison_variable <- 'bike_count'
+
+    comp_func_sum <- function(x) {
+        return (sum(x, na.rm=TRUE))
+    }
+
+    ##########################################################################################################
+    # weekly
+    ##########################################################################################################
+    ##################
+    # count
+    ##################
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '8 weeks'))
+
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_week.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '8 weeks'))
+    ##################
+    # sum
+    ##################
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'week')) %>%
+    #     count(date, direction, wt=bike_count) %>% arrange(direction, date) %>% as.data.frame() %>% head(40)
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week__sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '8 weeks'))
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'week')) %>%
+    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     count(date, crossing, direction, wt=bike_count) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_week__sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '8 weeks'))
+
+
+    ##########################################################################################################
+    # monthly
+    ##########################################################################################################
+    ##################
+    # count
+    ##################
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
+    #     count(date, direction) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 months'))
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
+    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     count(date, crossing, direction) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_month.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 months'))
+
+    ##################
+    # sum
+    ##################
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
+    #     count(date, direction, wt=bike_count) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month__sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 months'))
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
+    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     count(date, crossing, direction, wt=bike_count) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_month__sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 months'))
+})
+
 test_that('rt_explore_plot_time_series', {
     dataset <- data.frame(flights %>%
                               mutate(date = lubridate::make_date(year, month, day),
