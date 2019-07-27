@@ -8,8 +8,8 @@ rt_explore_plot_time_series(dataset, variable,
   comparison_variable = NULL, comparison_function = NULL,
   comparison_function_name = NULL, color_variable = NULL,
   facet_variable = NULL, year_over_year = FALSE, y_zoom_min = NULL,
-  y_zoom_max = NULL, show_points = FALSE, show_labels = FALSE,
-  date_floor = NULL, date_break_format = NULL,
+  y_zoom_max = NULL, include_zero_y_axis = TRUE, show_points = FALSE,
+  show_labels = FALSE, date_floor = NULL, date_break_format = NULL,
   date_breaks_width = NULL, base_size = 11)
 }
 \arguments{
@@ -32,6 +32,8 @@ rt_explore_plot_time_series(dataset, variable,
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
+
+\item{include_zero_y_axis}{expand the lower bound of the y-axis to 0 (TRUE is best practice.)}
 
 \item{show_points}{if TRUE adds points to the graph}
 
