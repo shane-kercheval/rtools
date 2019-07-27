@@ -2314,7 +2314,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     set.seed(42)
     dataset <- dataset %>% sample_n(10000)
     dataset <- dataset %>% mutate(crossing = fct_lump(crossing, 1))
-    dataset %>% count(crossing)
+    #dataset %>% count(crossing)
 
     variable <- 'date'
     comparison_variable <- 'bike_count'
@@ -2326,6 +2326,29 @@ test_that('rt_explore_plot_time_facet_yoy', {
     ##########################################################################################################
     # weekly
     ##########################################################################################################
+
+    ##################
+    # Year-over-Year
+    ##################
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = format_format('%Y-%W')(date)) %>%
+    #     count(date) %>% arrange(date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__yoy_week.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    year_over_year = TRUE,
+                                                    facet_variable = NULL,
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '8 weeks'))
+
     ##################
     # count
     ##################
@@ -2333,6 +2356,25 @@ test_that('rt_explore_plot_time_facet_yoy', {
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
                                                     facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '8 weeks'))
+
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = format_format('%Y-%W')(date)) %>%
+    #     count(date, direction) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week__yoy.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
@@ -2377,6 +2419,26 @@ test_that('rt_explore_plot_time_facet_yoy', {
                                                     date_floor = 'week',
                                                     date_break_format = NULL,
                                                     date_breaks_width = '8 weeks'))
+
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = format_format('%Y-%W')(date)) %>%
+    #     count(date, direction, wt=bike_count) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week__sum__yoy.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    year_over_year = TRUE,
+                                                    color_variable = NULL,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'week',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '8 weeks'))
+
     # use to verify numbers
     # dataset %>%
     #     mutate(date = rt_floor_date_factor(date, 'week')) %>%
@@ -2397,7 +2459,6 @@ test_that('rt_explore_plot_time_facet_yoy', {
                                                     date_break_format = '%Y-%m-%d',
                                                     date_breaks_width = '8 weeks'))
 
-
     ##########################################################################################################
     # monthly
     ##########################################################################################################
@@ -2412,6 +2473,25 @@ test_that('rt_explore_plot_time_facet_yoy', {
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
                                                     facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 months'))
+
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
+    #     count(date, direction) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month__yoy.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
@@ -2452,6 +2532,25 @@ test_that('rt_explore_plot_time_facet_yoy', {
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
                                                     facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 months'))
+
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
+    #     count(date, direction, wt=bike_count) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month__sum__yoy.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,

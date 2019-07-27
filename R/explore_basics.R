@@ -1365,6 +1365,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param comparison_function_name name of the function so that it can be plotted on the Y-axis label
 #' @param color_variable an optional variable (categoric) that seperates the time series
 #' @param facet_variable an optional variable (categoric) that seperates the time series by facet
+#' @param year_over_year if true it displays the graph year-over-year; color_variable should be NULL (color will be year)
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param show_points if TRUE adds points to the graph
@@ -1377,8 +1378,8 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename filter
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date facet_wrap
-#' @importFrom lubridate floor_date
-#' @importFrom stringr str_to_title str_trim
+#' @importFrom lubridate floor_date year
+#' @importFrom stringr str_to_title str_trim str_replace
 #' @importFrom scales date_format pretty_breaks format_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
@@ -1388,6 +1389,7 @@ rt_explore_plot_time_series <- function(dataset,
                                         comparison_function_name=NULL,
                                         color_variable=NULL,
                                         facet_variable=NULL,
+                                        year_over_year=FALSE,
                                         y_zoom_min=NULL,
                                         y_zoom_max=NULL,
                                         show_points=FALSE,
@@ -1400,6 +1402,10 @@ rt_explore_plot_time_series <- function(dataset,
     # if using a comparison variable, we must also have a function and function name
     stopifnot(!(!is.null(comparison_variable) &&
         (is.null(comparison_function) || is.null(comparison_function_name))))
+
+    if(year_over_year) {
+        stopifnot(is.null(color_variable))
+    }
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
@@ -1467,6 +1473,13 @@ rt_explore_plot_time_series <- function(dataset,
                 date_break_format <- '%Y-%m-%d'
             }
         }
+
+        if(year_over_year && date_floor == 'week') {
+            # if it is year over year and the date floor is week then we need to force '%Y-%W'
+            # because '%Y-%m-%d' will not be the same for each year
+
+            date_break_format <- '%Y-%W'
+        }
     }
 
     # need to do this after date_floor because if date_floor is not NULL and date_breaks_width is NULL date_breaks_width
@@ -1523,12 +1536,35 @@ rt_explore_plot_time_series <- function(dataset,
                 rename(total=n)
         }
 
-        ggplot_object <- dataset %>%
-            ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
-            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
-            labs(title=str_trim(paste(title_context, 'Count of Records')),
-                 x=str_trim(paste(variable, x_label_context)),
-                 y='Count')
+        if(year_over_year) {
+
+            year_factor_levels <- as.character(sort(unique(year(dataset[[variable]]))))
+            temp_string_date <- date_format(date_break_format)(dataset[[variable]])
+            temp_string_date <- str_replace(temp_string_date, paste0(as.character(year(dataset[[variable]])), "-"), "")
+            dataset$cohort <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
+            dataset$year_factor <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
+
+            custom_colors <- rt_get_colors_from_values(dataset$year_factor)
+
+            ggplot_object <- dataset %>%
+                ggplot(aes(x=cohort, y=total, group=year_factor, color=year_factor)) +
+                scale_color_manual(values=custom_colors, na.value = '#2A3132') +
+                labs(title=str_trim(paste(title_context, 'Count of Records')),
+                     x=str_trim(paste(variable, x_label_context)),
+                     y='Count',
+                     color='Year')
+
+        } else {
+
+            ggplot_object <- dataset %>%
+                ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
+                scale_color_manual(values=custom_colors, na.value = '#2A3132') +
+                scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
+                labs(title=str_trim(paste(title_context, 'Count of Records')),
+                     x=str_trim(paste(variable, x_label_context)),
+                     y='Count')
+
+        }
 
     } else {
         # if we have a comparison_variable, we are have to aggregate by a given aggregation function
@@ -1565,20 +1601,44 @@ rt_explore_plot_time_series <- function(dataset,
                 summarise(total=comparison_function(!!sym_comparison_variable))
         }
 
-        ggplot_object <- dataset %>%
-            ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
-            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
-            labs(title=str_trim(paste(title_context,
-                                      paste(comparison_function_name,
-                                            'of', comparison_variable,
-                                            'by', variable))),
-                 x=str_trim(paste(variable, x_label_context)),
-                 y=paste(comparison_function_name, comparison_variable))
+        if(year_over_year) {
+
+            year_factor_levels <- as.character(sort(unique(year(dataset[[variable]]))))
+            temp_string_date <- date_format(date_break_format)(dataset[[variable]])
+            temp_string_date <- str_replace(temp_string_date, paste0(as.character(year(dataset[[variable]])), "-"), "")
+            dataset$cohort <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
+            dataset$year_factor <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
+
+            custom_colors <- rt_get_colors_from_values(dataset$year_factor)
+
+            ggplot_object <- dataset %>%
+                ggplot(aes(x=cohort, y=total, group=year_factor, color=year_factor)) +
+                scale_color_manual(values=custom_colors, na.value = '#2A3132') +
+                labs(title=str_trim(paste(title_context,
+                                          paste(comparison_function_name,
+                                                'of', comparison_variable,
+                                                'by', variable))),
+                     x=str_trim(paste(variable, x_label_context)),
+                     y=paste(comparison_function_name, comparison_variable),
+                     color='Year')
+
+        } else {
+
+            ggplot_object <- dataset %>%
+                ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
+                scale_color_manual(values=custom_colors, na.value = '#2A3132') +
+                scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
+                labs(title=str_trim(paste(title_context,
+                                          paste(comparison_function_name,
+                                                'of', comparison_variable,
+                                                'by', variable))),
+                     x=str_trim(paste(variable, x_label_context)),
+                     y=paste(comparison_function_name, comparison_variable))
+        }
     }
     ggplot_object <- ggplot_object +
         geom_line() +
         scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
-        scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
         expand_limits(y=0) +
         theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
