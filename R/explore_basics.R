@@ -1656,7 +1656,7 @@ rt_explore_plot_time_series <- function(dataset,
     if(!is.null(facet_variable)) {
         ggplot_object <- ggplot_object +
             facet_wrap(facets = facet_variable , ncol = 1, scales = 'free_y', strip.position = "right") +
-            theme(strip.text.y = element_text(size = 11))
+            theme(strip.text.y = element_text(size = base_size))
     }
 
     # zoom in on graph is parameters are set
