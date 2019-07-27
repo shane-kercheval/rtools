@@ -7,9 +7,10 @@
 rt_explore_plot_time_series(dataset, variable,
   comparison_variable = NULL, comparison_function = NULL,
   comparison_function_name = NULL, color_variable = NULL,
-  facet_variable = NULL, y_zoom_min = NULL, y_zoom_max = NULL,
-  show_points = FALSE, show_labels = FALSE, date_floor = NULL,
-  date_break_format = NULL, date_breaks_width = NULL, base_size = 11)
+  facet_variable = NULL, year_over_year = FALSE, y_zoom_min = NULL,
+  y_zoom_max = NULL, show_points = FALSE, show_labels = FALSE,
+  date_floor = NULL, date_break_format = NULL,
+  date_breaks_width = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -25,6 +26,8 @@ rt_explore_plot_time_series(dataset, variable,
 \item{color_variable}{an optional variable (categoric) that seperates the time series}
 
 \item{facet_variable}{an optional variable (categoric) that seperates the time series by facet}
+
+\item{year_over_year}{if true it displays the graph year-over-year; color_variable should be NULL (color will be year)}
 
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 
