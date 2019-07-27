@@ -67,7 +67,7 @@ rt_pretty_dataset <- function(dataset) {
 
     for(column in colnames(dataset)) {
 
-        dataset[, column] <- rt_pretty_text(dataset[, column])
+        dataset[[column]] <- rt_pretty_text(dataset[[column]])
     }
 
     colnames(dataset) <- rt_pretty_text(colnames(dataset))

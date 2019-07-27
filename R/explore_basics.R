@@ -248,11 +248,7 @@ rt_explore_plot_correlations <- function(dataset,
 rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, multi_value_delimiter=NULL) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
-
-    # temp <- data.frame(values=unlist(str_split(dataset[, variable], multi_value_delimiter, simplify=FALSE)),
-    #                    weight=1)
-    values <- dataset[, variable]
-
+    values <- dataset[[variable]]
 
     if(is.null(sum_by_variable)) {
 
@@ -262,7 +258,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 
     } else{
 
-        weights <- dataset[, sum_by_variable]
+        weights <- dataset[[sum_by_variable]]
         count_column_name <- 'sum'
         denominator <- sum(weights, na.rm = TRUE)
     }
@@ -398,8 +394,8 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(order_by_count) {
 
-            groups_by_variable[, variable] <- factor(groups_by_variable[, variable],
-                                                     levels = groups_by_variable[, variable])
+            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
+                                                     levels = groups_by_variable[[variable]])
         } else {
             groups_by_variable <- groups_by_variable %>% arrange(!!symbol_variable)
         }
@@ -410,7 +406,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
             rt_plot_proportions(numerators=groups_by_variable$total,
                                 denominators=rep(sum(groups_by_variable$total), nrow(groups_by_variable)),
-                                categories=as.character(groups_by_variable[, variable]),
+                                categories=as.character(groups_by_variable[[variable]]),
                                 confidence_level = 0.95,
                                 show_confidence_values=show_variable_totals,
                                 text_size=4,
@@ -478,13 +474,13 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(order_by_count) {
 
-            groups_by_variable[, variable] <- factor(groups_by_variable[, variable],
-                                                     levels = as.character(groups_by_variable[, variable]))
-            groups_by_both[, variable] <- factor(groups_by_both[, variable],
-                                                     levels = as.character(groups_by_variable[, variable]))
+            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
+                                                     levels = as.character(groups_by_variable[[variable]]))
+            groups_by_both[[variable]] <- factor(groups_by_both[[variable]],
+                                                     levels = as.character(groups_by_variable[[variable]]))
 
             comparison_order <- as.character((dataset %>% count(!!symbol_comparison_variable) %>% arrange(desc(n)))[[comparison_variable]])
-            groups_by_both[, comparison_variable] <- factor(groups_by_both[, comparison_variable],
+            groups_by_both[[comparison_variable]] <- factor(groups_by_both[[comparison_variable]],
                                                      levels = comparison_order)
         }
 
@@ -893,12 +889,12 @@ rt_explore_plot_boxplot <- function(dataset,
 
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+            y_zoom_min <- min(dataset[[variable]], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+            y_zoom_max <- max(dataset[[variable]], na.rm = TRUE)
         }
 
         boxplot_plot <- boxplot_plot +
@@ -973,12 +969,12 @@ rt_explore_plot_histogram <- function(dataset,
 
         if(rt_is_null_na_nan(x_zoom_min)) {
 
-            x_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+            x_zoom_min <- min(dataset[[variable]], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(x_zoom_max)) {
 
-            x_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+            x_zoom_max <- max(dataset[[variable]], na.rm = TRUE)
         }
 
         histogram_plot <- histogram_plot +
@@ -1062,7 +1058,7 @@ rt_explore_plot_scatter <- function(dataset,
 
         } else {
 
-            dataset$custom_label_column_dtyqpdhjdemn <- dataset[, label_variables]
+            dataset$custom_label_column_dtyqpdhjdemn <- dataset[[label_variables]]
         }
 
         # check_overlap shows the first labels that appear in the dataset;
@@ -1106,15 +1102,15 @@ rt_explore_plot_scatter <- function(dataset,
              y=variable)
 
     if(!is.null(color_variable) &&
-            (is.character(dataset[, color_variable]) ||
-                is.factor(dataset[, color_variable]) ||
-                is.logical(dataset[, color_variable]))) {
+            (is.character(dataset[[color_variable]]) ||
+                is.factor(dataset[[color_variable]]) ||
+                is.logical(dataset[[color_variable]]))) {
 
         custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
         scatter_plot <- scatter_plot + scale_color_manual(values=custom_colors)
     }
 
-    if(!is.null(size_variable) && is.numeric(dataset[, size_variable])) {
+    if(!is.null(size_variable) && is.numeric(dataset[[size_variable]])) {
 
         scatter_plot <- scatter_plot +
             scale_size_continuous(breaks=pretty_breaks(10),
@@ -1131,12 +1127,12 @@ rt_explore_plot_scatter <- function(dataset,
 
         if(rt_is_null_na_nan(x_zoom_min)) {
 
-            x_zoom_min <- min(dataset[, comparison_variable], na.rm = TRUE)
+            x_zoom_min <- min(dataset[[comparison_variable]], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(x_zoom_max)) {
 
-            x_zoom_max <- max(dataset[, comparison_variable], na.rm = TRUE)
+            x_zoom_max <- max(dataset[[comparison_variable]], na.rm = TRUE)
         }
 
         x_zooms <- c(x_zoom_min, x_zoom_max)
@@ -1149,12 +1145,12 @@ rt_explore_plot_scatter <- function(dataset,
 
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+            y_zoom_min <- min(dataset[[variable]], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+            y_zoom_max <- max(dataset[[variable]], na.rm = TRUE)
         }
 
         y_zooms <- c(y_zoom_min, y_zoom_max)
@@ -1164,7 +1160,7 @@ rt_explore_plot_scatter <- function(dataset,
 
     if(!is.null(label_variables)) {
 
-        if(length(label_variables) == 1 && is.numeric(dataset[, label_variables])) {
+        if(length(label_variables) == 1 && is.numeric(dataset[[label_variables]])) {
 
             scatter_plot <- scatter_plot +
                 geom_text(aes(label = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)(custom_label_column_dtyqpdhjdemn)),
@@ -1322,12 +1318,12 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 
         if(rt_is_null_na_nan(x_zoom_min)) {
 
-            x_zoom_min <- min(dataset[, comparison_variable], na.rm = TRUE)
+            x_zoom_min <- min(dataset[[comparison_variable]], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(x_zoom_max)) {
 
-            x_zoom_max <- max(dataset[, comparison_variable], na.rm = TRUE)
+            x_zoom_max <- max(dataset[[comparison_variable]], na.rm = TRUE)
         }
 
         x_zooms <- c(x_zoom_min, x_zoom_max)
@@ -1340,12 +1336,12 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            y_zoom_min <- min(dataset[, variable], na.rm = TRUE)
+            y_zoom_min <- min(dataset[[variable]], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, variable], na.rm = TRUE)
+            y_zoom_max <- max(dataset[[variable]], na.rm = TRUE)
         }
 
         y_zooms <- c(y_zoom_min, y_zoom_max)
@@ -1665,12 +1661,12 @@ rt_explore_plot_time_series <- function(dataset,
 
         if(rt_is_null_na_nan(y_zoom_min)) {
 
-            y_zoom_min <- min(dataset[, 'total'], na.rm = TRUE)
+            y_zoom_min <- min(dataset[['total']], na.rm = TRUE)
         }
 
         if(rt_is_null_na_nan(y_zoom_max)) {
 
-            y_zoom_max <- max(dataset[, 'total'], na.rm = TRUE)
+            y_zoom_max <- max(dataset[['total']], na.rm = TRUE)
         }
 
         ggplot_object <- ggplot_object +
