@@ -1756,6 +1756,10 @@ test_that('rt_explore_plot_time_series', {
     test_save_plot(file_name='data/rt_explore_plot_time_series_default.png',
                    plot=rt_explore_plot_time_series(dataset=dataset, variable=variable))
 
+    test_save_plot(file_name='data/rt_explore_plot_time_series_default_include_zero_false.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable, include_zero_y_axis = FALSE))
+
     # rquires both comparison_function and comparison_function_name
     expect_error(rt_explore_plot_time_series(dataset=dataset, variable=variable,
                                              comparison_variable=comparison_variable))
@@ -2574,6 +2578,30 @@ test_that('rt_explore_plot_time_facet_yoy', {
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
                                                     comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'month',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 months'))
+
+    # to test include_zero_y_axis, lets make the numbers much higher than they are and make sure no values are 0
+    comp_func_custom <- function(x) {
+        x <- ifelse(x == 0, 100000, x * 10000)
+        x <- sum(x, na.rm=TRUE)
+        x <- ifelse(x > 30000000, 30000000, x)
+        x <- ifelse(x < 1000000, 1000000, x)
+        return (x)
+    }
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_month__include_zero.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    include_zero_y_axis = FALSE,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_custom,
+                                                    comparison_function_name = 'Custom',
                                                     show_labels = TRUE,
                                                     show_points = TRUE,
                                                     date_floor = 'month',

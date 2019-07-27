@@ -1364,6 +1364,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param year_over_year if true it displays the graph year-over-year; color_variable should be NULL (color will be year)
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param include_zero_y_axis expand the lower bound of the y-axis to 0 (TRUE is best practice.)
 #' @param show_points if TRUE adds points to the graph
 #' @param show_labels if TRUE adds labels to each point
 #' @param date_floor options are e.g. "week", "month", "quarter"
@@ -1388,6 +1389,7 @@ rt_explore_plot_time_series <- function(dataset,
                                         year_over_year=FALSE,
                                         y_zoom_min=NULL,
                                         y_zoom_max=NULL,
+                                        include_zero_y_axis=TRUE,
                                         show_points=FALSE,
                                         show_labels=FALSE,
                                         date_floor=NULL,
@@ -1635,21 +1637,27 @@ rt_explore_plot_time_series <- function(dataset,
     ggplot_object <- ggplot_object +
         geom_line() +
         scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
-        expand_limits(y=0) +
         theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
+    if(include_zero_y_axis) {
+
+        ggplot_object <- ggplot_object + expand_limits(y=0)
+    }
+
     if(show_points) {
-        ggplot_object <- ggplot_object +
-            geom_point()
+
+        ggplot_object <- ggplot_object + geom_point()
     }
 
     if(show_labels) {
+
         ggplot_object <- ggplot_object +
             geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)), check_overlap = TRUE, vjust=-0.5)
     }
 
     if(!is.null(facet_variable)) {
+
         ggplot_object <- ggplot_object +
             facet_wrap(facets = facet_variable , ncol = 1, scales = 'free_y', strip.position = "right") +
             theme(strip.text.y = element_text(size = base_size))
