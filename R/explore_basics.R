@@ -1367,9 +1367,11 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param include_zero_y_axis expand the lower bound of the y-axis to 0 (TRUE is best practice.)
 #' @param show_points if TRUE adds points to the graph
 #' @param show_labels if TRUE adds labels to each point
-#' @param date_floor options are e.g. "week", "month", "quarter"
+#' @param date_floor converts dates to date_floor value and aggregates; options are e.g. "week", "month", "quarter"
 #' @param date_break_format format of date breaks e.g. `'\%Y-\%m-\%d'`
 #' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
+#' @param date_limits "zoom" for date x-axis, 2 values representing min/max in the format of YYYY-MM-DD. If `date_floor` is used, the date_limits are converted to the corresponding date floor
+#'       e.g. if date_floor is 'month' and date_limits are `c('2013-01-15', '2013-12-15')` they will be converted to `c('2013-01-01', '2013-12-01')`
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -1395,6 +1397,7 @@ rt_explore_plot_time_series <- function(dataset,
                                         date_floor=NULL,
                                         date_break_format=NULL,
                                         date_breaks_width=NULL,
+                                        date_limits=NULL,
                                         base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
@@ -1437,6 +1440,15 @@ rt_explore_plot_time_series <- function(dataset,
         x_label_context <- paste0("(", date_floor, ")")
 
         dataset[[variable]] <- as.Date(floor_date(dataset[[variable]], unit=date_floor, week_start = 1))
+
+        # if we have a date floor, we need to adjust the date_limits
+        # e.g. if date floor is 'month' but our date limit starts half way through the month (e.g. because
+        # perhaps the min date in the dataset starts half way through the month, then we need to make sure 
+        # the date limit is also the floor of the month; or whatever date aggregation we are doing.
+        if(!is.null(date_limits)) {
+
+            date_limits <- floor_date(as.Date(date_limits), unit=date_floor, week_start = 1)
+        }
 
         if(is.null(date_breaks_width)) {
 
@@ -1504,6 +1516,10 @@ rt_explore_plot_time_series <- function(dataset,
         custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
     }
 
+    if(!is.null(date_limits)) {
+        date_limits <- as.Date(date_limits)
+    }
+
     if(is.null(sym_comparison_variable)) {
         # if no comparison_variable, we are just counting records
         # either have to aggregate by variable, or variable and/or color/facet
@@ -1557,7 +1573,7 @@ rt_explore_plot_time_series <- function(dataset,
             ggplot_object <- dataset %>%
                 ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
-                scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
+                scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width, limits=date_limits) +
                 labs(title=str_trim(paste(title_context, 'Count of Records')),
                      x=str_trim(paste(variable, x_label_context)),
                      y='Count')
@@ -1625,7 +1641,7 @@ rt_explore_plot_time_series <- function(dataset,
             ggplot_object <- dataset %>%
                 ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
-                scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width) +
+                scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width, limits=date_limits) +
                 labs(title=str_trim(paste(title_context,
                                           paste(comparison_function_name,
                                                 'of', comparison_variable,
