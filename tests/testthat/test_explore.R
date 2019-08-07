@@ -2314,6 +2314,9 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
 test_that('rt_explore_plot_time_facet_yoy', {
     # bike_traffic <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-04-02/bike_traffic.csv")
     # bike_traffic <- bike_traffic %>% mutate(date = mdy_hms(date))
+    # specifying version 2 removes the dependency on R >= 3.5
+    # saveRDS(bike_traffic %>% as.data.frame(), 'data/bike_traffic.RDS', version = 2)
+
     dataset <- readRDS('data/bike_traffic.RDS')
     set.seed(42)
     dataset <- dataset %>% sample_n(10000)

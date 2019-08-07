@@ -361,20 +361,23 @@ test_that("rt_floor_date_factor", {
     week_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='week')
     expect_true(is.factor(week_vector))
     expect_true(is.ordered(week_vector))
-    expect_true(rt_are_dataframes_equal_from_file(dataframe1 = table(week_vector) %>% as.data.frame(),
-                                      rds_file = 'data/rt_floor_date_factor__week.RDS'))
+    expect_true(rt_are_dataframes_equal(table(week_vector) %>% as.data.frame(),
+                                        read.csv(file = 'data/rt_floor_date_factor__week.csv') %>%
+                                            select(-X)))
 
     month_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='month')
     expect_true(is.factor(month_vector))
     expect_true(is.ordered(month_vector))
-    expect_true(rt_are_dataframes_equal_from_file(dataframe1 = table(month_vector) %>% as.data.frame(),
-                                      rds_file = 'data/rt_floor_date_factor__month.RDS'))
+    expect_true(rt_are_dataframes_equal(table(month_vector) %>% as.data.frame(),
+                                        read.csv(file = 'data/rt_floor_date_factor__month.csv') %>%
+                                            select(-X)))
 
     quarter_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='quarter')
     expect_true(is.factor(quarter_vector))
     expect_true(is.ordered(quarter_vector))
-    expect_true(rt_are_dataframes_equal_from_file(dataframe1 = table(quarter_vector) %>% as.data.frame(),
-                                      rds_file = 'data/rt_floor_date_factor__quarter.RDS'))
+    expect_true(rt_are_dataframes_equal(table(quarter_vector) %>% as.data.frame(),
+                                        read.csv(file = 'data/rt_floor_date_factor__quarter.csv') %>%
+                                            select(-X)))
 
     year_vector <- rt_floor_date_factor(date_vector=all_dates, date_floor='year')
     expect_true(is.factor(year_vector))
