@@ -340,7 +340,8 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #'          "Confidence Interval" - for either single variable or with comparison variable; when comparison_variable is not NULL, the denominator/count used is the same as faceting
 #'          "Facet by Comparison" - valid when comparison_variable is not NULL, facet based on comparison_variable
 #'          "Confidence Interval - within Variable" - valid when comparison_variable is not null, this provides confidence intervals similar to the "Stack" view
-#'          "Stack" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)
+#'          "Stack" - valid when comparison_variable is not null, stack comparison variable within variable
+#'          "Stack Percent" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
@@ -363,7 +364,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          multi_value_delimiter=NULL,
                                          base_size=11) {
 
-    stopifnot(view_type %in% c("Bar", "Confidence Interval", "Facet by Comparison", "Confidence Interval - within Variable", "Stack"))
+    stopifnot(view_type %in% c("Bar", "Confidence Interval", "Facet by Comparison", "Confidence Interval - within Variable", "Stack", "Stack Percent"))
 
     # we can't do confidence intervals if we are suming by a variable.
     # Confidence intervals are based on sample size, which come from the denominator of the proportion.
@@ -584,7 +585,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      plot_y_axis_label,
                                                      base_size) {
 
-    stopifnot(view_type %in% c("Bar", "Facet by Comparison", "Stack"))
+    stopifnot(view_type %in% c("Bar", "Facet by Comparison", "Stack", "Stack Percent"))
 
     if(view_type == "Facet by Comparison") {
 
@@ -631,28 +632,41 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
         if(view_type == "Stack") {
 
-            comparison_position <- position_fill(reverse = TRUE)
+            unique_values_plot <- ggplot() +
+                geom_bar(data = groups_by_both,
+                         aes(x = !!symbol_variable,
+                             y = total,
+                             fill = !!symbol_comparison_variable),
+                         stat = 'identity',
+                         position = position_stack(reverse = TRUE))
 
         } else {
 
-            comparison_position <- position_dodge(width = 0.9)
+            if(view_type == "Stack Percent") {
+
+                comparison_position <- position_fill(reverse = TRUE)
+
+            } else {
+
+                comparison_position <- position_dodge(width = 0.9)
+            }
+
+            # create the plot
+            unique_values_plot <- ggplot() +
+                geom_bar(data = groups_by_variable,
+                         aes(x = !!symbol_variable, y = percent),
+                         stat = 'identity',
+                         position = 'dodge',
+                         alpha = 0.3) +
+                geom_bar(data = groups_by_both,
+                         aes(x = !!symbol_variable,
+                             y = actual_percent,
+                             fill = !!symbol_comparison_variable),
+                         stat = 'identity',
+                         position = comparison_position)
         }
 
-        # create the plot
-        unique_values_plot <- ggplot() +
-            geom_bar(data = groups_by_variable,
-                     aes(x = !!symbol_variable, y = percent),
-                     stat = 'identity',
-                     position = 'dodge',
-                     alpha = 0.3) +
-            geom_bar(data = groups_by_both,
-                     aes(x = !!symbol_variable,
-                         y = actual_percent,
-                         fill = !!symbol_comparison_variable),
-                     stat = 'identity',
-                     position = comparison_position)
-
-        if(show_dual_axes && view_type != "Stack") {
+        if(show_dual_axes && view_type != "Stack Percent") {
 
             unique_values_plot <- unique_values_plot +
                 scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format(),
@@ -663,6 +677,12 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                                               digits=4,
                                                                               scientific=FALSE),
                                                        name=plot_y_second_axis_label))
+
+        } else if(view_type == "Stack") {
+
+            unique_values_plot <- unique_values_plot +
+                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+
         } else {
 
             unique_values_plot <- unique_values_plot +
@@ -671,36 +691,71 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
         #(i.e. all 100%)
-        if(show_variable_totals && view_type != "Stack") {
+        if(show_variable_totals && view_type != "Stack Percent") {
 
-            unique_values_plot <- unique_values_plot +
-                geom_text(data = groups_by_variable,
-                          aes(x=!!symbol_variable, label = percent(percent), y = percent),
-                          vjust=-1.5, check_overlap=TRUE) +
-                geom_text(data = groups_by_variable,
-                          aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent),
-                          vjust=-0.25, check_overlap=TRUE)
+            if(view_type == "Stack") {
+
+                unique_values_plot <- unique_values_plot +
+                    geom_text(data = groups_by_variable,
+                              aes(x=!!symbol_variable,
+                                  y = total,
+                                  label = prettyNum(total,
+                                                    big.mark=",",
+                                                    preserve.width="none",
+                                                    digits=4,
+                                                    scientific=FALSE)),
+                              vjust=-0.25, check_overlap=TRUE)
+
+            } else {
+
+                unique_values_plot <- unique_values_plot +
+                    geom_text(data = groups_by_variable,
+                              aes(x=!!symbol_variable, label = percent(percent), y = percent),
+                              vjust=-1.5, check_overlap=TRUE) +
+                    geom_text(data = groups_by_variable,
+                              aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent),
+                              vjust=-0.25, check_overlap=TRUE)
+
+            }
         }
 
-        if(show_comparison_totals && view_type != "Stack") {
+        if(show_comparison_totals && view_type != "Stack Percent") {
 
-            unique_values_plot <- unique_values_plot +
-                geom_text(data = groups_by_both,
-                          aes(x = !!symbol_variable,
-                              y = actual_percent,
-                              label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
-                              group = !!symbol_comparison_variable),
-                          position = comparison_position,
-                          vjust=-0.25, check_overlap=TRUE) +
-                geom_text(data = groups_by_both,
-                          aes(x = !!symbol_variable,
-                              y = actual_percent,
-                              label = percent(group_percent),
-                              group = !!symbol_comparison_variable),
-                          position = comparison_position,
-                          vjust=1.25, check_overlap=TRUE)
+            if(view_type == "Stack") {
 
-        } else if (show_comparison_totals && view_type == "Stack") {
+                unique_values_plot <- unique_values_plot +
+                    geom_text(data = groups_by_both,
+                              aes(x = !!symbol_variable,
+                                  y = total,
+                                  label = prettyNum(total, big.mark=",",
+                                                    preserve.width="none",
+                                                    digits=4,
+                                                    scientific=FALSE),
+                                  group = !!symbol_comparison_variable),
+                              position = position_stack(reverse = TRUE),
+                              vjust=1.25, check_overlap=TRUE)
+
+            } else {
+                unique_values_plot <- unique_values_plot +
+                    geom_text(data = groups_by_both,
+                              aes(x = !!symbol_variable,
+                                  y = actual_percent,
+                                  label = prettyNum(total, big.mark=",",
+                                                    preserve.width="none",
+                                                    digits=4,
+                                                    scientific=FALSE),
+                                  group = !!symbol_comparison_variable),
+                              position = comparison_position,
+                              vjust=-0.25, check_overlap=TRUE) +
+                    geom_text(data = groups_by_both,
+                              aes(x = !!symbol_variable,
+                                  y = actual_percent,
+                                  label = percent(group_percent),
+                                  group = !!symbol_comparison_variable),
+                              position = comparison_position,
+                              vjust=1.25, check_overlap=TRUE)
+            }
+        } else if (show_comparison_totals && view_type == "Stack Percent") {
             #in this case, we don't want to show the totals of the main variable (they are all at 100%)
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_both,
@@ -719,8 +774,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                          x = variable) +
                     scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
                     theme_light(base_size = base_size) +
-                    theme(#legend.position = 'none',
-                        axis.text.x = element_text(angle = 30, hjust = 1)))
+                    theme(axis.text.x = element_text(angle = 30, hjust = 1)))
     }
 }
 
@@ -1443,7 +1497,7 @@ rt_explore_plot_time_series <- function(dataset,
 
         # if we have a date floor, we need to adjust the date_limits
         # e.g. if date floor is 'month' but our date limit starts half way through the month (e.g. because
-        # perhaps the min date in the dataset starts half way through the month, then we need to make sure 
+        # perhaps the min date in the dataset starts half way through the month, then we need to make sure
         # the date limit is also the floor of the month; or whatever date aggregation we are doing.
         if(!is.null(date_limits)) {
 
@@ -1555,13 +1609,13 @@ rt_explore_plot_time_series <- function(dataset,
             year_factor_levels <- as.character(sort(unique(year(dataset[[variable]]))))
             temp_string_date <- date_format(date_break_format)(dataset[[variable]])
             temp_string_date <- str_replace(temp_string_date, paste0(as.character(year(dataset[[variable]])), "-"), "")
-            dataset$cohort <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
-            dataset$year_factor <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
+            dataset$cohort___ <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
+            dataset$year_factor___ <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
 
-            custom_colors <- rt_get_colors_from_values(dataset$year_factor)
+            custom_colors <- rt_get_colors_from_values(dataset$year_factor___)
 
             ggplot_object <- dataset %>%
-                ggplot(aes(x=cohort, y=total, group=year_factor, color=year_factor)) +
+                ggplot(aes(x=cohort___, y=total, group=year_factor___, color=year_factor___)) +
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
                 labs(title=str_trim(paste(title_context, 'Count of Records')),
                      x=str_trim(paste(variable, x_label_context)),
@@ -1620,13 +1674,13 @@ rt_explore_plot_time_series <- function(dataset,
             year_factor_levels <- as.character(sort(unique(year(dataset[[variable]]))))
             temp_string_date <- date_format(date_break_format)(dataset[[variable]])
             temp_string_date <- str_replace(temp_string_date, paste0(as.character(year(dataset[[variable]])), "-"), "")
-            dataset$cohort <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
-            dataset$year_factor <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
+            dataset$cohort___ <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
+            dataset$year_factor___ <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
 
-            custom_colors <- rt_get_colors_from_values(dataset$year_factor)
+            custom_colors <- rt_get_colors_from_values(dataset$year_factor___)
 
             ggplot_object <- dataset %>%
-                ggplot(aes(x=cohort, y=total, group=year_factor, color=year_factor)) +
+                ggplot(aes(x=cohort___, y=total, group=year_factor___, color=year_factor___)) +
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
                 labs(title=str_trim(paste(title_context,
                                           paste(comparison_function_name,

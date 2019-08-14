@@ -507,6 +507,13 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable='default',
+                                                     view_type="Stack Percent",
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_total.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
                                                      view_type="Stack",
                                                      order_by_count=FALSE))
 
@@ -537,7 +544,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable='default',
-                                                     view_type="Stack",
+                                                     view_type="Stack Percent",
                                                      order_by_count=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf__swapped_order.png',
@@ -603,7 +610,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                    plot=rt_explore_plot_value_totals(dataset=diamonds,
                                                      variable='cut',
                                                      comparison_variable='color',
-                                                     view_type="Stack",
+                                                     view_type="Stack Percent",
                                                      show_dual_axes = TRUE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__diamonds__comparison_sum_stacked__dual.png',
@@ -611,7 +618,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
                                                      variable='cut',
                                                      comparison_variable='color',
                                                      sum_by_variable='price',
-                                                     view_type="Stack",
+                                                     view_type="Stack Percent",
                                                      show_dual_axes = TRUE))
 })
 
@@ -708,7 +715,7 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                               order_by_count=FALSE,
                                               show_variable_totals=TRUE,
                                               show_comparison_totals=TRUE,
-                                              view_type="Stack",
+                                              view_type="Stack Percent",
                                               show_dual_axes=TRUE))
     ##########################################################################################################
     # VARIABLE, SUM_BY_VARIABLE
@@ -752,7 +759,7 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                               order_by_count=FALSE,
                                               show_variable_totals=TRUE,
                                               show_comparison_totals=TRUE,
-                                              view_type="Stack",
+                                              view_type="Stack Percent",
                                               show_dual_axes=TRUE))
 
     ##########################################################################################################
@@ -811,7 +818,7 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                                      order_by_count=FALSE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
-                                                     view_type="Stack",
+                                                     view_type="Stack Percent",
                                                      show_dual_axes=TRUE))
 
     ##########################################################################################################
@@ -868,7 +875,7 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                                      order_by_count=FALSE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
-                                                     view_type="Stack",
+                                                     view_type="Stack Percent",
                                                      show_dual_axes=TRUE))
 })
 
@@ -887,7 +894,7 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE,
-                                                      view_type="Stack"))
+                                                      view_type="Stack Percent"))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -897,7 +904,7 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
                                                      order_by_count=TRUE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
-                                                     view_type="Stack"))
+                                                     view_type="Stack Percent"))
 })
 
 test_that("rt_explore_plot_value_totals_sums", {
@@ -2314,9 +2321,6 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
 test_that('rt_explore_plot_time_facet_yoy', {
     # bike_traffic <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-04-02/bike_traffic.csv")
     # bike_traffic <- bike_traffic %>% mutate(date = mdy_hms(date))
-    # specifying version 2 removes the dependency on R >= 3.5
-    # saveRDS(bike_traffic %>% as.data.frame(), 'data/bike_traffic.RDS', version = 2)
-
     dataset <- readRDS('data/bike_traffic.RDS')
     set.seed(42)
     dataset <- dataset %>% sample_n(10000)
@@ -2683,4 +2687,162 @@ test_that('rt_explore_plot_time_series__many_nas', {
                    plot=rt_explore_plot_time_series(dataset,
                                                     variable = variable,
                                                     color_variable = color_variable))
+})
+
+test_that('rt_explore_plot_conversion_rates', {
+
+    library(lubridate)
+
+    sample_size <- 20000
+    conversion_rate <- 0.3
+
+    set.seed(42)
+    conversion_data <- data.frame(index=1:sample_size,
+                                  first_visit=ymd_hms('2019-01-01 00:00:00') +
+                                      days(round(runif(n=sample_size, min=0, max=600))) +
+                                      hours(round(runif(n=sample_size, min=0, max=23))) +
+                                      minutes(round(runif(n=sample_size, min=0, max=60))) +
+                                      seconds(round(runif(n=sample_size, min=0, max=60))))
+
+    set.seed(43)
+    conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
+
+    get_rand_binom_num <- function(seed, max_num) {
+        set.seed(seed)
+        rbinom(1, max_num, 0.3)
+    }
+    get_rand_unif_num <- function(seed, max_num) {
+        set.seed(seed)
+        as.integer(round(runif(n=1, min=0, max=max_num)))
+    }
+
+    conversion_data$num_days <- map_int(conversion_data$index, ~ get_rand_binom_num(., 39))
+    conversion_data$num_hours <- map_int(conversion_data$index, ~ get_rand_unif_num(., 23))
+    conversion_data <- conversion_data %>%
+        mutate(conversion_date = first_visit +
+                   days(num_days) +
+                   hours(num_hours)) %>%
+        select(-num_days, -num_hours)
+
+    conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
+
+    summary(rt_difftime_numeric(conversion_data$conversion_date, conversion_data$first_visit))
+
+    rt_explore_plot_time_series(dataset = conversion_data,
+                                variable = 'first_visit', color_variable = 'converted')
+
+
+    conversion_data <- conversion_data %>%
+        mutate(days_from_x_to_y = rt_difftime_numeric(conversion_date, first_visit, units = 'days'))
+
+    mock_reference_date <- max(conversion_data$first_visit)
+    #rt_floor_date_factor(mock_reference_date)
+
+
+    # 1, 7, 14 days
+    snapshots <- c(6, 7, 10, 14)
+    temp <- conversion_data %>%
+        mutate(cohort = rt_floor_date_factor(first_visit, date_floor = 'weeks')) %>%
+        group_by(cohort) %>%
+        mutate(youngest_age = rt_difftime_numeric(mock_reference_date, max(first_visit), units = 'days')) %>%
+        ungroup() %>%
+        arrange(desc(first_visit)) %>%
+        #head() %>%
+        crossing(snapshots) %>%
+        rename(snapshot=snapshots) %>%
+        filter(youngest_age >= snapshot) %>%
+        group_by(cohort, snapshot) %>%
+        summarise(sum_converted_within_threshold=sum(days_from_x_to_y <= snapshot, na.rm = TRUE),
+                  total=n(),
+                  converted_within_threshold=sum(days_from_x_to_y <= snapshot, na.rm = TRUE) / n()) %>%
+        ungroup() %>%
+        mutate(cohort = ymd(cohort),
+               snapshot = factor(as.character(snapshot), levels = as.character(sort(snapshots))))
+
+
+    rt_explore_plot_time_series(dataset=temp,
+                                variable = 'cohort',
+                                comparison_variable = 'converted_within_threshold',
+                                color_variable = 'snapshot',
+                                #facet_variable = 'snapshot',
+                                comparison_function = function(x) {x},
+                                comparison_function_name = 'self',
+                                show_labels = FALSE,
+                                show_points = TRUE,
+                                include_zero_y_axis = TRUE,
+                                date_floor = 'week',
+                                #date_break_format = '%Y-%W',
+                                #year_over_year = TRUE
+                                date_break_format = '%Y-%m-%d',
+                                date_breaks_width = '2 weeks'
+                                )
+    rt_explore_plot_time_series(dataset=temp,
+                                variable = 'cohort',
+                                comparison_variable = 'converted_within_threshold',
+                                #color_variable = 'snapshot',
+                                facet_variable = 'snapshot',
+                                comparison_function = function(x) {x},
+                                comparison_function_name = 'self',
+                                show_labels = FALSE,
+                                show_points = TRUE,
+                                include_zero_y_axis = TRUE,
+                                date_floor = 'week',
+                                #date_break_format = '%Y-%W',
+                                #year_over_year = TRUE
+                                date_break_format = '%Y-%m-%d',
+                                date_breaks_width = '2 weeks'
+    )
+
+    ggplot_object <- rt_explore_plot_time_series(dataset=temp,
+                                    variable = 'cohort',
+                                    comparison_variable = 'converted_within_threshold',
+                                    #color_variable = 'snapshot',
+                                    facet_variable = 'snapshot',
+                                    comparison_function = function(x) {x},
+                                    comparison_function_name = 'self',
+                                    show_labels = FALSE,
+                                    show_points = TRUE,
+                                    include_zero_y_axis = TRUE,
+                                    date_floor = 'week',
+                                    date_break_format = '%Y-%W',
+                                    year_over_year = TRUE
+                                    #date_break_format = '%Y-%m-%d',
+                                    #date_breaks_width = '2 weeks'
+                                    )
+        ggplot_object
+        ggplot_object +
+            geom_text(aes(label = percent(total)), check_overlap = TRUE, vjust=-0.5)
+
+
+
+    snapshots <- c(6, 7, 10, 14)
+
+
+    aaaa <- data.frame()
+    for(day_number in 1:30) {
+
+        # day_number <- 30
+        aaaa <- bind_rows(aaaa,
+            conversion_data %>%
+                mutate(cohort = rt_floor_date_factor(first_visit, date_floor = 'weeks')) %>%
+                group_by(cohort) %>%
+                mutate(youngest_age = rt_difftime_numeric(mock_reference_date, max(first_visit), units = 'days')) %>%
+                ungroup() %>%
+                filter(youngest_age >= day_number) %>%
+                group_by(cohort) %>%
+                summarise(converted_within_threshold=sum(days_from_x_to_y <= day_number, na.rm = TRUE) / n()) %>%
+                ungroup() %>%
+                mutate(day=day_number))
+    }
+
+    base_size <- 15
+    aaaa %>%
+        filter(cohort >= sort(unique(aaaa$cohort))[75]) %>%
+        ggplot(aes(x=day, y=converted_within_threshold, color=cohort)) +
+            geom_line() +
+            scale_color_manual(values=c(rt_colors(),rt_colors())) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            theme_light(base_size = base_size)
+
 })

@@ -33,7 +33,8 @@ Options are:
     "Confidence Interval" - for either single variable or with comparison variable; when comparison_variable is not NULL, the denominator/count used is the same as faceting
     "Facet by Comparison" - valid when comparison_variable is not NULL, facet based on comparison_variable
     "Confidence Interval - within Variable" - valid when comparison_variable is not null, this provides confidence intervals similar to the "Stack" view
-    "Stack" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)}
+    "Stack" - valid when comparison_variable is not null, stack comparison variable within variable
+    "Stack Percent" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)}
 
 \item{multi_value_delimiter}{if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 this variable to the delimiter will cause the function to count seperate values}
