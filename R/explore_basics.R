@@ -1702,7 +1702,7 @@ rt_explore_plot_time_series <- function(dataset,
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
                 labs(title=str_trim(paste(title_context,
                                           paste(comparison_function_name,
-                                                'of', comparison_variable,
+                                                comparison_variable,
                                                 'by', variable))),
                      x=str_trim(paste(variable, x_label_context)),
                      y=paste(comparison_function_name, comparison_variable),
@@ -1716,7 +1716,7 @@ rt_explore_plot_time_series <- function(dataset,
                 scale_x_date(labels = date_format(date_break_format), breaks=date_breaks_width, limits=date_limits) +
                 labs(title=str_trim(paste(title_context,
                                           paste(comparison_function_name,
-                                                'of', comparison_variable,
+                                                comparison_variable,
                                                 'by', variable))),
                      x=str_trim(paste(variable, x_label_context)),
                      y=paste(comparison_function_name, comparison_variable))
