@@ -532,15 +532,29 @@ rt_explore_plot_value_totals <- function(dataset,
                 plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable,'`')
                 plot_subtitle <- ""
                 #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
-                plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
+                if(view_type == "Stack") {
+
+                    plot_y_axis_label <- paste0('`' , sum_by_variable, '`')
+                } else {
+
+                    plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
+                }
                 plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
 
             } else if(view_type == "Facet by Comparison") {
 
                 plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
                 plot_subtitle <- ""
-                plot_y_axis_label <- paste0("Percent of Sub-population")
+                plot_y_axis_label <- "Percent of Sub-population"
                 plot_y_second_axis_label <- "Count"
+
+            } else if(view_type == "Stack") {
+
+                plot_title <- paste0("Count of `", variable, "` by `", comparison_variable, "`")
+                plot_subtitle <- ""
+                plot_y_axis_label <- "Count"
+                plot_y_second_axis_label <- NULL
+
 
             } else {
 
@@ -638,7 +652,8 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                              y = total,
                              fill = !!symbol_comparison_variable),
                          stat = 'identity',
-                         position = position_stack(reverse = TRUE))
+                         position = position_stack(reverse = TRUE),
+                         alpha=0.75)
 
         } else {
 
@@ -735,14 +750,14 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                     digits=4,
                                                     scientific=FALSE),
                                   group = !!symbol_comparison_variable),
-                              position = position_stack(reverse = TRUE),
-                              vjust=1.25, check_overlap=TRUE)
+                              position = position_stack(reverse=TRUE, vjust = .5),
+                              check_overlap=TRUE)
 
             } else {
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_both,
                               aes(x = !!symbol_variable,
-                                  y = actual_percent,
+                                  y = 0.5 * actual_percent,
                                   label = prettyNum(total, big.mark=",",
                                                     preserve.width="none",
                                                     digits=4,
@@ -752,7 +767,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                               vjust=-0.25, check_overlap=TRUE) +
                     geom_text(data = groups_by_both,
                               aes(x = !!symbol_variable,
-                                  y = actual_percent,
+                                  y = 0.5 * actual_percent,
                                   label = percent(group_percent),
                                   group = !!symbol_comparison_variable),
                               position = comparison_position,
