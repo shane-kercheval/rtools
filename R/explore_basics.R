@@ -666,7 +666,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                          position = comparison_position)
         }
 
-        if(show_dual_axes && view_type != "Stack Percent") {
+        if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent") {
 
             unique_values_plot <- unique_values_plot +
                 scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format(),
@@ -681,7 +681,10 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         } else if(view_type == "Stack") {
 
             unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+                scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
+                                                                              preserve.width="none",
+                                                                              digits=4,
+                                                                              scientific=FALSE))
 
         } else {
 
