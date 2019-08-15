@@ -7,7 +7,7 @@
 #' library(ggplot2)
 #' rt_pretty_text(c('abc', 'ABC', 'abc/xyz'))
 #'
-#' @importFrom stringr str_replace_all str_split str_to_title
+#' @importFrom stringr str_replace_all str_split
 #' @importFrom purrr map_chr
 #' @export
 rt_pretty_text <- function(values) {
@@ -36,7 +36,7 @@ rt_pretty_text <- function(values) {
             word <- NA
             if(!all(is.na(.))) {
 
-                word <- str_to_title(.)
+                word <- paste(toupper(substring(., 1,1)), substring(., 2), sep='', collapse=' ')
             }
             return (word)
         })

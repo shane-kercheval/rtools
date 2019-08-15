@@ -2788,12 +2788,12 @@ test_that('rt_explore_plot_conversion_rates', {
     mock_reference_date <- max(conversion_data$first_visit)
 
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
-                                     #snapshots=c(1, 7, 14),
-                                     snapshots <- c(6, 7, 10, 14),
+                                     snapshots=c(6, 7, 10, 14),
                                      snapshot_units='days',
                                      date_floor='month',
                                      color_or_facet='color',
@@ -2804,15 +2804,15 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width=NULL)
+                                     date_breaks_width=NULL))
 
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_facet.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
-                                     #snapshots=c(1, 7, 14),
-                                     snapshots <- c(6, 7, 10, 14),
+                                     snapshots=c(6, 7, 10, 14),
                                      snapshot_units='days',
                                      date_floor='month',
                                      color_or_facet='facet',
@@ -2823,14 +2823,14 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width=NULL)
+                                     date_breaks_width=NULL))
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_yoy.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
-                                     #snapshots=c(1, 7, 14),
-                                     snapshots <- c(6, 7, 10, 14),
+                                     snapshots=c(6, 7, 10, 14),
                                      snapshot_units='days',
                                      date_floor='month',
                                      color_or_facet='facet',
@@ -2841,14 +2841,14 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width=NULL)
+                                     date_breaks_width=NULL))
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__2.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
                                      snapshots=c(7, 14, 21),
-                                     #snapshots <- c(6, 7, 10, 14),
                                      snapshot_units='days',
                                      date_floor='month',
                                      color_or_facet='facet',
@@ -2859,28 +2859,11 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width=NULL)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                                     date_breaks_width=NULL))
 
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
@@ -2895,10 +2878,11 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width='4 weeks')
+                                     date_breaks_width='4 weeks'))
 
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_facet.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
@@ -2913,9 +2897,10 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width='4 weeks')
+                                     date_breaks_width='4 weeks'))
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_yoy.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
@@ -2930,9 +2915,10 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,
-                                     date_breaks_width='4 weeks')
+                                     date_breaks_width='4 weeks'))
     ##########################################################################################################
-    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_2.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
                                      first_date='first_visit',
                                      second_date='conversion_date',
                                      reference_date=mock_reference_date,
@@ -2946,8 +2932,6 @@ test_that('rt_explore_plot_conversion_rates', {
                                      include_zero_y_axis=FALSE,
                                      show_points=TRUE,
                                      show_labels=TRUE,
-                                     date_break_format=NULL,
-                                     date_breaks_width='4 weeks')
-
-
+                                     date_break_format='%Y-%m-%d',
+                                     date_breaks_width='4 weeks'))
 })

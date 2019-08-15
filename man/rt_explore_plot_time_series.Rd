@@ -10,7 +10,8 @@ rt_explore_plot_time_series(dataset, variable,
   facet_variable = NULL, year_over_year = FALSE, y_zoom_min = NULL,
   y_zoom_max = NULL, include_zero_y_axis = TRUE, show_points = FALSE,
   show_labels = FALSE, date_floor = NULL, date_break_format = NULL,
-  date_breaks_width = NULL, date_limits = NULL, base_size = 11)
+  date_breaks_width = NULL, date_limits = NULL,
+  format_as_percent = FALSE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -47,6 +48,8 @@ rt_explore_plot_time_series(dataset, variable,
 
 \item{date_limits}{"zoom" for date x-axis, 2 values representing min/max in the format of YYYY-MM-DD. If `date_floor` is used, the date_limits are converted to the corresponding date floor
 e.g. if date_floor is 'month' and date_limits are `c('2013-01-15', '2013-12-15')` they will be converted to `c('2013-01-01', '2013-12-01')`}
+
+\item{format_as_percent}{if `TRUE` display the y-axis as a percent, as well as any text labels}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

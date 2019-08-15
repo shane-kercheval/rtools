@@ -1905,13 +1905,13 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #'  Feb 28, for example, have not had a full 7 days of potential activity.
 #'
 #' @param dataset dataframe
-#' @param first_date
-#' @param second_date
+#' @param first_date the reference date (e.g. first-touch point)
+#' @param second_date the date of conversion, NA if not converted
 #' @param reference_date we need to know how old the cohort is so we can determine if the
-#' @param snapshots
+#' @param snapshots the numeric snapshots
 #' @param snapshot_units the units of the snapshots e.g. `hours`, `days`, `weeks`
 #' @param date_floor how we should define the cohort group e.g. by `day`, `by week`, by `months`
-#' @param color_or_facet
+#' @param color_or_facet `color` or `facet`
 #' @param year_over_year if true it displays the graph year-over-year; color_variable should be NULL (color will be year)
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
@@ -1952,7 +1952,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
     symbol_first_date <- sym(first_date)
     symbol_second_date <- sym(second_date)
 
-    snapshotted_conversions <- conversion_data %>%
+    snapshotted_conversions <- dataset %>%
         # e.g. "# days from x to y" where x and y are first and second date
         mutate(time_units_from_x_to_y = rt_difftime_numeric(!!symbol_second_date,
                                                             !!symbol_first_date,
