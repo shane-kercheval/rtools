@@ -1455,14 +1455,15 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
 #' @param date_limits "zoom" for date x-axis, 2 values representing min/max in the format of YYYY-MM-DD. If `date_floor` is used, the date_limits are converted to the corresponding date floor
 #'       e.g. if date_floor is 'month' and date_limits are `c('2013-01-15', '2013-12-15')` they will be converted to `c('2013-01-01', '2013-12-01')`
+#' @param format_as_percent if `TRUE` display the y-axis as a percent, as well as any text labels
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr count group_by summarise rename filter
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date facet_wrap
 #' @importFrom lubridate floor_date year
-#' @importFrom stringr str_to_title str_trim str_replace
-#' @importFrom scales date_format pretty_breaks format_format
+#' @importFrom stringr str_to_title str_trim str_replace str_detect
+#' @importFrom scales date_format pretty_breaks format_format percent_format
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -1481,6 +1482,7 @@ rt_explore_plot_time_series <- function(dataset,
                                         date_break_format=NULL,
                                         date_breaks_width=NULL,
                                         date_limits=NULL,
+                                        format_as_percent=FALSE,
                                         base_size=11) {
 
     # if using a comparison variable, we must also have a function and function name
@@ -1535,7 +1537,7 @@ rt_explore_plot_time_series <- function(dataset,
 
         if(is.null(date_breaks_width)) {
 
-            if (date_floor == 'quarter') {
+            if (str_detect(date_floor, 'quarter')) {
 
                 date_breaks_width <- NULL
             } else {
@@ -1545,19 +1547,19 @@ rt_explore_plot_time_series <- function(dataset,
         }
 
         if(is.null(date_break_format)) {
-            if(date_floor == 'week') {
+            if(str_detect(date_floor, 'week')) {
 
                 date_break_format <- '%Y-%W'
 
-            } else if (date_floor == 'month') {
+            } else if (str_detect(date_floor, 'month')) {
 
                 date_break_format <- '%Y-%m'
 
-            } else if (date_floor == 'quarter') {
+            } else if (str_detect(date_floor, 'quarter')) {
 
                 date_break_format <- '%Y-%m'
 
-            } else if (date_floor == 'year') {
+            } else if (str_detect(date_floor, 'year')) {
 
                 date_break_format <- '%Y'
 
@@ -1567,7 +1569,7 @@ rt_explore_plot_time_series <- function(dataset,
             }
         }
 
-        if(year_over_year && date_floor == 'week') {
+        if(year_over_year && str_detect(date_floor, 'week')) {
             # if it is year over year and the date floor is week then we need to force '%Y-%W'
             # because '%Y-%m-%d' will not be the same for each year
 
@@ -1735,9 +1737,23 @@ rt_explore_plot_time_series <- function(dataset,
     }
     ggplot_object <- ggplot_object +
         geom_line() +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
         theme_light(base_size = base_size) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+    if(format_as_percent) {
+
+        ggplot_object <- ggplot_object +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+
+    } else {
+
+        ggplot_object <- ggplot_object +
+            scale_y_continuous(breaks=pretty_breaks(10),
+                               labels = format_format(big.mark=",",
+                                                      preserve.width="none",
+                                                      digits=4,
+                                                      scientific=FALSE))
+    }
 
     if(include_zero_y_axis) {
 
@@ -1751,8 +1767,23 @@ rt_explore_plot_time_series <- function(dataset,
 
     if(show_labels) {
 
-        ggplot_object <- ggplot_object +
-            geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)), check_overlap = TRUE, vjust=-0.5)
+        if(format_as_percent) {
+
+            ggplot_object <- ggplot_object +
+                geom_text(aes(label = percent_format()(total)),
+                              check_overlap = TRUE,
+                              vjust=-0.5)
+        } else {
+
+            ggplot_object <- ggplot_object +
+                geom_text(aes(label = prettyNum(total,
+                                                big.mark=",",
+                                                preserve.width="none",
+                                                digits=4,
+                                                scientific=FALSE)),
+                              check_overlap = TRUE,
+                              vjust=-0.5)
+        }
     }
 
     if(!is.null(facet_variable)) {
@@ -1848,8 +1879,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
         geom_text(aes(x = 0, y=label_y, label=Step), vjust=-1, check_overlap = TRUE) +
         scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
         theme_classic() +
-        theme(
-              axis.title=element_blank(),
+        theme(axis.title=element_blank(),
               axis.text=element_blank(),
               axis.ticks=element_blank(),
               axis.line=element_blank(),
@@ -1863,4 +1893,123 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
              subtitle = subtitle,
              caption = caption,
              fill="")
+}
+
+#' shows conversion rates (y-axis) of a particular cohort based on various 'snapshots' in time (a line is a snapshot in time).
+#'
+#' Each record in the cohort must have had enough time to convert, in order to be shown in the graph.
+#' For example, say the snapshots we are interested in are at day 1 and day 7. If the cohort refers to
+#'  February, and it is March 3rd, every record in the February cohort has had at least 1 day of "activity" or
+#'  potential to convert, so we can include Feb for that snapshot. However, not everyone in Feb has had 7 days
+#'  of activity, so we cannot yet include Feb for the 7 day snapshot, because people who joined the cohort on
+#'  Feb 28, for example, have not had a full 7 days of potential activity.
+#'
+#' @param dataset dataframe
+#' @param first_date
+#' @param second_date
+#' @param reference_date we need to know how old the cohort is so we can determine if the
+#' @param snapshots
+#' @param snapshot_units the units of the snapshots e.g. `hours`, `days`, `weeks`
+#' @param date_floor how we should define the cohort group e.g. by `day`, `by week`, by `months`
+#' @param color_or_facet
+#' @param year_over_year if true it displays the graph year-over-year; color_variable should be NULL (color will be year)
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param include_zero_y_axis expand the lower bound of the y-axis to 0 (TRUE is best practice.)
+#' @param show_points if TRUE adds points to the graph
+#' @param show_labels if TRUE adds labels to each point
+#' @param date_break_format format of date breaks e.g. `'\%Y-\%m-\%d'`
+#' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr mutate group_by ungroup arrange desc rename filter summarise n
+#' @importFrom ggplot2 labs
+#' @importFrom lubridate floor_date ymd
+#' @importFrom tidyr crossing
+#' @export
+rt_explore_plot_conversion_rates <- function(dataset,
+                                             first_date,
+                                             second_date,
+                                             reference_date,
+                                             snapshots=c(1, 7, 14),
+                                             snapshot_units='days',
+                                             date_floor='month',
+                                             color_or_facet='color',
+                                             year_over_year=FALSE,
+                                             y_zoom_min=NULL,
+                                             y_zoom_max=NULL,
+                                             include_zero_y_axis=TRUE,
+                                             show_points=FALSE,
+                                             show_labels=FALSE,
+                                             date_break_format=NULL,
+                                             date_breaks_width=NULL,
+                                             base_size=11
+                                             ) {
+
+    stopifnot(color_or_facet %in% c('color', 'facet'))
+
+    symbol_first_date <- sym(first_date)
+    symbol_second_date <- sym(second_date)
+
+    snapshotted_conversions <- conversion_data %>%
+        # e.g. "# days from x to y" where x and y are first and second date
+        mutate(time_units_from_x_to_y = rt_difftime_numeric(!!symbol_second_date,
+                                                            !!symbol_first_date,
+                                                            units = snapshot_units)) %>%
+        mutate(cohort = as.character(floor_date(x=!!symbol_first_date, unit=date_floor, week_start=1))) %>%
+        group_by(cohort) %>%
+        mutate(youngest_age = rt_difftime_numeric(reference_date,
+                                                  max(!!symbol_first_date),
+                                                  units = snapshot_units)) %>%
+        ungroup() %>%
+        arrange(desc(!!symbol_first_date)) %>%
+        #head() %>%
+        crossing(snapshots) %>%
+        rename(Snapshot=snapshots) %>%
+        filter(youngest_age >= Snapshot) %>%
+        group_by(cohort, Snapshot) %>%
+        summarise(sum_converted_within_threshold=sum(time_units_from_x_to_y <= Snapshot, na.rm = TRUE),
+                  total=n(),
+                  converted_within_threshold=sum(time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
+        ungroup() %>%
+        mutate(cohort = ymd(cohort),
+               Snapshot = factor(paste(Snapshot, snapshot_units),
+                                 levels = paste((sort(snapshots)), snapshot_units),
+                                 ordered = TRUE))
+
+    if(color_or_facet == 'color') {
+
+        color_variable <- 'Snapshot'
+        facet_variable <- NULL
+
+    } else {
+        color_variable <- NULL
+        facet_variable <- 'Snapshot'
+
+    }
+
+    rt_explore_plot_time_series(dataset=snapshotted_conversions,
+                                variable='cohort',
+                                comparison_variable='converted_within_threshold',
+                                comparison_function=function(x) {x},
+                                comparison_function_name='xxx',
+                                color_variable=color_variable,
+                                facet_variable=facet_variable,
+                                year_over_year=year_over_year,
+                                y_zoom_min=y_zoom_min,
+                                y_zoom_max=y_zoom_max,
+                                include_zero_y_axis=include_zero_y_axis,
+                                show_points=show_points,
+                                show_labels=show_labels,
+                                date_floor=date_floor,
+                                date_break_format=date_break_format,
+                                date_breaks_width=date_breaks_width,
+                                format_as_percent=TRUE,
+                                base_size=base_size) +
+        labs(title=paste0("Conversion Rate from `", first_date, "` to `", second_date, "`"),
+             y="Conversion Rate",
+             x=paste0(first_date, " (", date_floor, ")"),
+             caption=paste0("\nShows the conversion rates (y-axis) of a particular cohort (x-axis) based on various 'snapshots' in time\nrelative to X ",
+                            snapshot_units, " after the corresponding ", first_date, "."))
 }

@@ -2749,160 +2749,205 @@ test_that('rt_plot_funnel', {
                    plot=rt_funnel_plot(step_names=steps, step_values=values, proportionate=TRUE))
 })
 
-# test_that('rt_explore_plot_conversion_rates', {
+test_that('rt_explore_plot_conversion_rates', {
 
-#     library(lubridate)
+    sample_size <- 20000
+    conversion_rate <- 0.3
 
-#     sample_size <- 20000
-#     conversion_rate <- 0.3
+    set.seed(42)
+    conversion_data <- data.frame(index=1:sample_size,
+                                  first_visit=ymd_hms('2019-01-01 00:00:00') +
+                                      days(round(runif(n=sample_size, min=0, max=600))) +
+                                      hours(round(runif(n=sample_size, min=0, max=23))) +
+                                      minutes(round(runif(n=sample_size, min=0, max=60))) +
+                                      seconds(round(runif(n=sample_size, min=0, max=60))))
 
-#     set.seed(42)
-#     conversion_data <- data.frame(index=1:sample_size,
-#                                   first_visit=ymd_hms('2019-01-01 00:00:00') +
-#                                       days(round(runif(n=sample_size, min=0, max=600))) +
-#                                       hours(round(runif(n=sample_size, min=0, max=23))) +
-#                                       minutes(round(runif(n=sample_size, min=0, max=60))) +
-#                                       seconds(round(runif(n=sample_size, min=0, max=60))))
+    set.seed(43)
+    conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
 
-#     set.seed(43)
-#     conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
+    get_rand_binom_num <- function(seed, max_num) {
+        set.seed(seed)
+        rbinom(1, max_num, 0.3)
+    }
+    get_rand_unif_num <- function(seed, max_num) {
+        set.seed(seed)
+        as.integer(round(runif(n=1, min=0, max=max_num)))
+    }
 
-#     get_rand_binom_num <- function(seed, max_num) {
-#         set.seed(seed)
-#         rbinom(1, max_num, 0.3)
-#     }
-#     get_rand_unif_num <- function(seed, max_num) {
-#         set.seed(seed)
-#         as.integer(round(runif(n=1, min=0, max=max_num)))
-#     }
+    conversion_data$num_days <- map_int(conversion_data$index, ~ get_rand_binom_num(., 39))
+    conversion_data$num_hours <- map_int(conversion_data$index, ~ get_rand_unif_num(., 23))
+    conversion_data <- conversion_data %>%
+        mutate(conversion_date = first_visit +
+                   days(num_days) +
+                   hours(num_hours)) %>%
+        select(-num_days, -num_hours)
 
-#     conversion_data$num_days <- map_int(conversion_data$index, ~ get_rand_binom_num(., 39))
-#     conversion_data$num_hours <- map_int(conversion_data$index, ~ get_rand_unif_num(., 23))
-#     conversion_data <- conversion_data %>%
-#         mutate(conversion_date = first_visit +
-#                    days(num_days) +
-#                    hours(num_hours)) %>%
-#         select(-num_days, -num_hours)
+    conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
+    conversion_data <- conversion_data %>% select(-index, -converted)
 
-#     conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
+    mock_reference_date <- max(conversion_data$first_visit)
 
-#     summary(rt_difftime_numeric(conversion_data$conversion_date, conversion_data$first_visit))
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     #snapshots=c(1, 7, 14),
+                                     snapshots <- c(6, 7, 10, 14),
+                                     snapshot_units='days',
+                                     date_floor='month',
+                                     color_or_facet='color',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width=NULL)
 
-#     rt_explore_plot_time_series(dataset = conversion_data,
-#                                 variable = 'first_visit', color_variable = 'converted')
-
-
-#     conversion_data <- conversion_data %>%
-#         mutate(days_from_x_to_y = rt_difftime_numeric(conversion_date, first_visit, units = 'days'))
-
-#     mock_reference_date <- max(conversion_data$first_visit)
-#     #rt_floor_date_factor(mock_reference_date)
-
-
-#     # 1, 7, 14 days
-#     snapshots <- c(6, 7, 10, 14)
-#     temp <- conversion_data %>%
-#         mutate(cohort = rt_floor_date_factor(first_visit, date_floor = 'weeks')) %>%
-#         group_by(cohort) %>%
-#         mutate(youngest_age = rt_difftime_numeric(mock_reference_date, max(first_visit), units = 'days')) %>%
-#         ungroup() %>%
-#         arrange(desc(first_visit)) %>%
-#         #head() %>%
-#         crossing(snapshots) %>%
-#         rename(snapshot=snapshots) %>%
-#         filter(youngest_age >= snapshot) %>%
-#         group_by(cohort, snapshot) %>%
-#         summarise(sum_converted_within_threshold=sum(days_from_x_to_y <= snapshot, na.rm = TRUE),
-#                   total=n(),
-#                   converted_within_threshold=sum(days_from_x_to_y <= snapshot, na.rm = TRUE) / n()) %>%
-#         ungroup() %>%
-#         mutate(cohort = ymd(cohort),
-#                snapshot = factor(as.character(snapshot), levels = as.character(sort(snapshots))))
-
-
-#     rt_explore_plot_time_series(dataset=temp,
-#                                 variable = 'cohort',
-#                                 comparison_variable = 'converted_within_threshold',
-#                                 color_variable = 'snapshot',
-#                                 #facet_variable = 'snapshot',
-#                                 comparison_function = function(x) {x},
-#                                 comparison_function_name = 'self',
-#                                 show_labels = FALSE,
-#                                 show_points = TRUE,
-#                                 include_zero_y_axis = TRUE,
-#                                 date_floor = 'week',
-#                                 #date_break_format = '%Y-%W',
-#                                 #year_over_year = TRUE
-#                                 date_break_format = '%Y-%m-%d',
-#                                 date_breaks_width = '2 weeks'
-#                                 )
-#     rt_explore_plot_time_series(dataset=temp,
-#                                 variable = 'cohort',
-#                                 comparison_variable = 'converted_within_threshold',
-#                                 #color_variable = 'snapshot',
-#                                 facet_variable = 'snapshot',
-#                                 comparison_function = function(x) {x},
-#                                 comparison_function_name = 'self',
-#                                 show_labels = FALSE,
-#                                 show_points = TRUE,
-#                                 include_zero_y_axis = TRUE,
-#                                 date_floor = 'week',
-#                                 #date_break_format = '%Y-%W',
-#                                 #year_over_year = TRUE
-#                                 date_break_format = '%Y-%m-%d',
-#                                 date_breaks_width = '2 weeks'
-#     )
-
-#     ggplot_object <- rt_explore_plot_time_series(dataset=temp,
-#                                     variable = 'cohort',
-#                                     comparison_variable = 'converted_within_threshold',
-#                                     #color_variable = 'snapshot',
-#                                     facet_variable = 'snapshot',
-#                                     comparison_function = function(x) {x},
-#                                     comparison_function_name = 'self',
-#                                     show_labels = FALSE,
-#                                     show_points = TRUE,
-#                                     include_zero_y_axis = TRUE,
-#                                     date_floor = 'week',
-#                                     date_break_format = '%Y-%W',
-#                                     year_over_year = TRUE
-#                                     #date_break_format = '%Y-%m-%d',
-#                                     #date_breaks_width = '2 weeks'
-#                                     )
-#         ggplot_object
-#         ggplot_object +
-#             geom_text(aes(label = percent(total)), check_overlap = TRUE, vjust=-0.5)
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     #snapshots=c(1, 7, 14),
+                                     snapshots <- c(6, 7, 10, 14),
+                                     snapshot_units='days',
+                                     date_floor='month',
+                                     color_or_facet='facet',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width=NULL)
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     #snapshots=c(1, 7, 14),
+                                     snapshots <- c(6, 7, 10, 14),
+                                     snapshot_units='days',
+                                     date_floor='month',
+                                     color_or_facet='facet',
+                                     year_over_year=TRUE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=FALSE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width=NULL)
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(7, 14, 21),
+                                     #snapshots <- c(6, 7, 10, 14),
+                                     snapshot_units='days',
+                                     date_floor='month',
+                                     color_or_facet='facet',
+                                     year_over_year=TRUE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=FALSE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width=NULL)
 
 
 
-#     snapshots <- c(6, 7, 10, 14)
 
 
-#     aaaa <- data.frame()
-#     for(day_number in 1:30) {
 
-#         # day_number <- 30
-#         aaaa <- bind_rows(aaaa,
-#             conversion_data %>%
-#                 mutate(cohort = rt_floor_date_factor(first_visit, date_floor = 'weeks')) %>%
-#                 group_by(cohort) %>%
-#                 mutate(youngest_age = rt_difftime_numeric(mock_reference_date, max(first_visit), units = 'days')) %>%
-#                 ungroup() %>%
-#                 filter(youngest_age >= day_number) %>%
-#                 group_by(cohort) %>%
-#                 summarise(converted_within_threshold=sum(days_from_x_to_y <= day_number, na.rm = TRUE) / n()) %>%
-#                 ungroup() %>%
-#                 mutate(day=day_number))
-#     }
 
-#     base_size <- 15
-#     aaaa %>%
-#         filter(cohort >= sort(unique(aaaa$cohort))[75]) %>%
-#         ggplot(aes(x=day, y=converted_within_threshold, color=cohort)) +
-#             geom_line() +
-#             scale_color_manual(values=c(rt_colors(),rt_colors())) +
-#             scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
-#             scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
-#             theme_light(base_size = base_size)
 
-# })
+
+
+
+
+
+
+
+
+
+
+
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(1, 2, 3),
+                                     snapshot_units='weeks',
+                                     date_floor='weeks',
+                                     color_or_facet='color',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width='4 weeks')
+
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(1, 2, 3),
+                                     snapshot_units='weeks',
+                                     date_floor='weeks',
+                                     color_or_facet='facet',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width='4 weeks')
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(1, 2, 3),
+                                     snapshot_units='weeks',
+                                     date_floor='weeks',
+                                     color_or_facet='facet',
+                                     year_over_year=TRUE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width='4 weeks')
+    ##########################################################################################################
+    rt_explore_plot_conversion_rates(dataset=snapshotted_conversions,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(1, 2, 3),
+                                     snapshot_units='weeks',
+                                     date_floor='weeks',
+                                     color_or_facet='facet',
+                                     year_over_year=TRUE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=FALSE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width='4 weeks')
+
+
+})
