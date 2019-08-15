@@ -510,12 +510,28 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                      view_type="Stack Percent",
                                                      order_by_count=FALSE))
 
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_rev.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Stack Percent",
+                                                     order_by_count=FALSE,
+                                                     reverse_stack=FALSE))
+
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_total.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable='default',
                                                      view_type="Stack",
                                                      order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_total_rev.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Stack",
+                                                     order_by_count=FALSE,
+                                                     reverse_stack=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -525,7 +541,16 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                      sum_by_variable = 'amount',
                                                      order_by_count=TRUE))
 
-    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount_no_var_totals.png',
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount_rev.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     view_type="Stack",
+                                                     sum_by_variable = 'amount',
+                                                     order_by_count=TRUE,
+                                                     reverse_stack=FALSE))
+
+    test_save_plot(file_name='data/value_counts__ordered_factor_stacked_amount_no_var_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable='default',
@@ -534,7 +559,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
                                                      order_by_count=TRUE,
                                                      show_variable_totals=FALSE))
 
-    test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount_no_comp_totals.png',
+    test_save_plot(file_name='data/value_counts__ordered_factor_stacked_amount_no_comp_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      comparison_variable='default',

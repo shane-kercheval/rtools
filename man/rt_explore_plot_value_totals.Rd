@@ -8,7 +8,8 @@ rt_explore_plot_value_totals(dataset, variable,
   comparison_variable = NULL, sum_by_variable = NULL,
   order_by_count = TRUE, show_variable_totals = TRUE,
   show_comparison_totals = TRUE, show_dual_axes = FALSE,
-  view_type = "Bar", multi_value_delimiter = NULL, base_size = 11)
+  view_type = "Bar", multi_value_delimiter = NULL,
+  reverse_stack = TRUE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -38,6 +39,8 @@ Options are:
 
 \item{multi_value_delimiter}{if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 this variable to the delimiter will cause the function to count seperate values}
+
+\item{reverse_stack}{reverse stack from the default stacking order (defaulted to `TRUE`)}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

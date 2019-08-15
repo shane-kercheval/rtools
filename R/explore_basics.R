@@ -344,6 +344,7 @@ rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, mul
 #'          "Stack Percent" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
+#' @param reverse_stack reverse stack from the default stacking order (defaulted to `TRUE`)
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -362,6 +363,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          show_dual_axes=FALSE,
                                          view_type="Bar",
                                          multi_value_delimiter=NULL,
+                                         reverse_stack=TRUE,
                                          base_size=11) {
 
     stopifnot(view_type %in% c("Bar", "Confidence Interval", "Facet by Comparison", "Confidence Interval - within Variable", "Stack", "Stack Percent"))
@@ -572,6 +574,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      symbol_comparison_variable,
                                                      view_type,
                                                      show_dual_axes,
+                                                     reverse_stack,
                                                      show_variable_totals,
                                                      show_comparison_totals,
                                                      plot_y_second_axis_label,
@@ -591,6 +594,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      symbol_comparison_variable,
                                                      view_type,
                                                      show_dual_axes,
+                                                     reverse_stack,
                                                      show_variable_totals,
                                                      show_comparison_totals,
                                                      plot_y_second_axis_label,
@@ -652,33 +656,40 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                              y = total,
                              fill = !!symbol_comparison_variable),
                          stat = 'identity',
-                         position = position_stack(reverse = TRUE),
+                         position = position_stack(reverse=reverse_stack),
                          alpha=0.75)
 
         } else {
 
             if(view_type == "Stack Percent") {
 
-                comparison_position <- position_fill(reverse = TRUE)
-
+                comparison_position <- position_fill(reverse=reverse_stack)
+                # create the plot
+                unique_values_plot <- ggplot() +
+                    geom_bar(data = groups_by_both,
+                             aes(x = !!symbol_variable,
+                                 y = actual_percent,
+                                 fill = !!symbol_comparison_variable),
+                             stat = 'identity',
+                             alpha=0.75,
+                             position = comparison_position)
             } else {
 
                 comparison_position <- position_dodge(width = 0.9)
+                # create the plot
+                unique_values_plot <- ggplot() +
+                    geom_bar(data = groups_by_variable,
+                             aes(x = !!symbol_variable, y = percent),
+                             stat = 'identity',
+                             position = 'dodge',
+                             alpha = 0.3) +
+                    geom_bar(data = groups_by_both,
+                             aes(x = !!symbol_variable,
+                                 y = actual_percent,
+                                 fill = !!symbol_comparison_variable),
+                             stat = 'identity',
+                             position = comparison_position)
             }
-
-            # create the plot
-            unique_values_plot <- ggplot() +
-                geom_bar(data = groups_by_variable,
-                         aes(x = !!symbol_variable, y = percent),
-                         stat = 'identity',
-                         position = 'dodge',
-                         alpha = 0.3) +
-                geom_bar(data = groups_by_both,
-                         aes(x = !!symbol_variable,
-                             y = actual_percent,
-                             fill = !!symbol_comparison_variable),
-                         stat = 'identity',
-                         position = comparison_position)
         }
 
         if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent") {
@@ -750,7 +761,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                     digits=4,
                                                     scientific=FALSE),
                                   group = !!symbol_comparison_variable),
-                              position = position_stack(reverse=TRUE, vjust = .5),
+                              position = position_stack(reverse=reverse_stack, vjust = .5),
                               check_overlap=TRUE)
 
             } else {
@@ -781,7 +792,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                               y = group_percent,
                               label = percent(group_percent),
                               group = !!symbol_comparison_variable),
-                          position = position_fill(reverse = TRUE, vjust = .5),
+                          position = position_fill(reverse=reverse_stack, vjust = .5),
                           check_overlap=TRUE)
         }
 
