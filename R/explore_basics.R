@@ -1969,6 +1969,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
         rename(Snapshot=snapshots) %>%
         filter(youngest_age >= Snapshot) %>%
         group_by(cohort, Snapshot) %>%
+        # make sure that y happened after x (i.e. time_units_from_x_to_y is positie)
         summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
         ungroup() %>%
         mutate(cohort = ymd(cohort),
