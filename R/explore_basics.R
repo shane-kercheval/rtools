@@ -1969,9 +1969,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
         rename(Snapshot=snapshots) %>%
         filter(youngest_age >= Snapshot) %>%
         group_by(cohort, Snapshot) %>%
-        summarise(sum_converted_within_threshold=sum(time_units_from_x_to_y <= Snapshot, na.rm = TRUE),
-                  total=n(),
-                  converted_within_threshold=sum(time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
+        summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
         ungroup() %>%
         mutate(cohort = ymd(cohort),
                Snapshot = factor(paste(Snapshot, snapshot_units),
