@@ -2012,3 +2012,162 @@ rt_explore_plot_conversion_rates <- function(dataset,
              caption=paste0("\nShows the conversion rates (y-axis) of a particular cohort (x-axis) based on various 'snapshots' in time\nrelative to X ",
                             snapshot_units, " after the corresponding ", first_date, "."))
 }
+
+#' creates a cohorted option graph that e.g. shows the adoption/conversion rate over time (e.g. days) 
+#'
+#' @param dataset dataframe
+#' @param first_date the reference date (e.g. first-touch point)
+#' @param second_date the date of conversion, NA if not converted
+#' @param reference_date we need to know how old the cohort is so we can determine if the
+#' @param last_n_cohorts the number of cohorts to include
+#' @param n_units_after_first_date `n` refers to the number of, for example, *days* of adoption from the first-touch, where `days` is represented in the units parameter
+#' @param units see description for `n_units_after_first_date`
+#' @param date_floor how we should define the cohort group e.g. by `day`, `by week`, by `months`
+#' @param separated_colors if TRUE, returns the default color scheme that arranges sequential colors such that they are not close in color i.e. they are "separated". `FALSE` gives a smoother gradient of colors.
+#' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
+#' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param include_zero_y_axis expand the lower bound of the y-axis to 0 (TRUE is best practice.)
+#' @param show_points if TRUE adds points to the graph
+#' @param show_labels if TRUE adds labels to each point
+#' @param date_break_format format of date breaks e.g. `'\%Y-\%m-\%d'`
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr mutate group_by ungroup summarise filter bind_rows
+#' @importFrom stringr str_detect
+#' @importFrom scales date_format pretty_breaks format_format percent_format
+#' @importFrom ggplot2 ggplot aes geom_line geom_text geom_point labs expand_limits theme_light coord_cartesian scale_color_manual scale_x_continuous scale_y_continuous
+#' @importFrom lubridate floor_date
+#' @export
+rt_explore_plot_cohorted_adoption <- function(dataset,
+                                             first_date,
+                                             second_date,
+                                             reference_date,
+                                             last_n_cohorts=10,
+                                             n_units_after_first_date=30,
+                                             units='days',
+                                             date_floor='month',
+                                             separated_colors=TRUE,
+                                             y_zoom_min=NULL,
+                                             y_zoom_max=NULL,
+                                             include_zero_y_axis=TRUE,
+                                             show_points=FALSE,
+                                             show_labels=FALSE,
+                                             date_break_format=NULL,
+                                             base_size=11) {
+    symbol_first_date <- sym(first_date)
+    symbol_second_date <- sym(second_date)
+
+    if(is.null(date_break_format)) {
+        if(str_detect(date_floor, 'week')) {
+
+            date_break_format <- '%Y-%m-%d'
+
+        } else if (str_detect(date_floor, 'month')) {
+
+            date_break_format <- '%Y-%m'
+
+        } else if (str_detect(date_floor, 'quarter')) {
+
+            date_break_format <- '%Y-%m'
+
+        } else if (str_detect(date_floor, 'year')) {
+
+            date_break_format <- '%Y'
+
+        } else {
+
+            date_break_format <- '%Y-%m-%d'
+        }
+    }
+
+    dataset <- dataset %>%
+        mutate(time_units_from_x_to_y = rt_difftime_numeric(!!symbol_second_date,
+                                                            !!symbol_first_date,
+                                                            units=units))
+    adoption_df <- data.frame()
+    # unit_index is e.g. the nth day after someone signups where
+    # `nth` is n_units_after_first_date
+    # `day` is units
+    # `signgup` is first_date
+    for(unit_index in 1:n_units_after_first_date) {
+        # unit_index <- 30
+        adoption_df <- bind_rows(adoption_df,
+            dataset %>%
+            mutate(cohort=date_format(date_break_format)(floor_date(x=!!symbol_first_date,
+                                                                    unit=date_floor,
+                                                                    week_start=1))) %>%
+            group_by(cohort) %>%
+            mutate(youngest_age=rt_difftime_numeric(reference_date,
+                                                    max(first_visit),
+                                                    units=units)) %>%
+            ungroup() %>%
+            filter(youngest_age >= unit_index) %>%
+            group_by(cohort) %>%
+            summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= unit_index,
+                                                     na.rm = TRUE) / n()) %>%
+            ungroup() %>%
+            mutate(day=unit_index))
+    }
+
+    last_n_cohorts <- min(last_n_cohorts, 20)  # max out at 20
+
+    ggplot_object <- adoption_df %>%
+        filter(cohort %in% tail(sort(unique(adoption_df$cohort)), n = last_n_cohorts)) %>%
+        ggplot(aes(x=day, y=converted_within_threshold, color=cohort)) +
+        geom_line() +
+        scale_x_continuous(breaks=pretty_breaks(10),
+                           labels = format_format(big.mark=",",
+                                                  preserve.width="none",
+                                                  digits=4,
+                                                  scientific=FALSE)) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels=percent_format()) +
+        theme_light(base_size=base_size) +
+        labs(title=paste0("Adoption from `", first_date, "` to `", second_date, "`"),
+             y="Converstion Rate",
+             x=paste0("# of ", units, " from `", first_date, "`"),
+             color=paste0("Cohort (", date_floor,")"),
+             caption=paste0("\nEach cohort represents the ", date_floor, " of `", first_date, "`."))
+
+    if(separated_colors) {
+
+        ggplot_object <- ggplot_object + scale_color_manual(values=c(rt_colors(),rt_colors()))
+    }
+
+    if(include_zero_y_axis) {
+
+        ggplot_object <- ggplot_object + expand_limits(y=0)
+    }
+
+    if(show_points) {
+
+        ggplot_object <- ggplot_object + geom_point()
+    }
+
+    if(show_labels) {
+
+        ggplot_object <- ggplot_object +
+            geom_text(aes(label = percent_format()(converted_within_threshold)),
+                      check_overlap = TRUE,
+                      vjust=-0.5)
+    }
+    # zoom in on graph is parameters are set
+    if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
+        # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
+
+        if(rt_is_null_na_nan(y_zoom_min)) {
+
+            y_zoom_min <- min(adoption_df$converted_within_threshold, na.rm = TRUE)
+        }
+
+        if(rt_is_null_na_nan(y_zoom_max)) {
+
+            y_zoom_max <- max(adoption_df$converted_within_threshold, na.rm = TRUE)
+        }
+
+        ggplot_object <- ggplot_object +
+            coord_cartesian(ylim = c(y_zoom_min, y_zoom_max))
+    }
+
+    return (ggplot_object)
+}

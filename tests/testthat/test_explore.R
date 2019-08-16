@@ -2935,3 +2935,128 @@ test_that('rt_explore_plot_conversion_rates', {
                                      date_break_format='%Y-%m-%d',
                                      date_breaks_width='4 weeks'))
 })
+
+test_that('rt_explore_plot_cohorted_adoption', {
+    sample_size <- 20000
+    conversion_rate <- 0.3
+
+    set.seed(42)
+    conversion_data <- data.frame(index=1:sample_size,
+                                  first_visit=ymd_hms('2019-01-01 00:00:00') +
+                                      days(round(runif(n=sample_size, min=0, max=600))) +
+                                      hours(round(runif(n=sample_size, min=0, max=23))) +
+                                      minutes(round(runif(n=sample_size, min=0, max=60))) +
+                                      seconds(round(runif(n=sample_size, min=0, max=60))))
+
+    set.seed(43)
+    conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
+
+    get_rand_binom_num <- function(seed, max_num) {
+        set.seed(seed)
+        rbinom(1, max_num, 0.3)
+    }
+    get_rand_unif_num <- function(seed, max_num) {
+        set.seed(seed)
+        as.integer(round(runif(n=1, min=0, max=max_num)))
+    }
+
+    conversion_data$num_days <- map_int(conversion_data$index, ~ get_rand_binom_num(., 39))
+    conversion_data$num_hours <- map_int(conversion_data$index, ~ get_rand_unif_num(., 23))
+    conversion_data <- conversion_data %>%
+        mutate(conversion_date = first_visit +
+                   days(num_days) +
+                   hours(num_hours)) %>%
+        select(-num_days, -num_hours)
+
+    conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
+    conversion_data <- conversion_data %>% select(-index, -converted)
+
+    mock_reference_date <- max(conversion_data$first_visit)
+
+    test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__30_days_month.png',
+                   plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
+                                                          first_date='first_visit',
+                                                          second_date='conversion_date',
+                                                          reference_date=mock_reference_date,
+                                                          last_n_cohorts=10,
+                                                          n_units_after_first_date=30,
+                                                          units='days',
+                                                          date_floor='month',
+                                                          y_zoom_min=NULL,
+                                                          y_zoom_max=NULL,
+                                                          include_zero_y_axis=TRUE,
+                                                          show_points=FALSE,
+                                                          show_labels=FALSE,
+                                                          date_break_format=NULL,
+                                                          base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__30_days_month_options.png',
+                   plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
+                                                          first_date='first_visit',
+                                                          second_date='conversion_date',
+                                                          reference_date=mock_reference_date,
+                                                          last_n_cohorts=10,
+                                                          n_units_after_first_date=30,
+                                                          units='days',
+                                                          date_floor='month',
+                                                          y_zoom_min=NULL,
+                                                          y_zoom_max=0.30,
+                                                          include_zero_y_axis=TRUE,
+                                                          show_points=TRUE,
+                                                          show_labels=TRUE,
+                                                          date_break_format='%Y-%m-%d',
+                                                          base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__3_weeks_week.png',
+                   plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
+                                                          first_date='first_visit',
+                                                          second_date='conversion_date',
+                                                          reference_date=mock_reference_date,
+                                                          last_n_cohorts=15,
+                                                          n_units_after_first_date=3,
+                                                          units='weeks',
+                                                          date_floor='week',
+                                                          y_zoom_min=NULL,
+                                                          #y_zoom_max=0.30,
+                                                          include_zero_y_axis=TRUE,
+                                                          #show_points=TRUE,
+                                                          #show_labels=TRUE,
+                                                          #date_break_format='%Y-%m-%d',
+                                                          base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__3_weeks_month_options1.png',
+                   plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
+                                                          first_date='first_visit',
+                                                          second_date='conversion_date',
+                                                          reference_date=mock_reference_date,
+                                                          last_n_cohorts=100,
+                                                          n_units_after_first_date=4,
+                                                          units='weeks',
+                                                          date_floor='month',
+                                                          y_zoom_min=NULL,
+                                                          separated_colors=FALSE,
+                                                          #y_zoom_max=0.30,
+                                                          include_zero_y_axis=TRUE,
+                                                          show_points=TRUE,
+                                                          #show_labels=TRUE,
+                                                          #date_break_format='%Y-%W',
+                                                          base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__3_weeks_month_options2.png',
+                   plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
+                                                          first_date='first_visit',
+                                                          second_date='conversion_date',
+                                                          reference_date=mock_reference_date,
+                                                          last_n_cohorts=100,
+                                                          n_units_after_first_date=4,
+                                                          units='weeks',
+                                                          date_floor='month',
+                                                          y_zoom_min=NULL,
+                                                          separated_colors=TRUE,
+                                                          #y_zoom_max=0.30,
+                                                          include_zero_y_axis=TRUE,
+                                                          show_points=TRUE,
+                                                          #show_labels=TRUE,
+                                                          #date_break_format='%Y-%W',
+                                                          base_size=11))
+})
