@@ -2,7 +2,7 @@
 % Please edit documentation in R/general.R
 \name{rt_ceiling_nearest_x}
 \alias{rt_ceiling_nearest_x}
-\title{Returnes the ceiling of the **absolute value** of `y`, rounded to the nearest_x.}
+\title{Returns the ceiling of the **absolute value** of `y`, rounded to the nearest_x.}
 \usage{
 rt_ceiling_nearest_x(y, nearest_x)
 }
@@ -12,5 +12,5 @@ rt_ceiling_nearest_x(y, nearest_x)
 \item{nearest_x}{the decimal value to round the ceiling to}
 }
 \description{
-Returnes the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
+Returns the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
 }

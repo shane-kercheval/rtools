@@ -617,7 +617,8 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             mutate(total_facet_percent = sum(facet_percent),
                    facet_group_total = sum(total)) %>%
             ungroup()
-        stopifnot(all(facet_groups$total_facet_percent == 1))
+        # make sure total_facet_percent values are all 1 (out to 7 digits)
+        stopifnot(rt_are_numerics_equal(n1=facet_groups$total_facet_percent, n2=1, num_decimals=7))
 
         unique_values_plot <- ggplot(data=facet_groups,
                                      aes(x=!!symbol_variable, y=facet_percent, fill=!!symbol_variable)) +
@@ -2013,7 +2014,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
                             snapshot_units, " after the corresponding ", first_date, "."))
 }
 
-#' creates a cohorted option graph that e.g. shows the adoption/conversion rate over time (e.g. days) 
+#' creates a cohorted option graph that e.g. shows the adoption/conversion rate over time (e.g. days)
 #'
 #' @param dataset dataframe
 #' @param first_date the reference date (e.g. first-touch point)

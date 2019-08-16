@@ -2,6 +2,7 @@
 
 export(rt_are_dataframes_equal)
 export(rt_are_dataframes_equal_from_file)
+export(rt_are_numerics_equal)
 export(rt_ceiling_nearest_x)
 export(rt_colors)
 export(rt_colors_good_bad)

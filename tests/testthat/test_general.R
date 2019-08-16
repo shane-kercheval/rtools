@@ -387,3 +387,23 @@ test_that("rt_floor_date_factor", {
     expect_identical(levels(freq_df$year_vector), c('2019', '2020'))
     expect_true(all(freq_df$Freq == c(365, 2)))
 })
+
+test_that("rt_are_numerics_equal", {
+
+    expect_true(rt_are_numerics_equal(n1=1, n2=1, num_decimals=10))
+    expect_true(rt_are_numerics_equal(n1=1, n2=1.00000000001, num_decimals=10))
+    expect_true(rt_are_numerics_equal(n1=1.00000000001, n2=1, num_decimals=10))
+    expect_true(rt_are_numerics_equal(n1=1.00000000001, n2=1.00000000001, num_decimals=10))
+    expect_true(rt_are_numerics_equal(n1=c(1, 2, 3), n2=c(1, 2, 3), num_decimals=10))
+    expect_true(rt_are_numerics_equal(n1=c(1.00049, 1, 1), n2=1, num_decimals=3))
+    expect_true(rt_are_numerics_equal(n1=c(1.00049, 1, 1), n2=1.00049, num_decimals=3))
+    expect_true(rt_are_numerics_equal(n1=c(0.9999, 2, 3), n2=c(1.0001, 2.0001, 3.0001), num_decimals=3))
+
+    expect_false(rt_are_numerics_equal(n1=1.00000000001, n2=1, num_decimals=11))
+    expect_false(rt_are_numerics_equal(n1=1, n2=1.0000000001, num_decimals=10))
+    expect_false(rt_are_numerics_equal(n1=1.00000000001, n2=1, num_decimals=11))
+    expect_false(rt_are_numerics_equal(n1=1.000000000019, n2=1.00000000001, num_decimals=11))
+    expect_false(rt_are_numerics_equal(n1=c(1.00049, 1, 1), n2=1, num_decimals=4))
+    expect_false(rt_are_numerics_equal(n1=c(1.00049, 1, 1), n2=1.00049, num_decimals=4))
+    expect_false(rt_are_numerics_equal(n1=c(0.9999, 2, 3), n2=c(1.0001, 2.0001, 3.0001), num_decimals=4))
+})

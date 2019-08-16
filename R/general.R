@@ -189,7 +189,7 @@ rt_floor_date_factor <- function(date_vector, date_floor='week', week_start=1) {
     return (date_vector)
 }
 
-#' Returnes the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
+#' Returns the ceiling of the **absolute value** of `y`, rounded to the nearest_x.
 #'
 #' @param y the value
 #' @param nearest_x the decimal value to round the ceiling to
@@ -203,6 +203,18 @@ rt_ceiling_nearest_x <- function(y, nearest_x) {
     }
     # round to nearest 10 because computers can't handle decimals
     return (round(y_trans, 10))
+}
+
+#' Checks if two numbers are equivalent out to `n` decimals where `n` is the `num_decimals` parameter
+#'
+#' @param n1 number or vector of numbers
+#' @param n2 number or vector of numbers
+#' @param num_decimals round each value `n` decimals where `n` is `num_decimals`
+#'
+#' @export
+rt_are_numerics_equal <- function(n1, n2, num_decimals) {
+
+    return(all(round(n1, num_decimals) == round(n2, num_decimals)))
 }
 
 #' Like `stopifnot`, but stop `stopifnot` stops if the expression is not true, and `rt_stopif` stops if the
