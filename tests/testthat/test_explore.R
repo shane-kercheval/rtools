@@ -2880,6 +2880,26 @@ test_that('rt_explore_plot_conversion_rates', {
                                      date_break_format=NULL,
                                      date_breaks_width='4 weeks'))
 
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks2.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
+                                                             filter(first_visit >= ymd_hms('2020-01-01 00:00:00')),
+                                                         first_date='first_visit',
+                                                         second_date='conversion_date',
+                                                         reference_date=mock_reference_date,
+                                                         snapshots=c(1, 2, 3),
+                                                         snapshot_units='weeks',
+                                                         date_floor='weeks',
+                                                         color_or_facet='color',
+                                                         year_over_year=FALSE,
+                                                         y_zoom_min=NULL,
+                                                         y_zoom_max=NULL,
+                                                         include_zero_y_axis=TRUE,
+                                                         show_points=TRUE,
+                                                         show_labels=TRUE,
+                                                         date_break_format='%Y-%m-%d'
+                                                         #date_breaks_width='4 weeks'
+                                                         ))
+
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_facet.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
