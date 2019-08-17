@@ -2761,7 +2761,6 @@ test_that('rt_explore_plot_conversion_rates', {
                                       hours(round(runif(n=sample_size, min=0, max=23))) +
                                       minutes(round(runif(n=sample_size, min=0, max=60))) +
                                       seconds(round(runif(n=sample_size, min=0, max=60))))
-
     set.seed(43)
     conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
 
@@ -2783,10 +2782,14 @@ test_that('rt_explore_plot_conversion_rates', {
         select(-num_days, -num_hours)
 
     conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
+    conversion_data <- conversion_data %>% mutate(group=ifelse(index %% 2 == 0, 'A', 'B'))
     conversion_data <- conversion_data %>% select(-index, -converted)
 
     mock_reference_date <- max(conversion_data$first_visit)
 
+    ##########################################################################################################
+    # Non-Groups
+    ##########################################################################################################
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
@@ -2954,6 +2957,130 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_labels=TRUE,
                                      date_break_format='%Y-%m-%d',
                                      date_breaks_width='4 weeks'))
+
+    ##########################################################################################################
+    # GROUPS
+    ##########################################################################################################
+
+
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month__groups.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     group_variable='group',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(6, 7, 10, 14),
+                                     snapshot_units='days',
+                                     date_floor='month',
+                                     color_or_facet='color',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width=NULL))
+
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_facet__groups.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     group_variable='group',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(6, 7, 10, 14),
+                                     snapshot_units='days',
+                                     date_floor='month',
+                                     color_or_facet='facet',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width=NULL))
+    ##########################################################################################################
+    expect_error(rt_explore_plot_conversion_rates(dataset=conversion_data,
+                                                  first_date='first_visit',
+                                                  second_date='conversion_date',
+                                                  group_variable='group',
+                                                  reference_date=mock_reference_date,
+                                                  snapshots=c(6, 7, 10, 14),
+                                                  snapshot_units='days',
+                                                  date_floor='month',
+                                                  color_or_facet='facet',
+                                                  year_over_year=TRUE,
+                                                  y_zoom_min=NULL,
+                                                  y_zoom_max=NULL,
+                                                  include_zero_y_axis=FALSE,
+                                                  show_points=TRUE,
+                                                  show_labels=TRUE,
+                                                  date_break_format=NULL,
+                                                  date_breaks_width=NULL))
+
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks__groups.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     group_variable='group',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(1, 2, 3),
+                                     snapshot_units='weeks',
+                                     date_floor='weeks',
+                                     color_or_facet='color',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width='4 weeks'))
+
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks2__groups.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
+                                                             filter(first_visit >= ymd_hms('2020-01-01 00:00:00')),
+                                                         first_date='first_visit',
+                                                         second_date='conversion_date',
+                                                         group_variable='group',
+                                                         reference_date=mock_reference_date,
+                                                         snapshots=c(1, 2, 3),
+                                                         snapshot_units='weeks',
+                                                         date_floor='weeks',
+                                                         color_or_facet='color',
+                                                         year_over_year=FALSE,
+                                                         y_zoom_min=NULL,
+                                                         y_zoom_max=NULL,
+                                                         include_zero_y_axis=TRUE,
+                                                         show_points=TRUE,
+                                                         show_labels=TRUE,
+                                                         date_break_format='%Y-%m-%d'
+                                                         #date_breaks_width='4 weeks'
+                                                         ))
+
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_facet__groups.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
+                                     first_date='first_visit',
+                                     second_date='conversion_date',
+                                     group_variable='group',
+                                     reference_date=mock_reference_date,
+                                     snapshots=c(1, 2, 3),
+                                     snapshot_units='weeks',
+                                     date_floor='weeks',
+                                     color_or_facet='facet',
+                                     year_over_year=FALSE,
+                                     y_zoom_min=NULL,
+                                     y_zoom_max=NULL,
+                                     include_zero_y_axis=TRUE,
+                                     show_points=TRUE,
+                                     show_labels=TRUE,
+                                     date_break_format=NULL,
+                                     date_breaks_width='4 weeks'))
 })
 
 test_that('rt_explore_plot_cohorted_adoption', {
@@ -3080,3 +3207,5 @@ test_that('rt_explore_plot_cohorted_adoption', {
                                                           #date_break_format='%Y-%W',
                                                           base_size=11))
 })
+
+

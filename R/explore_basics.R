@@ -1908,12 +1908,107 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param dataset dataframe
 #' @param first_date the reference date (e.g. first-touch point)
 #' @param second_date the date of conversion, NA if not converted
+#' @param group_variable a variable to group/facet by. If `color_or_facet` will be ignored
+#' @param reference_date we need to know how old the cohort is so we can determine if the
+#' @param snapshots the numeric snapshots
+#' @param snapshot_units the units of the snapshots e.g. `hours`, `days`, `weeks`
+#' @param date_floor how we should define the cohort group e.g. by `day`, `by week`, by `months`
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr mutate group_by ungroup arrange desc rename filter summarise n
+#' @importFrom lubridate floor_date ymd
+#' @importFrom tidyr crossing
+#' @export
+rt_get_cohorted_conversion_rates <- function(dataset,
+                                             first_date,
+                                             second_date,
+                                             reference_date,
+                                             group_variable=NULL,
+                                             snapshots=c(1, 7, 14),
+                                             snapshot_units='days',
+                                             date_floor='month') {
+
+    symbol_first_date <- sym(first_date)
+    symbol_second_date <- sym(second_date)
+
+    if(is.null(group_variable)) {
+
+        snapshotted_conversions <- dataset %>%
+            # e.g. "# days from x to y" where x and y are first and second date
+            mutate(time_units_from_x_to_y = rt_difftime_numeric(!!symbol_second_date,
+                                                                !!symbol_first_date,
+                                                                units = snapshot_units)) %>%
+            mutate(cohort = as.character(floor_date(x=!!symbol_first_date, unit=date_floor, week_start=1))) %>%
+            group_by(cohort) %>%
+            mutate(youngest_age = rt_difftime_numeric(reference_date,
+                                                      max(!!symbol_first_date),
+                                                      units = snapshot_units)) %>%
+            ungroup() %>%
+            arrange(desc(!!symbol_first_date)) %>%
+            #head() %>%
+            crossing(snapshots) %>%
+            rename(Snapshot=snapshots) %>%
+            filter(youngest_age >= Snapshot) %>%
+            group_by(cohort, Snapshot) %>%
+            # make sure that y happened after x (i.e. time_units_from_x_to_y is positie)
+            summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
+            ungroup() %>%
+            mutate(cohort = ymd(cohort),
+                   Snapshot = factor(paste(Snapshot, snapshot_units),
+                                     levels = paste((sort(snapshots)), snapshot_units),
+                                     ordered = TRUE))
+
+    } else {
+
+        symbol_group <- sym(group_variable)
+        snapshotted_conversions <- dataset %>%
+            # e.g. "# days from x to y" where x and y are first and second date
+            mutate(time_units_from_x_to_y = rt_difftime_numeric(!!symbol_second_date,
+                                                                !!symbol_first_date,
+                                                                units = snapshot_units)) %>%
+            mutate(cohort = as.character(floor_date(x=!!symbol_first_date, unit=date_floor, week_start=1))) %>%
+            group_by(cohort, !!symbol_group) %>%
+            mutate(youngest_age = rt_difftime_numeric(reference_date,
+                                                      max(!!symbol_first_date),
+                                                      units = snapshot_units)) %>%
+            ungroup() %>%
+            arrange(desc(!!symbol_first_date)) %>%
+            #head() %>%
+            crossing(snapshots) %>%
+            rename(Snapshot=snapshots) %>%
+            filter(youngest_age >= Snapshot) %>%
+            group_by(cohort, !!symbol_group, Snapshot) %>%
+            # make sure that y happened after x (i.e. time_units_from_x_to_y is positie)
+            summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
+            ungroup() %>%
+            mutate(cohort = ymd(cohort),
+                   Snapshot = factor(paste(Snapshot, snapshot_units),
+                                     levels = paste((sort(snapshots)), snapshot_units),
+                                     ordered = TRUE))
+    }
+
+    return (snapshotted_conversions)
+}
+
+#' shows conversion rates (y-axis) of a particular cohort based on various 'snapshots' in time (a line is a snapshot in time).
+#'
+#' Each record in the cohort must have had enough time to convert, in order to be shown in the graph.
+#' For example, say the snapshots we are interested in are at day 1 and day 7. If the cohort refers to
+#'  February, and it is March 3rd, every record in the February cohort has had at least 1 day of "activity" or
+#'  potential to convert, so we can include Feb for that snapshot. However, not everyone in Feb has had 7 days
+#'  of activity, so we cannot yet include Feb for the 7 day snapshot, because people who joined the cohort on
+#'  Feb 28, for example, have not had a full 7 days of potential activity.
+#'
+#' @param dataset dataframe
+#' @param first_date the reference date (e.g. first-touch point)
+#' @param second_date the date of conversion, NA if not converted
+#' @param group_variable a variable to group/facet by. If `color_or_facet` will be ignored
 #' @param reference_date we need to know how old the cohort is so we can determine if the
 #' @param snapshots the numeric snapshots
 #' @param snapshot_units the units of the snapshots e.g. `hours`, `days`, `weeks`
 #' @param date_floor how we should define the cohort group e.g. by `day`, `by week`, by `months`
 #' @param color_or_facet `color` or `facet`
-#' @param year_over_year if true it displays the graph year-over-year; color_variable should be NULL (color will be year)
+#' @param year_over_year if true it displays the graph year-over-year; `color_or_facet` will be ignored
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param include_zero_y_axis expand the lower bound of the y-axis to 0 (TRUE is best practice.)
@@ -1924,15 +2019,13 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr mutate group_by ungroup arrange desc rename filter summarise n
 #' @importFrom ggplot2 labs
-#' @importFrom lubridate floor_date ymd
-#' @importFrom tidyr crossing
 #' @export
 rt_explore_plot_conversion_rates <- function(dataset,
                                              first_date,
                                              second_date,
                                              reference_date,
+                                             group_variable=NULL,
                                              snapshots=c(1, 7, 14),
                                              snapshot_units='days',
                                              date_floor='month',
@@ -1948,45 +2041,35 @@ rt_explore_plot_conversion_rates <- function(dataset,
                                              base_size=11
                                              ) {
 
+    rt_stopif(!is.null(group_variable) && year_over_year)
     stopifnot(color_or_facet %in% c('color', 'facet'))
 
-    symbol_first_date <- sym(first_date)
-    symbol_second_date <- sym(second_date)
+    snapshotted_conversions <- rt_get_cohorted_conversion_rates(dataset=dataset,
+                                                                first_date=first_date,
+                                                                second_date=second_date,
+                                                                reference_date=reference_date,
+                                                                group_variable=group_variable,
+                                                                snapshots=snapshots,
+                                                                snapshot_units=snapshot_units,
+                                                                date_floor=date_floor)
+    if(is.null(group_variable)) {
 
-    snapshotted_conversions <- dataset %>%
-        # e.g. "# days from x to y" where x and y are first and second date
-        mutate(time_units_from_x_to_y = rt_difftime_numeric(!!symbol_second_date,
-                                                            !!symbol_first_date,
-                                                            units = snapshot_units)) %>%
-        mutate(cohort = as.character(floor_date(x=!!symbol_first_date, unit=date_floor, week_start=1))) %>%
-        group_by(cohort) %>%
-        mutate(youngest_age = rt_difftime_numeric(reference_date,
-                                                  max(!!symbol_first_date),
-                                                  units = snapshot_units)) %>%
-        ungroup() %>%
-        arrange(desc(!!symbol_first_date)) %>%
-        #head() %>%
-        crossing(snapshots) %>%
-        rename(Snapshot=snapshots) %>%
-        filter(youngest_age >= Snapshot) %>%
-        group_by(cohort, Snapshot) %>%
-        # make sure that y happened after x (i.e. time_units_from_x_to_y is positie)
-        summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
-        ungroup() %>%
-        mutate(cohort = ymd(cohort),
-               Snapshot = factor(paste(Snapshot, snapshot_units),
-                                 levels = paste((sort(snapshots)), snapshot_units),
-                                 ordered = TRUE))
+        if(color_or_facet == 'color') {
 
-    if(color_or_facet == 'color') {
+            color_variable <- 'Snapshot'
+            facet_variable <- NULL
 
-        color_variable <- 'Snapshot'
-        facet_variable <- NULL
+        } else {
+            color_variable <- NULL
+            facet_variable <- 'Snapshot'
+        }
+        subtitle <- NULL
 
     } else {
-        color_variable <- NULL
-        facet_variable <- 'Snapshot'
 
+        color_variable <- 'Snapshot'
+        facet_variable <- group_variable
+        subtitle <- paste0("by `", group_variable,"`")
     }
 
     rt_explore_plot_time_series(dataset=snapshotted_conversions,
@@ -2008,6 +2091,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
                                 format_as_percent=TRUE,
                                 base_size=base_size) +
         labs(title=paste0("Conversion Rate from `", first_date, "` to `", second_date, "`"),
+             subtitle = subtitle,
              y="Conversion Rate",
              x=paste0(first_date, " (", date_floor, ")"),
              caption=paste0("\nShows the conversion rates (y-axis) of a particular cohort (x-axis) based on various 'snapshots' in time\nrelative to X ",
