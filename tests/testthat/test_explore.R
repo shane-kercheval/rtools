@@ -3207,5 +3207,3 @@ test_that('rt_explore_plot_cohorted_adoption', {
                                                           #date_break_format='%Y-%W',
                                                           base_size=11))
 })
-
-
