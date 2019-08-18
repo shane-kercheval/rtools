@@ -2125,21 +2125,21 @@ rt_explore_plot_conversion_rates <- function(dataset,
 #' @importFrom lubridate floor_date
 #' @export
 rt_explore_plot_cohorted_adoption <- function(dataset,
-                                             first_date,
-                                             second_date,
-                                             reference_date,
-                                             last_n_cohorts=10,
-                                             n_units_after_first_date=30,
-                                             units='days',
-                                             date_floor='month',
-                                             separated_colors=TRUE,
-                                             y_zoom_min=NULL,
-                                             y_zoom_max=NULL,
-                                             include_zero_y_axis=TRUE,
-                                             show_points=FALSE,
-                                             show_labels=FALSE,
-                                             date_break_format=NULL,
-                                             base_size=11) {
+                                              first_date,
+                                              second_date,
+                                              reference_date,
+                                              last_n_cohorts=10,
+                                              n_units_after_first_date=30,
+                                              units='days',
+                                              date_floor='month',
+                                              separated_colors=TRUE,
+                                              y_zoom_min=NULL,
+                                              y_zoom_max=NULL,
+                                              include_zero_y_axis=TRUE,
+                                              show_points=FALSE,
+                                              show_labels=FALSE,
+                                              date_break_format=NULL,
+                                              base_size=11) {
     symbol_first_date <- sym(first_date)
     symbol_second_date <- sym(second_date)
 
@@ -2184,7 +2184,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
                                                                     week_start=1))) %>%
             group_by(cohort) %>%
             mutate(youngest_age=rt_difftime_numeric(reference_date,
-                                                    max(first_visit),
+                                                    max(!!symbol_first_date),
                                                     units=units)) %>%
             ungroup() %>%
             filter(youngest_age >= unit_index) %>%
@@ -2209,7 +2209,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
         scale_y_continuous(breaks=pretty_breaks(10), labels=percent_format()) +
         theme_light(base_size=base_size) +
         labs(title=paste0("Adoption from `", first_date, "` to `", second_date, "`"),
-             y="Converstion Rate",
+             y="Conversion Rate",
              x=paste0("# of ", units, " from `", first_date, "`"),
              color=paste0("Cohort (", date_floor,")"),
              caption=paste0("\nEach cohort represents the ", date_floor, " of `", first_date, "`."))
