@@ -2016,6 +2016,8 @@ rt_get_cohorted_conversion_rates <- function(dataset,
 #' @param show_labels if TRUE adds labels to each point
 #' @param date_break_format format of date breaks e.g. `'\%Y-\%m-\%d'`
 #' @param date_breaks_width the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"
+#' @param date_limits "zoom" for date x-axis, 2 values representing min/max in the format of YYYY-MM-DD. If `date_floor` is used, the date_limits are converted to the corresponding date floor
+#'       e.g. if date_floor is 'month' and date_limits are `c('2013-01-15', '2013-12-15')` they will be converted to `c('2013-01-01', '2013-12-01')`
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -2038,6 +2040,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
                                              show_labels=FALSE,
                                              date_break_format=NULL,
                                              date_breaks_width=NULL,
+                                             date_limits=NULL,
                                              base_size=11
                                              ) {
 
@@ -2089,6 +2092,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
                                 date_break_format=date_break_format,
                                 date_breaks_width=date_breaks_width,
                                 format_as_percent=TRUE,
+                                date_limits=date_limits,
                                 base_size=base_size) +
         labs(title=paste0("Conversion Rate from `", first_date, "` to `", second_date, "`"),
              subtitle = subtitle,

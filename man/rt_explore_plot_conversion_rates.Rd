@@ -10,7 +10,7 @@ rt_explore_plot_conversion_rates(dataset, first_date, second_date,
   color_or_facet = "color", year_over_year = FALSE,
   y_zoom_min = NULL, y_zoom_max = NULL, include_zero_y_axis = TRUE,
   show_points = FALSE, show_labels = FALSE, date_break_format = NULL,
-  date_breaks_width = NULL, base_size = 11)
+  date_breaks_width = NULL, date_limits = NULL, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -46,6 +46,9 @@ rt_explore_plot_conversion_rates(dataset, first_date, second_date,
 \item{date_break_format}{format of date breaks e.g. `'\%Y-\%m-\%d'`}
 
 \item{date_breaks_width}{the date breaks for x axis, values correspond to ggplot scale_x_date e.g. "1 month", "1 week"}
+
+\item{date_limits}{"zoom" for date x-axis, 2 values representing min/max in the format of YYYY-MM-DD. If `date_floor` is used, the date_limits are converted to the corresponding date floor
+e.g. if date_floor is 'month' and date_limits are `c('2013-01-15', '2013-12-15')` they will be converted to `c('2013-01-01', '2013-12-01')`}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }
