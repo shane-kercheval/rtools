@@ -2845,6 +2845,25 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_labels=TRUE,
                                      date_break_format=NULL,
                                      date_breaks_width=NULL))
+
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_yoy_ignore_color.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
+                                                         first_date='first_visit',
+                                                         second_date='conversion_date',
+                                                         reference_date=mock_reference_date,
+                                                         snapshots=c(6, 7, 10, 14),
+                                                         snapshot_units='days',
+                                                         date_floor='month',
+                                                         color_or_facet='color',
+                                                         year_over_year=TRUE,
+                                                         y_zoom_min=NULL,
+                                                         y_zoom_max=NULL,
+                                                         include_zero_y_axis=FALSE,
+                                                         show_points=TRUE,
+                                                         show_labels=TRUE,
+                                                         date_break_format=NULL,
+                                                         date_breaks_width=NULL))
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__2.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,

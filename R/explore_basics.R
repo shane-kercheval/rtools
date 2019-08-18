@@ -2054,7 +2054,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
                                                                 date_floor=date_floor)
     if(is.null(group_variable)) {
 
-        if(color_or_facet == 'color') {
+        if(color_or_facet == 'color' && !year_over_year) {
 
             color_variable <- 'Snapshot'
             facet_variable <- NULL
