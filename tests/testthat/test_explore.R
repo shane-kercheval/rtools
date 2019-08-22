@@ -132,7 +132,7 @@ test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
                                                      p_value_threshold=0.3))
 })
 
-test_that("rt_explore_value_totals_counts", {
+test_that("rt_explore_value_totals", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
     ##########################################################################################################
@@ -141,42 +141,404 @@ test_that("rt_explore_value_totals_counts", {
     ##########################################################################################################
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
     credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+    credit_data$id <- 1:nrow(credit_data)
     # make sure it handles NAs
     credit_data[1, 'checking_balance'] <- NA
+    credit_data[2, 'default'] <- NA
+    credit_data[3, 'id'] <- NA
 
     variable <- 'checking_balance'
+    second_variable <- 'default'
+    sum_by_variable <- 'amount'
+    count_distinct <- 'id'
 
-    unique_values <- suppressWarnings(rt_explore_value_totals(dataset=credit_data, variable=variable))
-    expected_values <- suppressWarnings(credit_data %>%
-                                            count(checking_balance, sort = TRUE) %>%
-                                            rename(count = n))
-    expected_values <- expected_values %>% mutate(percent = count / sum(expected_values$count))
-    expect_true(rt_are_dataframes_equal(expected_values, unique_values))
+    # cannot use sum_by_variable and count_distict at the same time
+    expect_error(rt_explore_value_totals(dataset=credit_data,
+                                         variable=variable,
+                                         sum_by_variable=sum_by_variable,
+                                         count_distinct=count_distinct))
+    ####
+    # single var
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    actual_df <- rt_explore_value_totals(dataset=credit_data, variable=variable)
+    expect_true(is.factor(actual_df$checking_balance))
+    expect_identical(levels(actual_df$checking_balance), custom_levels)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
-    expect_true(all(colnames(unique_values) == c('checking_balance', 'count', 'percent')))
-    expect_true(all(levels(unique_values$checking_balance) == custom_levels))
+    ####
+    # single var - non factor
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance) %>%
+                                        rename(count = n)) %>% as.data.frame() %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        arrange(checking_balance)
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    actual_df <- rt_explore_value_totals(dataset=credit_data %>%
+                                             mutate(checking_balance = as.character(checking_balance)),
+                                         variable=variable)
+    expect_false(is.factor(actual_df$checking_balance))
+    expect_identical(c(sort(actual_df$checking_balance), NA), actual_df$checking_balance)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
-    expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
-    expect_true(is.na(unique_values$checking_balance[5]))
-    expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
-    expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
+    ####
+    # single var - count-distinct
+    # this should actually be the same things as not counting distinct, because NAs get lumped into 1
+    # and there is only 1 NA for the id field, so it still gets counted as a single distinct
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    actual_df <- rt_explore_value_totals(dataset=credit_data, variable=variable,
+                                         count_distinct=count_distinct)
+    expect_true(is.factor(actual_df$checking_balance))
+    expect_identical(levels(actual_df$checking_balance), custom_levels)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
-    ##########################################################################################################
-    # test without factor
-    ##########################################################################################################
-    credit_data$checking_balance <- as.character(credit_data$checking_balance)
-    unique_values <- rt_explore_value_totals(dataset=credit_data, variable=variable)
+    ####
+    # single var - count-distinct
+    # set all `unknown`s to NA, so there should only be 1 distinct value for `unknown`, but the rest of the
+    # dataset should be the same as above
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df[4, 'count'] <- 1
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    temp <- credit_data %>% mutate(id = ifelse(checking_balance == 'unknown', NA, id))
+    actual_df <- rt_explore_value_totals(dataset=temp, variable=variable, count_distinct = count_distinct)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
-    expect_true(all(colnames(unique_values) == c('checking_balance', 'count', 'percent')))
+    ####
+    # single var - sum by var
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, wt=amount) %>%
+                                        rename(sum = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$sum / sum(expected_df$sum)
+    actual_df <- rt_explore_value_totals(dataset=credit_data,
+                                         variable=variable,
+                                         sum_by_variable=sum_by_variable)
+    expect_true(is.factor(actual_df$checking_balance))
+    expect_identical(levels(actual_df$checking_balance), custom_levels)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
-    # this is the only thing that should change
-    expect_true(is.null(levels(unique_values$checking_balance)))
+    ####
+    # single var - multi-var
+    # transform "< 0 DM" to "< 0 DM | < 0 DM" so that we can parse " | " and "< 0 DM" should be duplicated
+    # while all other variable counts remain the same
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df[1, 'count'] <- expected_df[1, 'count'] * 2
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- expected_df %>%
+        mutate(checking_balance = factor(checking_balance, levels = sort(custom_levels))) %>%
+        arrange(checking_balance)
 
-    # all of these should remain the same
-    expect_true(all(unique_values$checking_balance[1:4] == c('unknown', '< 0 DM', '1 - 200 DM', '> 200 DM')))
-    expect_true(is.na(unique_values$checking_balance[5]))
-    expect_true(all(unique_values$count == c(394, 273, 269, 63, 1)))
-    expect_true(all(unique_values$percent == c(0.394, 0.273, 0.269, 0.063, 0.001)))
+    # need to convert to a character, otherwise ifelse will convert to numeric factor value
+    # then convert back to factor
+    temp <- credit_data %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        mutate(checking_balance = ifelse(checking_balance == '< 0 DM',
+                                                             paste(checking_balance, '|', checking_balance),
+                                                             checking_balance)) %>%
+        mutate(checking_balance = factor(checking_balance))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         multi_value_delimiter=' \\| ')
+    expect_true(is.factor(actual_df$checking_balance))
+    # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
+    # take the unique values and sort them for the factor levels)
+    expect_identical(levels(actual_df$checking_balance), sort(custom_levels))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # single var - multi-var - sum by
+    # transform "< 0 DM" to "< 0 DM | < 0 DM" so that we can parse " | " and "< 0 DM" should be duplicated
+    # while all other variable counts remain the same
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, wt=amount) %>%
+                                        rename(sum = n)) %>% as.data.frame()
+    expected_df[1, 'sum'] <- expected_df[1, 'sum'] * 2
+    expected_df$percent <- expected_df$sum / sum(expected_df$sum)
+    expected_df <- expected_df %>%
+        mutate(checking_balance = factor(checking_balance, levels = sort(custom_levels))) %>%
+        arrange(checking_balance)
+
+    # need to convert to a character, otherwise ifelse will convert to numeric factor value
+    # then convert back to factor
+    temp <- credit_data %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        mutate(checking_balance = ifelse(checking_balance == '< 0 DM',
+                                         paste(checking_balance, '|', checking_balance),
+                                         checking_balance)) %>%
+        mutate(checking_balance = factor(checking_balance))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         sum_by_variable=sum_by_variable,
+                                         multi_value_delimiter=' \\| ')
+    expect_true(is.factor(actual_df$checking_balance))
+    # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
+    # take the unique values and sort them for the factor levels)
+    expect_identical(levels(actual_df$checking_balance), sort(custom_levels))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # single var - multi-var - count distinct
+    # transform "< 0 DM" to "< 0 DM | < 0 DM" so that we can parse " | " and "< 0 DM" should be duplicated
+    # while all other variable counts remain the same
+    # since we are duplicated "< 0 DM", but counting distinct Id, the counts should be the same as if we
+    # did not duplicate
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- expected_df %>%
+        mutate(checking_balance = factor(checking_balance, levels = sort(custom_levels))) %>%
+        arrange(checking_balance)
+
+    # need to convert to a character, otherwise ifelse will convert to numeric factor value
+    # then convert back to factor
+    temp <- credit_data %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        mutate(checking_balance = ifelse(checking_balance == '< 0 DM',
+                                         paste(checking_balance, '|', checking_balance),
+                                         checking_balance)) %>%
+        mutate(checking_balance = factor(checking_balance))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         count_distinct=count_distinct,
+                                         multi_value_delimiter=' \\| ')
+    expect_true(is.factor(actual_df$checking_balance))
+    # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
+    # take the unique values and sort them for the factor levels)
+    expect_identical(levels(actual_df$checking_balance), sort(custom_levels))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default) %>%
+                                        rename(count = n))
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- suppressWarnings(expected_df %>%
+        group_by(checking_balance) %>%
+        mutate(group_percent = count / sum(count)) %>%
+        ungroup()) %>% as.data.frame()
+    actual_df <- rt_explore_value_totals(dataset=credit_data,
+                                         variable=variable,
+                                         second_variable=second_variable)
+    expect_true(is.factor(actual_df$checking_balance))
+    expect_identical(levels(actual_df$checking_balance), custom_levels)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var - non factor
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default) %>%
+                                        rename(count = n))
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- suppressWarnings(expected_df %>%
+                                        group_by(checking_balance) %>%
+                                        mutate(group_percent = count / sum(count)) %>%
+                                        ungroup()) %>% as.data.frame() %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        arrange(checking_balance)
+    actual_df <- rt_explore_value_totals(dataset=credit_data %>%
+                                             mutate(checking_balance = as.character(checking_balance)),
+                                         variable=variable,
+                                         second_variable=second_variable)
+    expect_false(is.factor(actual_df$checking_balance))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var - count-distinct
+    # this should actually be the same things as not counting distinct, because NAs get lumped into 1
+    # and there is only 1 NA for the id field, so it still gets counted as a single distinct
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- suppressWarnings(expected_df %>%
+                                       group_by(checking_balance) %>%
+                                       mutate(group_percent = count / sum(count)) %>%
+                                       ungroup()) %>% as.data.frame()
+    actual_df <- rt_explore_value_totals(dataset=credit_data,
+                                         variable=variable,
+                                         second_variable=second_variable,
+                                         count_distinct=count_distinct)
+    expect_true(is.factor(actual_df$checking_balance))
+    expect_identical(levels(actual_df$checking_balance), custom_levels)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var - count-distinct
+    # set all `unknown`s to NA, so there should only be 1 distinct value for `unknown`, but the rest of the
+    # dataset should be the same as above
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df[8, 'count'] <- 1
+    expected_df[9, 'count'] <- 1
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- suppressWarnings(expected_df %>%
+                                        group_by(checking_balance) %>%
+                                        mutate(group_percent = count / sum(count)) %>%
+                                        ungroup()) %>% as.data.frame()
+    temp <- credit_data %>% mutate(id = ifelse(checking_balance == 'unknown', NA, id))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         second_variable=second_variable,
+                                         count_distinct=count_distinct)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var - sum by var
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default, wt=amount) %>%
+                                        rename(sum = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$sum / sum(expected_df$sum)
+    expected_df <- suppressWarnings(expected_df %>%
+                                        group_by(checking_balance) %>%
+                                        mutate(group_percent = sum / sum(sum)) %>%
+                                        ungroup()) %>% as.data.frame()
+
+    actual_df <- rt_explore_value_totals(dataset=credit_data,
+                                         variable=variable,
+                                         second_variable=second_variable,
+                                         sum_by_variable=sum_by_variable)
+    expect_true(is.factor(actual_df$checking_balance))
+    expect_identical(levels(actual_df$checking_balance), custom_levels)
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+
+    ####
+    # double var - multi-var
+    # transform "< 0 DM" to "< 0 DM | < 0 DM" so that we can parse " | " and "< 0 DM" should be duplicated
+    # while all other variable counts remain the same
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df[1, 'count'] <- expected_df[1, 'count'] * 2
+    expected_df[2, 'count'] <- expected_df[2, 'count'] * 2
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- expected_df %>%
+        mutate(checking_balance = factor(checking_balance, levels = sort(custom_levels))) %>%
+        arrange(checking_balance)
+    expected_df <- suppressWarnings(expected_df %>%
+                                        group_by(checking_balance) %>%
+                                        mutate(group_percent = count / sum(count)) %>%
+                                        ungroup()) %>% as.data.frame()
+
+    # need to convert to a character, otherwise ifelse will convert to numeric factor value
+    # then convert back to factor
+    temp <- credit_data %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        mutate(checking_balance = ifelse(checking_balance == '< 0 DM',
+                                         paste(checking_balance, '|', checking_balance),
+                                         checking_balance)) %>%
+        mutate(checking_balance = factor(checking_balance))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         second_variable=second_variable,
+                                         multi_value_delimiter=' \\| ')
+    expect_true(is.factor(actual_df$checking_balance))
+    # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
+    # take the unique values and sort them for the factor levels)
+    expect_identical(levels(actual_df$checking_balance), sort(custom_levels))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var - multi-var - sum by
+    # transform "< 0 DM" to "< 0 DM | < 0 DM" so that we can parse " | " and "< 0 DM" should be duplicated
+    # while all other variable counts remain the same
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default, wt=amount) %>%
+                                        rename(sum = n)) %>% as.data.frame()
+    expected_df[1, 'sum'] <- expected_df[1, 'sum'] * 2
+    expected_df[2, 'sum'] <- expected_df[2, 'sum'] * 2
+    expected_df$percent <- expected_df$sum / sum(expected_df$sum)
+    expected_df <- expected_df %>%
+        mutate(checking_balance = factor(checking_balance, levels = sort(custom_levels))) %>%
+        arrange(checking_balance)
+    expected_df <- suppressWarnings(expected_df %>%
+                                        group_by(checking_balance) %>%
+                                        mutate(group_percent = sum / sum(sum)) %>%
+                                        ungroup()) %>% as.data.frame()
+
+    # need to convert to a character, otherwise ifelse will convert to numeric factor value
+    # then convert back to factor
+    temp <- credit_data %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        mutate(checking_balance = ifelse(checking_balance == '< 0 DM',
+                                         paste(checking_balance, '|', checking_balance),
+                                         checking_balance)) %>%
+        mutate(checking_balance = factor(checking_balance))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         second_variable=second_variable,
+                                         sum_by_variable=sum_by_variable,
+                                         multi_value_delimiter=' \\| ')
+    expect_true(is.factor(actual_df$checking_balance))
+    # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
+    # take the unique values and sort them for the factor levels)
+    expect_identical(levels(actual_df$checking_balance), sort(custom_levels))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # double var - multi-var - count distinct
+    # transform "< 0 DM" to "< 0 DM | < 0 DM" so that we can parse " | " and "< 0 DM" should be duplicated
+    # while all other variable counts remain the same
+    # since we are duplicated "< 0 DM", but counting distinct Id, the counts should be the same as if we
+    # did not duplicate
+    ####
+    expected_df <- suppressWarnings(credit_data %>%
+                                        count(checking_balance, default) %>%
+                                        rename(count = n)) %>% as.data.frame()
+    expected_df$percent <- expected_df$count / sum(expected_df$count)
+    expected_df <- expected_df %>%
+        mutate(checking_balance = factor(checking_balance, levels = sort(custom_levels))) %>%
+        arrange(checking_balance)
+    expected_df <- suppressWarnings(expected_df %>%
+                                        group_by(checking_balance) %>%
+                                        mutate(group_percent = count / sum(count)) %>%
+                                        ungroup()) %>% as.data.frame()
+
+    # need to convert to a character, otherwise ifelse will convert to numeric factor value
+    # then convert back to factor
+    temp <- credit_data %>%
+        mutate(checking_balance = as.character(checking_balance)) %>%
+        mutate(checking_balance = ifelse(checking_balance == '< 0 DM',
+                                         paste(checking_balance, '|', checking_balance),
+                                         checking_balance)) %>%
+        mutate(checking_balance = factor(checking_balance))
+    actual_df <- rt_explore_value_totals(dataset=temp,
+                                         variable=variable,
+                                         second_variable=second_variable,
+                                         count_distinct=count_distinct,
+                                         multi_value_delimiter=' \\| ')
+    expect_true(is.factor(actual_df$checking_balance))
+    # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
+    # take the unique values and sort them for the factor levels)
+    expect_identical(levels(actual_df$checking_balance), sort(custom_levels))
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+    expect_equal(sum(actual_df$count), 1000)
 })
 
 test_that("rt_get_colors_from_values", {
@@ -219,55 +581,6 @@ test_that("rt_get_colors_from_values", {
     temp_dataset$cut <- fct_infreq(temp_dataset$cut, ordered = TRUE)
     returned_colors <- rt_get_colors_from_values(temp_dataset[['cut']])
     expect_identical(custom_colors[expected_order], returned_colors)
-})
-
-test_that("rt_explore_value_totals_sums", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
-    variable <- 'checking_balance'
-    sum_by <- 'amount'
-
-    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
-    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
-    # make sure it handles NAs
-    credit_data[1, 'checking_balance'] <- NA
-    credit_data[2, 'amount'] <- NA
-    credit_data[3, 'checking_balance'] <- NA
-    credit_data[3, 'amount'] <- NA
-
-    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by_variable=sum_by)
-
-    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum', 'percent')))
-    expect_true(all(levels(value_sums$checking_balance) == custom_levels))
-
-    expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
-    expect_true(is.na(value_sums$checking_balance[5]))
-
-    expected_total_sum <- sum(credit_data$amount, na.rm = TRUE)
-    expected_unknown <- credit_data %>% filter(checking_balance == 'unknown') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
-    expected_1_200 <- credit_data %>% filter(checking_balance == '1 - 200 DM') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
-    expected_0 <- credit_data %>% filter(checking_balance == '< 0 DM') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
-    expected_200 <- credit_data %>% filter(checking_balance == '> 200 DM') %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
-    expected_na <- credit_data %>% filter(is.na(checking_balance)) %>% rt_get_vector('amount') %>% sum(na.rm=TRUE)
-    expected_sums <- c(expected_unknown, expected_1_200, expected_0, expected_200, expected_na)
-
-    expect_equal(sum(value_sums$sum), expected_total_sum)
-    expect_true(all(value_sums$sum == expected_sums))
-    expect_true(all(value_sums$percent == expected_sums / sum(expected_sums)))
-    expect_equal(sum(value_sums$percent), 1)
-
-    # change to character
-    credit_data$checking_balance <- as.character(credit_data$checking_balance)
-    value_sums <- rt_explore_value_totals(dataset=credit_data, variable=variable, sum_by_variable=sum_by)
-
-    expect_true(all(colnames(value_sums) == c('checking_balance', 'sum', 'percent')))
-    expect_true(all(levels(value_sums$checking_balance) == custom_levels))
-
-    expect_equal(sum(value_sums$sum), expected_total_sum)
-    expect_true(all(value_sums$checking_balance[1:4] == c('unknown', '1 - 200 DM', '< 0 DM', '> 200 DM')))
-    expect_true(is.na(value_sums$checking_balance[5]))
-    expect_true(all(value_sums$sum == expected_sums))
-    expect_true(all(value_sums$percent == expected_sums / sum(expected_sums)))
-    expect_equal(sum(value_sums$percent), 1)
 })
 
 test_that("rt_explore_plot_value_counts", {
@@ -336,9 +649,9 @@ test_that("rt_explore_plot_value_counts", {
     # plot with order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_with_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                      variable=variable,
-                                                      order_by_count=TRUE,
-                                                      base_size=11))
+                                                     variable=variable,
+                                                     order_by_count=TRUE,
+                                                     base_size=11))
 
     ##########################################################################################################
     # test without factor
@@ -1030,7 +1343,9 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
         count(purpose, wt = months_loan_duration, sort = TRUE)
     expected_sum_by_variable <- expected_sum_by_variable %>%
         rename(sum = n) %>%
-        mutate(percent = sum / sum(expected_sum_by_variable$n))
+        mutate(percent = sum / sum(expected_sum_by_variable$n)) %>%
+        arrange(purpose) %>%
+        as.data.frame()
     expect_equal(sum(expected_sum_by_variable$percent), 1)
 
     expect_true(rt_are_dataframes_equal(expected_sum_by_variable,
@@ -1039,46 +1354,13 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
                                                                 sum_by_variable='months_loan_duration',
                                                                 multi_value_delimiter=', ')))
 
-    # now test with multi-value columns
-    #expected_totals =
-    expected_totals <- rbind(expected_totals,
-                             expected_totals %>%
-                                 filter(purpose == 'car' | purpose == 'business') %>%
-                                 mutate(purpose = paste0(purpose, '_test'))) %>%
-        arrange(desc(count), purpose)
-    expect_true(sum(expected_totals$percent) > 1)
-
-
-    expected_sum_by_variable <- rbind(expected_sum_by_variable,
-                                      expected_sum_by_variable %>%
-                                          filter(purpose == 'car' | purpose == 'business') %>%
-                                          mutate(purpose = paste0(purpose, '_test'))) %>%
-        arrange(desc(sum), purpose)
-    expect_true(sum(expected_sum_by_variable$percent) > 1)
-
-    expected_totals <- expected_totals %>%
-        mutate(purpose = factor(purpose, levels=sort(as.character(expected_totals$purpose))))
-    # create multi-value column
-
     credit_data <- credit_data %>%
         mutate(purpose = case_when(
             purpose == 'car' ~ 'car, car_test',
             purpose == 'business' ~ 'business, business_test',
             TRUE ~ as.character(purpose))) %>%
+        arrange(purpose) %>%
         mutate(purpose = as.factor(purpose))
-
-    found_totals <- rt_explore_value_totals(dataset=credit_data,
-                                            variable='purpose',
-                                            multi_value_delimiter=', ')
-
-    expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
-
-    found_sums <- rt_explore_value_totals(dataset=credit_data,
-                                          variable='purpose',
-                                          sum_by_variable='months_loan_duration',
-                                          multi_value_delimiter=', ')
-
-    expect_true(rt_are_dataframes_equal(expected_sum_by_variable, found_sums))
 
     variable <- 'purpose'
     comparison_variable <- NULL

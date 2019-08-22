@@ -231,6 +231,8 @@ rt_explore_plot_correlations <- function(dataset,
 #'
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
+#' @param second_variable group by a second variable
+#' @param count_distinct count the distinct number of values in this column
 #' @param sum_by_variable the numeric variable to sum
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
@@ -241,76 +243,154 @@ rt_explore_plot_correlations <- function(dataset,
 #' rt_explore_value_totals(dataset=iris, variable='Species')
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr sym count mutate group_by ungroup summarise rename arrange desc
-#' @importFrom stringr str_split
-#' @importFrom purrr flatten map2 map_dbl map_chr
+#' @importFrom dplyr sym count mutate group_by ungroup summarise rename arrange select filter n_distinct
+#' @importFrom tidyr gather separate
 #' @export
-rt_explore_value_totals <- function(dataset, variable, sum_by_variable=NULL, multi_value_delimiter=NULL) {
+rt_explore_value_totals <- function(dataset,
+                                    variable,
+                                    second_variable=NULL,
+                                    count_distinct=NULL,
+                                    sum_by_variable=NULL,
+                                    multi_value_delimiter=NULL) {
 
-    symbol_variable <- sym(variable)  # because we are using string variables
+    # if either is NULL make sure both aren't not null
+    if(!is.null(sum_by_variable) || !is.null(count_distinct)) {
+
+        rt_stopif(!is.null(sum_by_variable) && !is.null(count_distinct))
+    }
+
+    dataset <- dataset %>% select(c(variable, second_variable, count_distinct, sum_by_variable))
+    # capture original values (might be changed by multi-value-delimiter)
     values <- dataset[[variable]]
-
-    if(is.null(sum_by_variable)) {
-
-        weights <- 1
-        count_column_name <- 'count'
-        denominator <- nrow(dataset)
-
-    } else{
-
-        weights <- dataset[[sum_by_variable]]
-        count_column_name <- 'sum'
-        denominator <- sum(weights, na.rm = TRUE)
+    symbol_variable <- sym(variable)  # because we are using string variables
+    symbol_sum_by <- NULL
+    if(!is.null(sum_by_variable)) {
+        symbol_sum_by <- sym(sum_by_variable)
     }
 
-    if(is.null(multi_value_delimiter)) {
+    # NOTE some of the following code will give warnings if there are NA's,
+    # but we want to keep NAs, no use fct_explicit_na so that,
+    # e.g. we can use `na.value = '#2A3132'` with scale_fill_manual
+    # so we use suppressWarnings
 
-        temp <- data.frame(value = values,
-                           weight = weights,
-                           stringsAsFactors = FALSE)
-    }else {
+    ##########################################################################################################
+    # Transform primary column from multi-value to single value (duplicates records)
+    ##########################################################################################################
+    if(!is.null(multi_value_delimiter)) {
 
-        temp <- map2(values, weights,
-                      function(value, weight) {
-                          split_values <- unlist(str_split(value, multi_value_delimiter, simplify = FALSE))
-                          map2(split_values, rep(weight, length(split_values)),
-                               function(val, val_weight)
-                                   c(val, val_weight))
-                      })
-        temp <- flatten(temp)
-        temp <- data.frame(value = map_chr(temp, ~.[[1]]),
-                           weight = map_dbl(temp, ~as.double(.[[2]])),
-                           stringsAsFactors = FALSE)
+        dataset <- suppressWarnings(dataset %>%
+                                     separate(col=!!symbol_variable,
+                                              into=c('temp_a__', 'temp_b__'),
+                                              sep = multi_value_delimiter))
+        # if NA is a value corresponding to `temp_a__` then it was NA to start with;
+        # if NA is a value corresponding to `temp_b__` then there wasn't multiple values
+        # i.e. we can get rid of all NAs associated with `temp_b__`
+        if(is.null(c(second_variable, count_distinct, sum_by_variable))) {
 
+            dataset <- dataset %>% gather(key, value)
+
+        } else {
+            dataset <- dataset %>%
+                gather(key, value, -c(second_variable, count_distinct, sum_by_variable))
+        }
+        dataset <- dataset %>%
+            filter(key == 'temp_a__' | !is.na(value)) %>%
+            select(-key)
+
+        dataset[, variable] <- dataset$value
+        dataset <- dataset %>% select(-value)
     }
-    # sometimes, column names given to data.frame aren't being retained
-    colnames(temp) <- c('value', 'weight')
 
-    # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
-    # we can use `na.value = '#2A3132'` with scale_fill_manual
-    totals <- suppressWarnings(temp %>%
-                                   group_by(value) %>%
-                                   summarise(count = sum(weight, na.rm = TRUE)) %>%
-                                   ungroup() %>%
-                                   mutate(percent = count / denominator) %>%
-                                   arrange(desc(count), value))
+    if(is.null(count_distinct)) {
+
+        if(is.null(second_variable)) {
+
+            totals <- suppressWarnings(dataset %>% count(!!symbol_variable, wt=!!symbol_sum_by)) %>%
+                arrange(!!symbol_variable)
+            totals$percent <- totals$n / sum(totals$n)
+
+            stopifnot(rt_are_numerics_equal(sum(totals$percent), 1, num_decimals = 8))
+
+        } else {
+
+            symbol_second <- sym(second_variable)
+            totals <- suppressWarnings(dataset %>% count(!!symbol_variable, !!symbol_second, wt=!!symbol_sum_by))
+            totals$percent <- totals$n / sum(totals$n)
+            totals <- suppressWarnings(totals %>%
+                group_by(!!symbol_variable) %>%
+                mutate(group_percent= n / sum(n)) %>%
+                ungroup()) %>%
+                arrange(!!symbol_variable, !!symbol_second)
+
+            stopifnot(rt_are_numerics_equal(suppressWarnings(totals %>%
+                                                group_by(!!symbol_variable) %>%
+                                                summarise(check=sum(group_percent))) %>%
+                                                rt_get_vector('check'),
+                                            1, num_decimals = 8))
+            stopifnot(rt_are_numerics_equal(sum(totals$percent), 1, num_decimals = 8))
+        }
+
+    } else {
+
+        symbol_count_distinct <- sym(count_distinct)
+        if(is.null(second_variable)) {
+
+            totals <- suppressWarnings(dataset %>%
+                group_by(!!symbol_variable) %>%
+                summarise(n=n_distinct(!!symbol_count_distinct))) %>%
+                arrange(!!symbol_variable)
+            totals$percent <- totals$n / sum(totals$n)
+
+            stopifnot(rt_are_numerics_equal(sum(totals$percent), 1, num_decimals = 8))
+
+        } else {
+
+            symbol_second <- sym(second_variable)
+            totals <- suppressWarnings(dataset %>%
+                group_by(!!symbol_variable, !!symbol_second) %>%
+                summarise(n=n_distinct(!!symbol_count_distinct)))
+            totals$percent <- totals$n / sum(totals$n)
+            totals <- suppressWarnings(totals %>%
+                group_by(!!symbol_variable) %>%
+                mutate(group_percent= n / sum(n)) %>%
+                ungroup()) %>%
+                arrange(!!symbol_variable, !!symbol_second)
+
+            stopifnot(rt_are_numerics_equal(suppressWarnings(totals %>%
+                                                group_by(!!symbol_variable) %>%
+                                                summarise(check=sum(group_percent))) %>%
+                                                rt_get_vector('check'),
+                                            1, num_decimals = 8))
+            stopifnot(rt_are_numerics_equal(sum(totals$percent), 1, num_decimals = 8))
+        }
+    }
+
+    if(is.null(symbol_sum_by)) {
+
+        totals <- totals %>% rename(count = n)
+    } else {
+
+        totals <- totals %>% rename(sum = n)
+    }
 
     if(is.factor(values)) {
-
         if(is.null(multi_value_delimiter)) {
 
-            totals <- totals %>%
-                mutate(value = factor(value, levels=levels(values)))
+            variable_levels <- levels(values)
 
         } else {
             # if we are delimiting, then the original factors aren't valid because they contain multi-value
             # levels
-            totals <- totals %>%
-                mutate(value = factor(value, levels=sort(unique(as.character(totals$value)))))
+            variable_levels <- sort(unique(as.character(totals[[variable]])))
         }
+
+        totals[, variable] <- factor(totals[[variable]], levels=variable_levels)
     }
 
-    colnames(totals) <- c(variable, count_column_name, 'percent')
+    # if(!is.null(second_variable) && is.factor(dataset[[second_variable]])) {
+    #
+    #         totals <- totals %>% mutate(value = factor(value, levels=levels(values)))
+    # }
 
     return (as.data.frame(totals))
 }
@@ -397,9 +477,11 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(order_by_count) {
 
+            ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
             groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
-                                                     levels = groups_by_variable[[variable]])
+                                                     levels = ordered_levels)
         } else {
+
             groups_by_variable <- groups_by_variable %>% arrange(!!symbol_variable)
         }
 
@@ -477,10 +559,11 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(order_by_count) {
 
+            ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
             groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
-                                                     levels = as.character(groups_by_variable[[variable]]))
+                                                     levels=ordered_levels)
             groups_by_both[[variable]] <- factor(groups_by_both[[variable]],
-                                                     levels = as.character(groups_by_variable[[variable]]))
+                                                     levels=ordered_levels)
 
             comparison_order <- as.character((dataset %>% count(!!symbol_comparison_variable) %>% arrange(desc(n)))[[comparison_variable]])
             groups_by_both[[comparison_variable]] <- factor(groups_by_both[[comparison_variable]],
