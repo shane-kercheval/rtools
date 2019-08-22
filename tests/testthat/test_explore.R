@@ -605,6 +605,166 @@ test_that("rt_explore_value_totals", {
     expect_true(rt_are_numerics_equal(get_group_percent_totals(actual_df), 1, num_decimals = 8))
 })
 
+test_that("rt_explore_plot_value_totals__distinct_variable", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    ##########################################################################################################
+    # test with factor
+    # change the levels to verify that the original levels are retained if order_by_count==FALSE
+    ##########################################################################################################
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+    credit_data$id <- 1:nrow(credit_data)
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    credit_data[2, 'default'] <- NA
+    credit_data[3, 'id'] <- NA
+    credit_data[4, 'amount'] <- NA
+
+    variable <- 'checking_balance'
+    comparison_variable <- 'default'
+    sum_by_variable <- 'amount'
+    count_distinct <- 'id'
+
+    ##########################################################################################################
+    # single variable
+    ##########################################################################################################
+    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
+                                              variable=variable,
+                                              sum_by_variable=sum_by_variable,
+                                              count_distinct_variable = count_distinct))
+
+    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
+                                              variable=variable,
+                                              count_distinct_variable=count_distinct,
+                                              view_type="Confidence Interval"))
+
+    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
+                                              variable=variable,
+                                              count_distinct_variable=count_distinct,
+                                              view_type="Confidence Interval - within Variable"))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=FALSE))
+
+    temp <- credit_data %>% unite(cohort, age, purpose)
+    # temp %>% group_by(checking_balance) %>% summarise(distinct_cohorts = n_distinct(cohort),
+    #                                                   perc_distinct = distinct_cohorts / length(unique(temp$cohort)))
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__purpose.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp,
+                                                     variable=variable,
+                                                     count_distinct_variable='cohort',
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct_order_by_count.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__char.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data %>%
+                                                         mutate(checking_balance = as.character(checking_balance)),
+                                                     variable=variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     show_dual_axes=TRUE,
+                                                     order_by_count=FALSE))
+
+    ##########################################################################################################
+    # comparison variable
+    ##########################################################################################################
+    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable=comparison_variable,
+                                              sum_by_variable=sum_by_variable,
+                                              count_distinct_variable = count_distinct))
+
+    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable=comparison_variable,
+                                              count_distinct_variable=count_distinct,
+                                              view_type="Confidence Interval"))
+
+    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
+                                              variable=variable,
+                                              comparison_variable=comparison_variable,
+                                              count_distinct_variable=count_distinct,
+                                              view_type="Confidence Interval - within Variable"))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     show_dual_axes=TRUE,
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=TRUE))
+
+    temp <- credit_data %>% unite(cohort, age, purpose)
+    # temp %>% group_by(checking_balance) %>% summarise(distinct_cohorts = n_distinct(cohort),
+    #                                                   perc_distinct = distinct_cohorts / length(unique(temp$cohort)))
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__purpose.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable='cohort',
+                                                     show_dual_axes = TRUE,
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp_order_by_count.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__char.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data %>%
+                                                         mutate(checking_balance = as.character(checking_balance)),
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__dual.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     show_dual_axes=TRUE,
+                                                     order_by_count=FALSE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__facet.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     count_distinct_variable=count_distinct,
+                                                     view_type="Facet by Comparison",
+                                                     order_by_count=FALSE))
+})
+
 test_that("rt_get_colors_from_values", {
 
     dataset <- diamonds

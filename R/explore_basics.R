@@ -459,6 +459,8 @@ rt_explore_plot_value_totals <- function(dataset,
     # same with counting by distinct variable, it could be a count of 4 distinct values, but a million observations;
     # i doubt the same rules of confidence intervals apply
     rt_stopif(!is.null(count_distinct_variable) && view_type %in% c("Confidence Interval", "Confidence Interval - within Variable"))
+    # what would it mean to stack unique ids of a comparison within the primary variable? they don't necessarily add up, could be counting the same id in each sub-category
+    rt_stopif(!is.null(count_distinct_variable) && !is.null(comparison_variable) && view_type %in% c("Stack", "Stack Percent"))
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
@@ -568,9 +570,9 @@ rt_explore_plot_value_totals <- function(dataset,
             groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]], levels=ordered_levels)
             groups_by_both[[variable]] <- factor(groups_by_both[[variable]], levels=ordered_levels)
 
-            comparison_order <- as.character((dataset %>%
+            comparison_order <- as.character(suppressWarnings((dataset %>%
                                                   count(!!symbol_comparison_variable) %>%
-                                                  arrange(desc(n)))[[comparison_variable]])
+                                                  arrange(desc(n)))[[comparison_variable]]))
             groups_by_both[[comparison_variable]] <- factor(groups_by_both[[comparison_variable]],
                                                      levels = comparison_order)
         }
@@ -679,12 +681,6 @@ rt_explore_plot_value_totals <- function(dataset,
                         plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
                         plot_y_axis_label <- paste0("Percent of All Unique `", count_distinct_variable, "`")
                         plot_y_second_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
-
-
-                        plot_title <- paste0("Percent `", comparison_variable, "` within each `", variable, "` category.")
-                        plot_subtitle <- ""
-                        plot_y_axis_label <- paste0("Percent of Dataset")
-                        plot_y_second_axis_label <- "Count"
                     }
                 }
             }
@@ -733,13 +729,13 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         # if we Facet, the colors will be based on the primary variable
         custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
 
-        facet_groups <- groups_by_both %>%
+        facet_groups <- suppressWarnings(groups_by_both %>%
             select(-actual_percent, -group_percent) %>%
             group_by(!!symbol_comparison_variable) %>%
             mutate(facet_percent = total / sum(total)) %>%
             mutate(total_facet_percent = sum(facet_percent),
                    facet_group_total = sum(total)) %>%
-            ungroup()
+            ungroup())
         # make sure total_facet_percent values are all 1 (out to 7 digits)
         stopifnot(rt_are_numerics_equal(n1=facet_groups$total_facet_percent, n2=1, num_decimals=7))
 
