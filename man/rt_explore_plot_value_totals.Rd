@@ -6,10 +6,10 @@
 \usage{
 rt_explore_plot_value_totals(dataset, variable,
   comparison_variable = NULL, sum_by_variable = NULL,
-  order_by_count = TRUE, show_variable_totals = TRUE,
-  show_comparison_totals = TRUE, show_dual_axes = FALSE,
-  view_type = "Bar", multi_value_delimiter = NULL,
-  reverse_stack = TRUE, base_size = 11)
+  count_distinct_variable = NULL, order_by_count = TRUE,
+  show_variable_totals = TRUE, show_comparison_totals = TRUE,
+  show_dual_axes = FALSE, view_type = "Bar",
+  multi_value_delimiter = NULL, reverse_stack = TRUE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -19,6 +19,8 @@ rt_explore_plot_value_totals(dataset, variable,
 \item{comparison_variable}{the additional variable to group by; must be a string/factor column}
 
 \item{sum_by_variable}{the numeric variable to sum}
+
+\item{count_distinct_variable}{when aggregating, rather than counting the total number of records, count distinct occurances of this variabled (cannot be used with `sum_by_variable`)}
 
 \item{order_by_count}{if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable}
 

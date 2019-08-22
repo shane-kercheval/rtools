@@ -409,6 +409,7 @@ rt_explore_value_totals <- function(dataset,
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param count_distinct_variable when aggregating, rather than counting the total number of records, count distinct occurances of this variabled (cannot be used with `sum_by_variable`)
 #' @param sum_by_variable the numeric variable to sum
 #' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
 #' @param show_variable_totals if TRUE (the default) the graph will display the totals for the variable
@@ -437,6 +438,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          variable,
                                          comparison_variable=NULL,
                                          sum_by_variable=NULL,
+                                         count_distinct_variable=NULL,
                                          order_by_count=TRUE,
                                          show_variable_totals=TRUE,
                                          show_comparison_totals=TRUE,
@@ -454,23 +456,25 @@ rt_explore_plot_value_totals <- function(dataset,
     # will result in a very small proportion confidence interval, even though it is based on only 2 records;
     # so confidence intervals for weighted counts probably doesn't make sense in general.
     rt_stopif(!is.null(sum_by_variable) && view_type %in% c("Confidence Interval", "Confidence Interval - within Variable"))
+    # same with counting by distinct variable, it could be a count of 4 distinct values, but a million observations;
+    # i doubt the same rules of confidence intervals apply
+    rt_stopif(!is.null(count_distinct_variable) && view_type %in% c("Confidence Interval", "Confidence Interval - within Variable"))
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
+    groups_by_variable <- rt_explore_value_totals(dataset=dataset,
+                                                  variable=variable,
+                                                  sum_by_variable=sum_by_variable,
+                                                  count_distinct=count_distinct_variable,
+                                                  multi_value_delimiter=multi_value_delimiter)
+
     if(is.null(sum_by_variable)) {
 
-        groups_by_variable <- rt_explore_value_totals(dataset=dataset,
-                                                      variable=variable,
-                                                      multi_value_delimiter=multi_value_delimiter) %>%
-            rename(total=count)
+        groups_by_variable <- groups_by_variable %>% rename(total=count)
 
     } else {
 
-        groups_by_variable <- rt_explore_value_totals(dataset=dataset,
-                                                      variable=variable,
-                                                      sum_by_variable=sum_by_variable,
-                                                      multi_value_delimiter=multi_value_delimiter) %>%
-            rename(total=sum)
+        groups_by_variable <- groups_by_variable %>% rename(total=sum)
     }
 
     if(rt_is_null_na_nan(comparison_variable)) {
@@ -478,8 +482,8 @@ rt_explore_plot_value_totals <- function(dataset,
         if(order_by_count) {
 
             ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
-            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
-                                                     levels = ordered_levels)
+            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]], levels = ordered_levels)
+
         } else {
 
             groups_by_variable <- groups_by_variable %>% arrange(!!symbol_variable)
@@ -505,9 +509,19 @@ rt_explore_plot_value_totals <- function(dataset,
 
             if(is.null(sum_by_variable)) {
 
-                plot_title <- paste0("Percent of dataset containing `", variable, "` categories.")
-                plot_y_axis_label <- 'Percent of Dataset'
-                plot_y_second_axis_label <- "Count"
+                if(is.null(count_distinct_variable)) {
+
+                    plot_title <- paste0("Percent of dataset containing `", variable, "` categories.")
+                    plot_y_axis_label <- 'Percent of Dataset'
+                    plot_y_second_axis_label <- "Count"
+
+                } else {
+
+                    plot_title <- paste0("Count of Unique `", count_distinct_variable, "` by `", variable, "`")
+                    plot_y_axis_label <- paste0("Percent of All Unique `", count_distinct_variable, "`")
+                    plot_y_second_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
+                }
+
 
             } else {
 
@@ -531,41 +545,32 @@ rt_explore_plot_value_totals <- function(dataset,
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
 
+        groups_by_both <- rt_explore_value_totals(dataset=dataset,
+                                                  variable=variable,
+                                                  second_variable = comparison_variable,
+                                                  sum_by_variable=sum_by_variable,
+                                                  count_distinct=count_distinct_variable,
+                                                  multi_value_delimiter=multi_value_delimiter) %>%
+            rename(actual_percent=percent)
+
         if(is.null(sum_by_variable)) {
-            # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
-            # we can use `na.value = '#2A3132'` with scale_fill_manual
-            groups_by_both <- suppressWarnings(dataset %>%
-                    group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
-                    summarise(total = n(), actual_percent=total / nrow(dataset)))
+
+            groups_by_both <- groups_by_both %>% rename(total=count)
 
         } else {
 
-            symbol_sum_by <- sym(sum_by_variable)  # because we are using string variables
-            # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
-            # we can use `na.value = '#2A3132'` with scale_fill_manual
-            groups_by_both <- suppressWarnings(dataset %>%
-                    group_by(!!symbol_variable, !!symbol_comparison_variable) %>%
-                    summarise(total = sum(!!symbol_sum_by, na.rm=TRUE)) %>%
-                    ungroup() %>%
-                    mutate(actual_percent=total / sum(total, na.rm = TRUE)))
+            groups_by_both <- groups_by_both %>% rename(total=sum)
         }
-        # this will give warning if there are NA's, but we want to keep NAs, no use fct_explicit_na so that, e.g.
-        # we can use `na.value = '#2A3132'` with scale_fill_manual
-        groups_by_both <- suppressWarnings(as.data.frame(groups_by_both %>%
-                group_by(!!symbol_variable) %>%
-                mutate(group_percent = total / sum(total, na.rm=TRUE)) %>%
-                ungroup() %>%
-                arrange(!!symbol_variable, !!symbol_comparison_variable)))
 
         if(order_by_count) {
 
             ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
-            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
-                                                     levels=ordered_levels)
-            groups_by_both[[variable]] <- factor(groups_by_both[[variable]],
-                                                     levels=ordered_levels)
+            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]], levels=ordered_levels)
+            groups_by_both[[variable]] <- factor(groups_by_both[[variable]], levels=ordered_levels)
 
-            comparison_order <- as.character((dataset %>% count(!!symbol_comparison_variable) %>% arrange(desc(n)))[[comparison_variable]])
+            comparison_order <- as.character((dataset %>%
+                                                  count(!!symbol_comparison_variable) %>%
+                                                  arrange(desc(n)))[[comparison_variable]])
             groups_by_both[[comparison_variable]] <- factor(groups_by_both[[comparison_variable]],
                                                      levels = comparison_order)
         }
@@ -626,27 +631,62 @@ rt_explore_plot_value_totals <- function(dataset,
                 }
                 plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
 
-            } else if(view_type == "Facet by Comparison") {
-
-                plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
-                plot_subtitle <- ""
-                plot_y_axis_label <- "Percent of Sub-population"
-                plot_y_second_axis_label <- "Count"
-
-            } else if(view_type == "Stack") {
-
-                plot_title <- paste0("Count of `", variable, "` by `", comparison_variable, "`")
-                plot_subtitle <- ""
-                plot_y_axis_label <- "Count"
-                plot_y_second_axis_label <- NULL
-
-
             } else {
 
-                plot_title <- paste0("Percent `", comparison_variable, "` within each `", variable, "` category.")
-                plot_subtitle <- ""
-                plot_y_axis_label <- paste0("Percent of Dataset")
-                plot_y_second_axis_label <- "Count"
+
+                if(is.null(count_distinct_variable)) {
+
+                    if(view_type == "Facet by Comparison") {
+
+                        plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
+                        plot_subtitle <- ""
+                        plot_y_axis_label <- "Percent of Sub-population"
+                        plot_y_second_axis_label <- "Count"
+
+                    } else if(view_type == "Stack") {
+
+                        plot_title <- paste0("Count of `", variable, "` by `", comparison_variable, "`")
+                        plot_subtitle <- ""
+                        plot_y_axis_label <- "Count"
+                        plot_y_second_axis_label <- NULL
+
+
+                    } else {
+
+                        plot_title <- paste0("Percent `", comparison_variable, "` within each `", variable, "` category.")
+                        plot_subtitle <- ""
+                        plot_y_axis_label <- paste0("Percent of Dataset")
+                        plot_y_second_axis_label <- "Count"
+                    }
+                } else {
+
+                    if(view_type == "Facet by Comparison") {
+
+                        plot_title <- paste0("Distribution of unique counts of `", count_distinct_variable, "`")
+                        plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
+                        plot_y_axis_label <- "Percent of Unique Values in Sub-population"
+                        plot_y_second_axis_label <- "Count of Unique Values"
+
+                    } else if(view_type == "Stack") {
+
+                        plot_title <- paste0("Count of unique `", count_distinct_variable, "`")
+                        plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
+                        plot_y_axis_label <- "Percent of Unique Values"
+                        plot_y_second_axis_label <- NULL
+
+                    } else {
+                        plot_title <- paste0("Count of Unique `", count_distinct_variable, "`")
+                        plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
+                        plot_y_axis_label <- paste0("Percent of All Unique `", count_distinct_variable, "`")
+                        plot_y_second_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
+
+
+                        plot_title <- paste0("Percent `", comparison_variable, "` within each `", variable, "` category.")
+                        plot_subtitle <- ""
+                        plot_y_axis_label <- paste0("Percent of Dataset")
+                        plot_y_second_axis_label <- "Count"
+                    }
+                }
             }
 
             private__create_bar_chart_comparison_var(groups_by_variable,
