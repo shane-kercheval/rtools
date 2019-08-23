@@ -513,24 +513,24 @@ rt_explore_plot_value_totals <- function(dataset,
 
                 if(is.null(count_distinct_variable)) {
 
-                    plot_title <- paste0("Percent of dataset containing `", variable, "` categories.")
-                    plot_y_axis_label <- 'Percent of Dataset'
-                    plot_y_second_axis_label <- "Count"
+                    plot_title <- paste0("Count of records for each `", variable, "` category.")
+                    plot_y_axis_label <- "Count"
+                    plot_y_second_axis_label <- "Percent of Dataset"
 
                 } else {
 
                     plot_title <- paste0("Count of Unique `", count_distinct_variable, "` by `", variable, "`")
-                    plot_y_axis_label <- paste0("Percent of All Unique `", count_distinct_variable, "`")
-                    plot_y_second_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
+                    plot_y_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
+                    plot_y_second_axis_label <- NULL
                 }
 
 
             } else {
 
-                plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable,'`')
+                plot_title <- paste0('Total `', sum_by_variable,'`, by `', variable,'`')
                 #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
-                plot_y_axis_label <- plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
-                plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
+                plot_y_axis_label <- plot_y_axis_label <- paste0('Total `' , sum_by_variable, '`')
+                plot_y_second_axis_label <- paste0('Percent of Total `', sum_by_variable, '`')
             }
 
             private__create_bar_chart_single_var(groups_by_variable,
@@ -621,20 +621,20 @@ rt_explore_plot_value_totals <- function(dataset,
 
             if(!is.null(sum_by_variable)) {
 
-                plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable,'`')
+                plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable,'` and `', comparison_variable,'`')
                 plot_subtitle <- ""
                 #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
-                if(view_type == "Stack") {
-
-                    plot_y_axis_label <- paste0('`' , sum_by_variable, '`')
-                } else {
+                if(view_type == "Stack Percent") {
 
                     plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
+                    plot_y_second_axis_label <- paste0('`', sum_by_variable, '`')
+
+                } else {
+
+                    plot_y_axis_label <- paste0('`' , sum_by_variable, '`')
+                    plot_y_second_axis_label <- paste0('Percent of Total `', sum_by_variable, '`')
                 }
-                plot_y_second_axis_label <- paste0('Sum of `', sum_by_variable, '`')
-
             } else {
-
 
                 if(is.null(count_distinct_variable)) {
 
@@ -642,8 +642,9 @@ rt_explore_plot_value_totals <- function(dataset,
 
                         plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
                         plot_subtitle <- ""
-                        plot_y_axis_label <- "Percent of Sub-population"
-                        plot_y_second_axis_label <- "Count"
+
+                        plot_y_axis_label <- "Count"
+                        plot_y_second_axis_label <- "Percent of Sub-population"
 
                     } else if(view_type == "Stack") {
 
@@ -652,36 +653,42 @@ rt_explore_plot_value_totals <- function(dataset,
                         plot_y_axis_label <- "Count"
                         plot_y_second_axis_label <- NULL
 
-
-                    } else {
+                    } else if(view_type == "Stack Percent") {
 
                         plot_title <- paste0("Percent `", comparison_variable, "` within each `", variable, "` category.")
                         plot_subtitle <- ""
-                        plot_y_axis_label <- paste0("Percent of Dataset")
-                        plot_y_second_axis_label <- "Count"
-                    }
-                } else {
-
-                    if(view_type == "Facet by Comparison") {
-
-                        plot_title <- paste0("Distribution of unique counts of `", count_distinct_variable, "`")
-                        plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
-                        plot_y_axis_label <- "Percent of Unique Values in Sub-population"
-                        plot_y_second_axis_label <- "Count of Unique Values"
-
-                    } else if(view_type == "Stack") {
-
-                        plot_title <- paste0("Count of unique `", count_distinct_variable, "`")
-                        plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
-                        plot_y_axis_label <- "Percent of Unique Values"
+                        plot_y_axis_label <- paste0("Perent of `", variable, "` category")
                         plot_y_second_axis_label <- NULL
 
                     } else {
+
+                        plot_title <- paste0("Count of `", comparison_variable, "` records within each `", variable, "` category.")
+                        plot_subtitle <- ""
+                        plot_y_axis_label <- "Count"
+                        plot_y_second_axis_label <- paste0("Percent of Dataset")
+                    }
+                } else {
+
+                    # if(view_type == "Facet by Comparison" ) {
+                    #
+                    #     plot_title <- paste0("Distribution of unique counts of `", count_distinct_variable, "`")
+                    #     plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
+                    #     plot_y_axis_label <- "Percent of Unique Values in Sub-population"
+                    #     plot_y_second_axis_label <- "Count of Unique Values"
+                    #
+                    # # } else if(view_type == "Stack") {
+                    # #
+                    # #     plot_title <- paste0("Count of unique `", count_distinct_variable, "`")
+                    # #     plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
+                    # #     plot_y_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
+                    # #     plot_y_second_axis_label <- NULL
+                    #
+                    # } else {
                         plot_title <- paste0("Count of Unique `", count_distinct_variable, "`")
                         plot_subtitle <- paste0("by `", variable, "` for each `", comparison_variable, "` category.")
-                        plot_y_axis_label <- paste0("Percent of All Unique `", count_distinct_variable, "`")
-                        plot_y_second_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
-                    }
+                        plot_y_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
+                        plot_y_second_axis_label <- NULL
+                    # }
                 }
             }
 
@@ -691,6 +698,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      symbol_variable,
                                                      comparison_variable,
                                                      symbol_comparison_variable,
+                                                     count_distinct_variable,
                                                      view_type,
                                                      show_dual_axes,
                                                      reverse_stack,
@@ -711,6 +719,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      symbol_variable,
                                                      comparison_variable,
                                                      symbol_comparison_variable,
+                                                     count_distinct_variable,
                                                      view_type,
                                                      show_dual_axes,
                                                      reverse_stack,
@@ -740,25 +749,38 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         stopifnot(rt_are_numerics_equal(n1=facet_groups$total_facet_percent, n2=1, num_decimals=7))
 
         unique_values_plot <- ggplot(data=facet_groups,
-                                     aes(x=!!symbol_variable, y=facet_percent, fill=!!symbol_variable)) +
+                                     aes(x=!!symbol_variable, y=total, fill=!!symbol_variable)) +
             geom_bar(stat = 'identity', alpha=0.75) +
-            facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1) +
-                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+            facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1, scales = 'free_y') +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
+                                                                                preserve.width="none",
+                                                                                digits=4,
+                                                                                scientific=FALSE))
 
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(x=!!symbol_variable, label = percent(facet_percent), y = facet_percent),
-                          vjust=-0.25, check_overlap=TRUE) +
-                geom_text(aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = facet_percent),
+                geom_text(aes(x=!!symbol_variable, label = prettyNum(total,
+                                                                     big.mark=",",
+                                                                     preserve.width="none",
+                                                                     digits=4,
+                                                                     scientific=FALSE),
+                              y = total),
                           vjust=1.25, check_overlap=TRUE)
+
+            if(is.null(count_distinct_variable)) {
+
+                unique_values_plot <- unique_values_plot +
+                    geom_text(aes(x=!!symbol_variable, label = percent(facet_percent), y = total),
+                              vjust=-0.25, check_overlap=TRUE)
+            }
         }
 
         return (unique_values_plot +
                     labs(title = plot_title,
-                         y=paste0("Percent of `", comparison_variable,"` Sub-Pop with Value"),
-                         fill = comparison_variable,
-                         x = variable) +
+                         y=plot_y_axis_label,
+                         fill=comparison_variable,
+                         x=variable) +
                     scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
                     theme_light(base_size = base_size) +
                     theme(legend.position = 'none',
@@ -797,50 +819,57 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
                 comparison_position <- position_dodge(width = 0.9)
                 # create the plot
-                unique_values_plot <- ggplot() +
-                    geom_bar(data = groups_by_variable,
-                             aes(x = !!symbol_variable, y = percent),
-                             stat = 'identity',
-                             position = 'dodge',
-                             alpha = 0.3) +
+                unique_values_plot <- ggplot()
+
+                if(is.null(count_distinct_variable)) {
+
+                    unique_values_plot <- unique_values_plot +
+                        geom_bar(data = groups_by_variable,
+                                 aes(x = !!symbol_variable,
+                                     y = total),
+                                 stat = 'identity',
+                                 position = 'dodge',
+                                 alpha = 0.3)
+                }
+                unique_values_plot <- unique_values_plot +
                     geom_bar(data = groups_by_both,
                              aes(x = !!symbol_variable,
-                                 y = actual_percent,
+                                 y = total,
                                  fill = !!symbol_comparison_variable),
                              stat = 'identity',
                              position = comparison_position)
             }
         }
 
-        if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent") {
-
-            unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format(),
-                                   sec.axis = sec_axis(~.*sum(groups_by_variable$total),
-                                                       breaks=pretty_breaks(10),
-                                                       labels = format_format(big.mark=",",
-                                                                              preserve.width="none",
-                                                                              digits=4,
-                                                                              scientific=FALSE),
-                                                       name=plot_y_second_axis_label))
-
-        } else if(view_type == "Stack") {
+        if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
 
             unique_values_plot <- unique_values_plot +
                 scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                              preserve.width="none",
-                                                                              digits=4,
-                                                                              scientific=FALSE))
+                                                                                    preserve.width="none",
+                                                                                    digits=4,
+                                                                                    scientific=FALSE),
+                                   sec.axis = sec_axis(~./sum(groups_by_variable$total),
+                                                       breaks=pretty_breaks(10),
+                                                       labels = percent_format(),
+                                                       name=plot_y_second_axis_label))
+
+        } else if(view_type == "Stack Percent") {
+
+            unique_values_plot <- unique_values_plot +
+                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
 
         } else {
 
             unique_values_plot <- unique_values_plot +
-                scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+                scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
+                                                                                    preserve.width="none",
+                                                                                    digits=4,
+                                                                                    scientific=FALSE))
         }
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
-        #(i.e. all 100%)
-        if(show_variable_totals && view_type != "Stack Percent") {
+        #(i.e. all 100%); and we aren't showing the primary variable totals when counting distinct values
+        if(show_variable_totals && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
 
             if(view_type == "Stack") {
 
@@ -859,10 +888,16 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_variable,
-                              aes(x=!!symbol_variable, label = percent(percent), y = percent),
+                              aes(x=!!symbol_variable, label = percent(percent),
+                                  y = total),
                               vjust=-1.5, check_overlap=TRUE) +
                     geom_text(data = groups_by_variable,
-                              aes(x=!!symbol_variable, label = prettyNum(total, big.mark=",", preserve.width="none", digits=4, scientific=FALSE), y = percent),
+                              aes(x=!!symbol_variable, label = prettyNum(total,
+                                                                         big.mark=",",
+                                                                         preserve.width="none",
+                                                                         digits=4,
+                                                                         scientific=FALSE),
+                                  y = total),
                               vjust=-0.25, check_overlap=TRUE)
 
             }
@@ -885,24 +920,29 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                               check_overlap=TRUE)
 
             } else {
+
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_both,
                               aes(x = !!symbol_variable,
-                                  y = 0.5 * actual_percent,
+                                  y = 0.5 * total,
                                   label = prettyNum(total, big.mark=",",
                                                     preserve.width="none",
                                                     digits=4,
                                                     scientific=FALSE),
                                   group = !!symbol_comparison_variable),
                               position = comparison_position,
-                              vjust=-0.25, check_overlap=TRUE) +
-                    geom_text(data = groups_by_both,
-                              aes(x = !!symbol_variable,
-                                  y = 0.5 * actual_percent,
-                                  label = percent(group_percent),
-                                  group = !!symbol_comparison_variable),
-                              position = comparison_position,
-                              vjust=1.25, check_overlap=TRUE)
+                              vjust=-0.25, check_overlap=TRUE)
+
+                if(is.null(count_distinct_variable)) {
+                    unique_values_plot <- unique_values_plot +
+                        geom_text(data = groups_by_both,
+                                  aes(x = !!symbol_variable,
+                                      y = 0.5 * total,
+                                      label = percent(group_percent),
+                                      group = !!symbol_comparison_variable),
+                                  position = comparison_position,
+                                  vjust=1.25, check_overlap=TRUE)
+                }
             }
         } else if (show_comparison_totals && view_type == "Stack Percent") {
             #in this case, we don't want to show the totals of the main variable (they are all at 100%)
@@ -939,32 +979,35 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
 
     unique_values_plot <- groups_by_variable %>%
-        ggplot(aes(x=!!symbol_variable, y=percent, fill=!!symbol_variable)) +
+        ggplot(aes(x=!!symbol_variable, y=total, fill=!!symbol_variable)) +
         geom_bar(stat = 'identity', alpha=0.75)
 
     if(show_dual_axes) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format(),
-                               sec.axis = sec_axis(~.*sum(groups_by_variable$total),
+            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
+                                                                                preserve.width="none",
+                                                                                digits=4,
+                                                                                scientific=FALSE),
+                               sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(10),
-                                                   labels = format_format(big.mark=",",
-                                                                          preserve.width="none",
-                                                                          digits=4,
-                                                                          scientific=FALSE),
+                                                   labels = percent_format(),
                                                    name=plot_y_second_axis_label))
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
+                                                                                preserve.width="none",
+                                                                                digits=4,
+                                                                                scientific=FALSE))
     }
 
     if(show_variable_totals) {
 
         unique_values_plot <- unique_values_plot +
-            geom_text(aes(label = percent(percent), y = percent), vjust=-0.25, check_overlap=TRUE) +
+            geom_text(aes(label = percent(percent), y = total), vjust=-0.25, check_overlap=TRUE) +
             geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4,
-                                            scientific=FALSE), y = percent),
+                                            scientific=FALSE), y = total),
                       vjust=1.25, check_overlap=TRUE)
     }
 
