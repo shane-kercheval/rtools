@@ -458,10 +458,12 @@ rt_explore_plot_value_totals <- function(dataset,
     rt_stopif(!is.null(sum_by_variable) && view_type %in% c("Confidence Interval", "Confidence Interval - within Variable"))
     # same with counting by distinct variable, it could be a count of 4 distinct values, but a million observations;
     # i doubt the same rules of confidence intervals apply
-    rt_stopif(!is.null(count_distinct_variable) && view_type %in% c("Confidence Interval", "Confidence Interval - within Variable"))
-    # what would it mean to stack unique ids of a comparison within the primary variable? they don't necessarily add up, could be counting the same id in each sub-category
-    rt_stopif(!is.null(count_distinct_variable) && !is.null(comparison_variable) && view_type %in% c("Stack", "Stack Percent"))
-
+    # additionally, what would it mean to stack unique ids of a comparison within the primary variable?;
+    # they don't necessarily add up, could be counting the same id in each sub-category
+    rt_stopif(!is.null(count_distinct_variable) && view_type %in% c("Confidence Interval",
+                                                                    "Confidence Interval - within Variable",
+                                                                    "Stack",
+                                                                    "Stack Percent"))
     symbol_variable <- sym(variable)  # because we are using string variables
 
     groups_by_variable <- rt_explore_value_totals(dataset=dataset,
