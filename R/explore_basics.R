@@ -323,6 +323,7 @@ rt_explore_value_totals <- function(dataset,
                 arrange(!!symbol_variable, !!symbol_second)
 
             stopifnot(rt_are_numerics_equal(suppressWarnings(totals %>%
+                                                filter(!is.nan(group_percent)) %>%
                                                 group_by(!!symbol_variable) %>%
                                                 summarise(check=sum(group_percent))) %>%
                                                 rt_get_vector('check'),
@@ -937,7 +938,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
                 if(is.null(count_distinct_variable)) {
                     unique_values_plot <- unique_values_plot +
-                        geom_text(data = groups_by_both,
+                        geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                                   aes(x = !!symbol_variable,
                                       y = 0.5 * total,
                                       label = percent(group_percent),
@@ -949,7 +950,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         } else if (show_comparison_totals && view_type == "Stack Percent") {
             #in this case, we don't want to show the totals of the main variable (they are all at 100%)
             unique_values_plot <- unique_values_plot +
-                geom_text(data = groups_by_both,
+                geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                           aes(x = !!symbol_variable,
                               y = group_percent,
                               label = percent(group_percent),

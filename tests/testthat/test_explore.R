@@ -605,6 +605,123 @@ test_that("rt_explore_value_totals", {
     expect_true(rt_are_numerics_equal(get_group_percent_totals(actual_df), 1, num_decimals = 8))
 })
 
+test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
+
+    # when using a second categoric variable and sum_by, and all the second categorical has a value of zero
+    # for all sum-by values ina particular primary categorical value, then we try to divide by zero and get
+    # NAN
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- credit_data %>% mutate(amount = ifelse(checking_balance == '< 0 DM', 0, amount))
+
+    actual_counts <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='checking_balance',
+                                             second_variable=NULL,
+                                             count_distinct=NULL,
+                                             sum_by_variable='amount',
+                                             multi_value_delimiter=NULL)
+
+    expect_true(rt_are_dataframes_equal(actual_counts,
+                                        credit_data %>%
+                                            group_by(checking_balance) %>%
+                                            summarise(sum = sum(amount),
+                                                      percent = sum(amount) / sum(credit_data$amount))))
+
+    actual_counts <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='checking_balance',
+                                             second_variable='default',
+                                             count_distinct=NULL,
+                                             sum_by_variable='amount',
+                                             multi_value_delimiter=NULL)
+    expect_true(rt_are_dataframes_equal(actual_counts,
+                                        credit_data %>%
+                                            group_by(checking_balance, default) %>%
+                                            summarise(sum = sum(amount),
+                                                      percent = sum(amount) / sum(credit_data$amount)) %>%
+                                            mutate(group_percent = sum / sum(sum)) %>%
+                                            ungroup()))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='checking_balance',
+                                                     comparison_variable='default',
+                                                     sum_by_variable='amount'))
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by_stack.png',
+                   plot=suppressWarnings(rt_explore_plot_value_totals(dataset=credit_data,
+                                                                      variable='checking_balance',
+                                                                      comparison_variable='default',
+                                                                      sum_by_variable='amount',
+                                                                      view_type = 'Stack Percent')))
+
+    actual_counts <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='checking_balance',
+                                             second_variable='default',
+                                             count_distinct='amount',
+                                             #sum_by_variable='amount',
+                                             multi_value_delimiter=NULL)
+    expect_true(rt_are_dataframes_equal(actual_counts %>% select(checking_balance, default, count),
+                                        credit_data %>%
+                                            group_by(checking_balance, default) %>%
+                                            summarise(count = n_distinct(amount))))
+
+
+
+    ##########################################################################################################
+    # Try the same thing but if values in category have NA rather than 0
+    ##########################################################################################################
+    credit_data <- credit_data %>% mutate(amount = ifelse(checking_balance == '< 0 DM', NA, amount))
+
+    actual_counts <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='checking_balance',
+                                             second_variable=NULL,
+                                             count_distinct=NULL,
+                                             sum_by_variable='amount',
+                                             multi_value_delimiter=NULL)
+
+    expect_true(rt_are_dataframes_equal(actual_counts,
+                                        credit_data %>%
+                                            group_by(checking_balance) %>%
+                                            summarise(sum = sum(amount, na.rm = TRUE),
+                                                      percent = sum(amount, na.rm = TRUE) / sum(credit_data$amount, na.rm = TRUE))))
+
+    actual_counts <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='checking_balance',
+                                             second_variable='default',
+                                             count_distinct=NULL,
+                                             sum_by_variable='amount',
+                                             multi_value_delimiter=NULL)
+    expect_true(rt_are_dataframes_equal(actual_counts,
+                                        credit_data %>%
+                                            group_by(checking_balance, default) %>%
+                                            summarise(sum = sum(amount, na.rm = TRUE),
+                                                      percent = sum(amount, na.rm = TRUE) / sum(credit_data$amount, na.rm = TRUE)) %>%
+                                            mutate(group_percent = sum / sum(sum, na.rm = TRUE)) %>%
+                                            ungroup()))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by_nas.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='checking_balance',
+                                                     comparison_variable='default',
+                                                     sum_by_variable='amount'))
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by_stack_nas.png',
+                   plot=suppressWarnings(rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='checking_balance',
+                                                     comparison_variable='default',
+                                                     sum_by_variable='amount',
+                                                     view_type = 'Stack Percent')))
+
+    actual_counts <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='checking_balance',
+                                             second_variable='default',
+                                             count_distinct='amount',
+                                             #sum_by_variable='amount',
+                                             multi_value_delimiter=NULL)
+    expect_true(rt_are_dataframes_equal(actual_counts %>% select(checking_balance, default, count),
+                                        credit_data %>%
+                                            group_by(checking_balance, default) %>%
+                                            summarise(count = n_distinct(amount))))
+
+})
+
 test_that("rt_explore_plot_value_totals__distinct_variable", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
