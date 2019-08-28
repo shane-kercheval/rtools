@@ -1844,6 +1844,68 @@ test_that("rt_explore_plot_boxplot", {
                                                   base_size=15))
 })
 
+test_that("rt_explore_plot_boxplot - NA numeric values", {
+    # there's a bug where the count of the records (below the median line) shows the number of total records
+    # in the group, but it should show the total number of non-na values for which the boxplot is based on
+    dataset <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'amount'
+    comparison_variable <- 'checking_balance'
+    color_variable <- 'default'
+
+    dataset <- dataset %>% mutate(amount = ifelse(checking_balance == '< 0 DM', NA, amount))
+
+    set.seed(42)
+    dataset$amount[sample(x=1:1000, size=300)] <- NA
+    #summary(dataset$amount)
+    # nrow(dataset) - sum(is.na(dataset$amount))
+    # mean(dataset$amount, na.rm = TRUE)
+    # median(dataset$amount, na.rm = TRUE)
+    # dataset %>%
+    #     group_by(checking_balance) %>%
+    #     summarise(med=median(amount, na.rm = TRUE),
+    #               cnt_non_na=sum(!is.na(amount)),
+    #               cnt=n())
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard__num_nas.png',
+                   plot=suppressWarnings(rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=NULL,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11)))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison__num_nas.png',
+                   plot=suppressWarnings(rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11)))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__defualt__num_nas.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                color_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset <- dataset
+    temp_dataset[6, 'default'] <- NA
+    # temp_dataset %>%
+    #     group_by(checking_balance, default) %>%
+    #     summarise(med=median(amount, na.rm = TRUE),
+    #               cnt_non_na=sum(!is.na(amount)),
+    #               cnt=n())
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs__num_nas.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable=color_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+})
+
 test_that("rt_explore_plot_histogram", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'months_loan_duration'

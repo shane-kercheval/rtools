@@ -1053,13 +1053,24 @@ rt_explore_plot_boxplot <- function(dataset,
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
+        plot_labels <- dataset %>%
+            summarise(y_position = median(!!symbol_variable, na.rm = TRUE),
+                      med = y_position,
+                      avg = mean(!!symbol_variable, na.rm = TRUE),
+                      cnt = sum(!is.na(!!symbol_variable)))
+
         boxplot_plot <- ggplot(dataset, aes(y=!!symbol_variable, group=1)) +
             geom_boxplot() +
+            geom_text(data = plot_labels,
+                      mapping = aes(y=y_position, x=0, group=1,
+                                    label = private__standard_prettyNum(med)),
+                      vjust=-0.5, check_overlap = TRUE) +
+            geom_hline(yintercept = plot_labels[['avg']], show.legend = FALSE, color=rt_colors()[1], size=.7) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             scale_x_discrete(breaks = NULL) +
-            labs(caption = paste("\n", prettyNum(sum(!is.na(dataset[[variable]])),
-                                                 big.mark=",", preserve.width="none", digits=4, scientific=FALSE),
-                                 'Non-NA Values'),
+            labs(caption = paste("\n", private__standard_prettyNum(plot_labels[['cnt']]),
+                                 'Non-NA Values',
+                                 "\nAverage (blue line): ", private__standard_prettyNum(plot_labels[['avg']])),
                  y=variable,
                  x='') +
             theme_light(base_size = base_size)
@@ -1075,7 +1086,7 @@ rt_explore_plot_boxplot <- function(dataset,
                 dataset %>%
                     group_by(!!symbol_comparison_variable) %>%
                     summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
-                              count = n()) %>% as.data.frame())
+                              count = sum(!is.na(!!symbol_variable))) %>% as.data.frame())
 
             custom_colors <- rt_get_colors_from_values(dataset[[comparison_variable]])
 
@@ -1087,7 +1098,7 @@ rt_explore_plot_boxplot <- function(dataset,
                     dataset %>%
                     group_by(!!symbol_comparison_variable, !!symbol_color_variable) %>%
                     summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
-                              count = n()) %>% as.data.frame())
+                              count = sum(!is.na(!!symbol_variable))) %>% as.data.frame())
 
             custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
         }
@@ -1151,6 +1162,14 @@ rt_explore_plot_boxplot <- function(dataset,
     }
 
     return (boxplot_plot)
+}
+
+private__standard_prettyNum <- function(x) {
+    return (prettyNum(x,
+                      big.mark=",",
+                      preserve.width="none",
+                      digits=4,
+                      scientific=FALSE))
 }
 
 #' returns a histogram of `variable`
