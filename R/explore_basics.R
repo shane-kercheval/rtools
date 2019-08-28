@@ -763,11 +763,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(x=!!symbol_variable, label = prettyNum(total,
-                                                                     big.mark=",",
-                                                                     preserve.width="none",
-                                                                     digits=4,
-                                                                     scientific=FALSE),
+                geom_text(aes(x=!!symbol_variable, label = private__standard_prettyNum(total),
                               y = total),
                           vjust=1.25, check_overlap=TRUE)
 
@@ -880,26 +876,20 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     geom_text(data = groups_by_variable,
                               aes(x=!!symbol_variable,
                                   y = total,
-                                  label = prettyNum(total,
-                                                    big.mark=",",
-                                                    preserve.width="none",
-                                                    digits=4,
-                                                    scientific=FALSE)),
+                                  label = private__standard_prettyNum(total)),
                               vjust=-0.25, check_overlap=TRUE)
 
             } else {
 
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_variable,
-                              aes(x=!!symbol_variable, label = percent(percent),
+                              aes(x=!!symbol_variable,
+                                  label = percent(percent),
                                   y = total),
                               vjust=-1.5, check_overlap=TRUE) +
                     geom_text(data = groups_by_variable,
-                              aes(x=!!symbol_variable, label = prettyNum(total,
-                                                                         big.mark=",",
-                                                                         preserve.width="none",
-                                                                         digits=4,
-                                                                         scientific=FALSE),
+                              aes(x=!!symbol_variable,
+                                  label = private__standard_prettyNum(total),
                                   y = total),
                               vjust=-0.25, check_overlap=TRUE)
 
@@ -914,10 +904,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     geom_text(data = groups_by_both,
                               aes(x = !!symbol_variable,
                                   y = total,
-                                  label = prettyNum(total, big.mark=",",
-                                                    preserve.width="none",
-                                                    digits=4,
-                                                    scientific=FALSE),
+                                  label = private__standard_prettyNum(total),
                                   group = !!symbol_comparison_variable),
                               position = position_stack(reverse=reverse_stack, vjust = .5),
                               check_overlap=TRUE)
@@ -928,10 +915,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     geom_text(data = groups_by_both,
                               aes(x = !!symbol_variable,
                                   y = 0.5 * total,
-                                  label = prettyNum(total, big.mark=",",
-                                                    preserve.width="none",
-                                                    digits=4,
-                                                    scientific=FALSE),
+                                  label = private__standard_prettyNum(total),
                                   group = !!symbol_comparison_variable),
                               position = comparison_position,
                               vjust=-0.25, check_overlap=TRUE)
@@ -1009,8 +993,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 
         unique_values_plot <- unique_values_plot +
             geom_text(aes(label = percent(percent), y = total), vjust=-0.25, check_overlap=TRUE) +
-            geom_text(aes(label = prettyNum(total, big.mark=",", preserve.width="none", digits=4,
-                                            scientific=FALSE), y = total),
+            geom_text(aes(label = private__standard_prettyNum(total), y = total),
                       vjust=1.25, check_overlap=TRUE)
     }
 
@@ -1113,14 +1096,14 @@ rt_explore_plot_boxplot <- function(dataset,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
                                     color=!!symbol_color_variable,
-                                    label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                                    label = private__standard_prettyNum(median)),
                       position=position_dodge(0.9),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                                    label = private__standard_prettyNum(count)),
                       position=position_dodge(0.9),
                       vjust=1.3,
                       check_overlap = TRUE) +
@@ -1510,13 +1493,13 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = prettyNum(median, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                                    label = private__standard_prettyNum(median)),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = prettyNum(count, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)),
+                                    label = private__standard_prettyNum(count)),
                       vjust=1.3,
                       check_overlap = TRUE) +
             scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
@@ -1547,7 +1530,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 
         if(show_labels) {
             aggregate_plot <- aggregate_plot +
-                geom_text(aes(y=agg_variable, label = prettyNum(agg_variable, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)), check_overlap = TRUE, vjust=-0.5)
+                geom_text(aes(y=agg_variable, label = private__standard_prettyNum(agg_variable)), check_overlap = TRUE, vjust=-0.5)
         }
 
         if(show_resampled_confidence_interval) {
@@ -1961,11 +1944,7 @@ rt_explore_plot_time_series <- function(dataset,
         } else {
 
             ggplot_object <- ggplot_object +
-                geom_text(aes(label = prettyNum(total,
-                                                big.mark=",",
-                                                preserve.width="none",
-                                                digits=4,
-                                                scientific=FALSE)),
+                geom_text(aes(label = private__standard_prettyNum(total)),
                               check_overlap = TRUE,
                               vjust=-0.5)
         }
@@ -2046,7 +2025,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
     df <- cbind(df, df_steps)
     df <- df %>%
         mutate(conversion_rate = percent(value / step_values[1]),
-               value = prettyNum(value, big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) %>%
+               value = private__standard_prettyNum(value)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
         # # need to make sure the label is only associated with one point so it's not overlapping
