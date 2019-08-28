@@ -1037,7 +1037,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge geom_hline
 #' @importFrom dplyr group_by summarise n
 #' @importFrom scales pretty_breaks format_format
 #' @export
@@ -1061,11 +1061,11 @@ rt_explore_plot_boxplot <- function(dataset,
 
         boxplot_plot <- ggplot(dataset, aes(y=!!symbol_variable, group=1)) +
             geom_boxplot() +
+            geom_hline(yintercept = plot_labels[['avg']], show.legend = FALSE, color=rt_colors()[1], size=.7) +
             geom_text(data = plot_labels,
                       mapping = aes(y=y_position, x=0, group=1,
                                     label = private__standard_prettyNum(med)),
                       vjust=-0.5, check_overlap = TRUE) +
-            geom_hline(yintercept = plot_labels[['avg']], show.legend = FALSE, color=rt_colors()[1], size=.7) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
             scale_x_discrete(breaks = NULL) +
             labs(caption = paste("\n", private__standard_prettyNum(plot_labels[['cnt']]),
