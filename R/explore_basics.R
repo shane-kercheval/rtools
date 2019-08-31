@@ -1430,11 +1430,11 @@ rt_explore_plot_time_series <- function(dataset,
 
 
         if(str_detect(date_floor, 'quarter')) {
-        
+
             date_breaks_width <- NULL
 
         } else if(is.null(date_breaks_width)) {
-            
+
             date_breaks_width <- paste('1', date_floor)
         }
 
@@ -2148,6 +2148,23 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
     return (ggplot_object)
 }
 
+#' only returns a value for dates matching quarter so that when used with scale_x_date there are no axis
+#' ticks for anything other than quarters
+#'
+#' @param x a vector of dates
+#'
+#' @importFrom zoo as.yearqtr
+#' @importFrom stringr str_replace
+#' @export
+rt_as_year_qtr_format <- function(x) {
+
+    quarter_floor_values <- floor_date(x, unit='quarters')
+    quarters_converted <- as.character(as.yearqtr(x))
+    # formats for as.yearqtr (e.g. "%Y-%q") don't seem to insert `-`, so need to do it manually
+    quarters_converted <- str_replace(string=quarters_converted, pattern = " ", replacement = "-")
+    return (ifelse(quarter_floor_values == x, quarters_converted, ""))
+}
+
 ##############################################################################################################
 # private helpers
 ##############################################################################################################
@@ -2452,14 +2469,6 @@ private__standard_prettyNum <- function(x) {
                       scientific=FALSE))
 }
 
-#' only returns a value for dates matching quarter so that when used with scale_x_date there are no axis
-#' ticks for anything other than quarters
-private__as_year_qtr_format <- function(x) {
-    quarter_floor_values <- floor_date(x, unit='quarters')
-    quarters_converted <- as.character(zoo::as.yearqtr(x))
-    ifelse(quarter_floor_values == x, quarters_converted, "")
-}
-
 private__custom_date_format <- function(date_floor, date_break_format) {
 
     if(is.null(date_floor) || date_floor != 'quarter') {
@@ -2468,6 +2477,6 @@ private__custom_date_format <- function(date_floor, date_break_format) {
 
     } else {  # not NULL && quarter
 
-        return (private__as_year_qtr_format)
+        return (rt_as_year_qtr_format)
     }
 }

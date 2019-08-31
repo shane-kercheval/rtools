@@ -2718,6 +2718,47 @@ test_that('rt_explore_plot_time_series__POSIXct', {
                    plot=rt_explore_plot_time_series(dataset=dataset, variable=variable))
 })
 
+test_that('rt_as_year_qtr_format', {
+
+    expected_values <- c("2019-Q1", "", "", "", "2019-Q2", "", "", "2019-Q3", "", "", "2019-Q4", "", "", "", "2020-Q1", NA, "2019-Q1")
+    actual_values <- rt_as_year_qtr_format(c(ymd('2019-01-01',
+                                                 '2019-01-02',
+                                                 '2019-02-01',
+                                                 '2019-03-04',
+                                                 '2019-04-01',
+                                                 '2019-04-04',
+                                                 '2019-06-01',
+                                                 '2019-07-01',
+                                                 '2019-08-01',
+                                                 '2019-09-01',
+                                                 '2019-10-01',
+                                                 '2019-11-01',
+                                                 '2019-12-01',
+                                                 '2019-12-31',
+                                                 '2020-01-01',
+                                                 NA,
+                                                 '2019-01-01')))
+    expect_identical(expected_values, actual_values)
+    actual_values <- rt_as_year_qtr_format(as.POSIXct(c(ymd('2019-01-01',
+                                                 '2019-01-02',
+                                                 '2019-02-01',
+                                                 '2019-03-04',
+                                                 '2019-04-01',
+                                                 '2019-04-04',
+                                                 '2019-06-01',
+                                                 '2019-07-01',
+                                                 '2019-08-01',
+                                                 '2019-09-01',
+                                                 '2019-10-01',
+                                                 '2019-11-01',
+                                                 '2019-12-01',
+                                                 '2019-12-31',
+                                                 '2020-01-01',
+                                                 NA,
+                                                 '2019-01-01'))))
+    expect_identical(expected_values, actual_values)
+})
+
 test_that('rt_explore_plot_time_series_breaks_floors', {
     dataset <- data.frame(flights %>%
                               mutate(date = lubridate::make_date(year, month, day),
@@ -3456,6 +3497,151 @@ test_that('rt_explore_plot_time_facet_yoy', {
                                                     date_floor = 'month',
                                                     date_break_format = '%Y-%m-%d',
                                                     date_breaks_width = '2 months'))
+
+    ##########################################################################################################
+    # quarterly
+    ##########################################################################################################
+    ##################
+    # count
+    ##################
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
+    #     count(date, direction) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 quarters'))
+
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
+    #     count(date, direction) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter__yoy.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    year_over_year = TRUE,
+                                                    color_variable = NULL,
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 quarters'))
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
+    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     count(date, crossing, direction) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_quarter.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    comparison_variable = NULL,
+                                                    comparison_function = NULL,
+                                                    comparison_function_name = NULL,
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 quarters'))
+
+    ##################
+    # sum
+    ##################
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
+    #     count(date, direction, wt=bike_count) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter__sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    color_variable = NULL,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 quarters'))
+
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
+    #     count(date, direction, wt=bike_count) %>% arrange(direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter__sum__yoy.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset,
+                                                    variable=variable,
+                                                    facet_variable = 'direction',
+                                                    year_over_year = TRUE,
+                                                    color_variable = NULL,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = NULL,
+                                                    date_breaks_width = '2 quarters'))
+    # use to verify numbers
+    # dataset %>%
+    #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
+    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     count(date, crossing, direction, wt=bike_count) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_quarter__sum.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_sum,
+                                                    comparison_function_name = 'SUM',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 quarters'))
+
+    # to test include_zero_y_axis, lets make the numbers much higher than they are and make sure no values are 0
+    comp_func_custom <- function(x) {
+        x <- ifelse(x == 0, 100000, x * 10000)
+        x <- sum(x, na.rm=TRUE)
+        x <- ifelse(x > 30000000, 30000000, x)
+        x <- ifelse(x < 1000000, 1000000, x)
+        return (x)
+    }
+    test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_quarter__include_zero.png',
+                   plot=rt_explore_plot_time_series(dataset=dataset %>%
+                                                        mutate(direction = fct_lump(direction, 1)),
+                                                    variable=variable,
+                                                    facet_variable = 'crossing',
+                                                    color_variable = 'direction',
+                                                    include_zero_y_axis = FALSE,
+                                                    comparison_variable = comparison_variable,
+                                                    comparison_function = comp_func_custom,
+                                                    comparison_function_name = 'Custom',
+                                                    show_labels = TRUE,
+                                                    show_points = TRUE,
+                                                    date_floor = 'quarter',
+                                                    date_break_format = '%Y-%m-%d',
+                                                    date_breaks_width = '2 quarters'))
 })
 
 test_that('rt_explore_plot_time_series', {
