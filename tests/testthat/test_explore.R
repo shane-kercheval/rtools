@@ -1712,6 +1712,104 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
                                                      multi_value_delimiter=', '))
 })
 
+test_that("rt_explore_plot_value_totals_multivalue_bug", {
+    # there is a bug where, because I had hardcoded the number of columns the underlying dataset would
+    # separate to, any multi-value that had >2 values (e.g. a;b;c) would get lost (e.g. `c` wouldnt' get
+    # counted)
+    ##########################################################################################################
+    # CREATE THE DATASET
+    ##########################################################################################################
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data$id <- 1:nrow(credit_data)
+    credit_data$purpose[1] <- NA
+    credit_data$id[2] <- NA
+    credit_data$amount[3] <- NA
+    credit_data$purpose[600] <- NA
+
+    original_totals <- rt_explore_value_totals(dataset=credit_data,
+                                               variable='purpose',
+                                               multi_value_delimiter=NULL)
+    # original_sum_by <-  credit_data %>% count(purpose, wt=amount)
+    # original_sum_by2 <-  credit_data %>% count(purpose, default, wt=amount)
+
+    credit_data <- credit_data %>%
+        mutate(purpose = case_when(
+            purpose == 'car' ~ 'car, car_test',
+            purpose == 'business' ~ 'business, business_test2, business_test3, business_test4',
+            TRUE ~ as.character(purpose)))
+
+    # set 2 rows to only 3 values for business, rather than 4
+    credit_data$purpose[30] <- 'business, business_test2, business_test3'
+    credit_data$purpose[31] <- 'business, business_test2, business_test3'
+    credit_data$purpose <- as.factor(credit_data$purpose)
+
+    ##########################################################################################################
+    # CREATE THE EXPECTED TOTALS
+    ##########################################################################################################
+    car_count <- (original_totals %>% filter(purpose == 'car'))$count
+    business_count <- (original_totals %>% filter(purpose == 'business'))$count
+
+    expected_totals <- data.frame(purpose=c('car_test', 'business_test2', 'business_test3', 'business_test4'),
+                                  # subtract 2 from business_test4 because we changed index 30/31
+                                  count=c(car_count, business_count, business_count, business_count - 2),
+                                  stringsAsFactors = FALSE) %>%
+        bind_rows(original_totals %>% mutate(purpose = as.character(purpose))) %>%
+        arrange(purpose)
+    expected_totals <- expected_totals %>% mutate(percent = count / sum(count))
+
+    ##########################################################################################################
+    # VALIDATE EXPECTED IS THE SAME AS ACTUAL
+    ##########################################################################################################
+    actual_totals <- rt_explore_value_totals(dataset=credit_data,
+                                             variable='purpose',
+                                             multi_value_delimiter=', ')
+    expect_true(rt_are_dataframes_equal(expected_totals, actual_totals))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='purpose',
+                                                     order_by_count=FALSE,
+                                                     multi_value_delimiter=', '))
+
+    ##########################################################################################################
+    # TEST COMPARISON
+    ##########################################################################################################
+    #credit_data %>% count(purpose, default)
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_comp.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='purpose',
+                                                     comparison_variable='default',
+                                                     order_by_count=FALSE,
+                                                     multi_value_delimiter=', '))
+
+    ##########################################################################################################
+    # TEST SUM-BY
+    ##########################################################################################################
+    #credit_data %>% count(purpose, default, wt=amount)
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_sum.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='purpose',
+                                                     comparison_variable='default',
+                                                     sum_by_variable = 'amount',
+                                                     order_by_count=FALSE,
+                                                     multi_value_delimiter=', '),
+                   size_inches = c(8, 20))
+
+
+    ##########################################################################################################
+    # TEST COUNT-DISTINCT
+    ##########################################################################################################
+    test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_dis.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable='purpose',
+                                                     comparison_variable='default',
+                                                     #sum_by_variable = 'amount',
+                                                     count_distinct_variable = 'id',
+                                                     order_by_count=FALSE,
+                                                     multi_value_delimiter=', '))
+
+})
+
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'months_loan_duration'
