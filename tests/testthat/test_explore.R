@@ -2768,7 +2768,6 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     date_break_format = NULL,
                                                     date_breaks_width = NULL))
 
-
     test_save_plot(file_name='data/rt_explore_plot_time_series_year.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
