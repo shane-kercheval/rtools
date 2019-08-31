@@ -130,12 +130,16 @@ rt_explore_correlations <- function(dataset,
                                     max_missing_column_perc=0.25,
                                     type='pearson') {
 
+    original_num_rows <- nrow(dataset)
     data_numeric <- dataset %>% select_if(is.numeric)
 
     # remove columns that have > max_missing_column_perc % of data missing
     data_numeric <- data_numeric[, colSums(is.na(data_numeric)) / nrow(data_numeric) <= max_missing_column_perc]
 
-    rcorr_results <- rcorr(as.matrix(data_numeric[complete.cases(data_numeric), ]), type=type)
+    data_numeric <- data_numeric[complete.cases(data_numeric), ]
+    remaining_num_rows <- nrow(data_numeric)
+
+    rcorr_results <- rcorr(as.matrix(data_numeric), type=type)
     correlations <- rcorr_results$r
     p_values <- rcorr_results$P
 
@@ -149,7 +153,9 @@ rt_explore_correlations <- function(dataset,
     correlations <- correlations[-1,]
     correlations <- correlations[,-ncol(correlations)]
 
-    return (as.matrix(round(correlations, 2)))
+    return (list(correlations=as.matrix(round(correlations, 2)),
+                 num_rows_dataset=original_num_rows,
+                 num_rows_used=remaining_num_rows))
 }
 
 #' returns a heatmap of correlations
@@ -182,11 +188,13 @@ rt_explore_plot_correlations <- function(dataset,
                                          max_missing_column_perc=0.25,
                                          base_size=11) {
 
-    correlations <- rt_explore_correlations(dataset=dataset,
-                                            corr_threshold=corr_threshold,
-                                            p_value_threshold=p_value_threshold,
-                                            type=type,
-                                            max_missing_column_perc=max_missing_column_perc)
+    results <- rt_explore_correlations(dataset=dataset,
+                                       corr_threshold=corr_threshold,
+                                       p_value_threshold=p_value_threshold,
+                                       type=type,
+                                       max_missing_column_perc=max_missing_column_perc)
+
+    correlations <- results$correlations
 
     column_names <- colnames(correlations)
     row_names <- rownames(correlations)
@@ -209,7 +217,12 @@ rt_explore_plot_correlations <- function(dataset,
                                'type: ', type),
              x = '',
              y = '',
-             fill = 'Colors') +
+             fill = 'Colors',
+             caption=paste("\nBased on",
+                           results$num_rows_used,
+                           "rows (removed",
+                           results$num_rows_dataset - results$num_rows_used,
+                           "rows with missing values)")) +
         theme_classic(base_size = base_size) +
         theme(line = element_blank(),
               axis.ticks.x = element_line(color="black"),

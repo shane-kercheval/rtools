@@ -57,7 +57,7 @@ test_that("rt_explore_correlations_credit", {
     credit_data[1, 'months_loan_duration'] <- NA
 
     # default parameters
-    correlations <- rt_explore_correlations(dataset=credit_data)
+    correlations <- rt_explore_correlations(dataset=credit_data)$correlations
 
     rds_file <- 'data/rt_correlations_credit.RDS'
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=data.frame(correlations), rds_file=rds_file))
