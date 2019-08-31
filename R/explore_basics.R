@@ -1428,15 +1428,14 @@ rt_explore_plot_time_series <- function(dataset,
             date_limits <- floor_date(as.Date(date_limits), unit=date_floor, week_start = 1)
         }
 
-        if(is.null(date_breaks_width)) {
 
-            if (str_detect(date_floor, 'quarter')) {
+        if(str_detect(date_floor, 'quarter')) {
+        
+            date_breaks_width <- NULL
 
-                date_breaks_width <- NULL
-            } else {
-                date_breaks_width <- paste('1', date_floor)
-            }
-
+        } else if(is.null(date_breaks_width)) {
+            
+            date_breaks_width <- paste('1', date_floor)
         }
 
         if(is.null(date_break_format)) {
