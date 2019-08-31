@@ -244,6 +244,7 @@ rt_explore_plot_correlations <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr sym count mutate group_by ungroup summarise rename arrange select filter n_distinct
+#' @importFrom stringr str_count
 #' @importFrom tidyr gather separate
 #' @export
 rt_explore_value_totals <- function(dataset,
