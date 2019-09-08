@@ -28,5 +28,6 @@ Imports:
     tidyr,
     tidyverse,
     tibble,
+    zoo,
 Suggests: testthat
 RoxygenNote: 6.1.1
