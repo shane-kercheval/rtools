@@ -29,7 +29,7 @@ rt_explore_plot_conversion_rates(dataset, first_date, second_date,
 
 \item{date_floor}{how we should define the cohort group e.g. by `day`, `by week`, by `months`}
 
-\item{color_or_facet}{`color` or `facet`}
+\item{color_or_facet}{display snaphosts by `color` or `facet`}
 
 \item{year_over_year}{if true it displays the graph year-over-year; `color_or_facet` will be ignored}
 

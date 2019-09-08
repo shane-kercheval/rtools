@@ -3984,7 +3984,7 @@ test_that('rt_explore_plot_conversion_rates', {
                                      year_over_year=FALSE,
                                      y_zoom_min=NULL,
                                      y_zoom_max=NULL,
-                                     include_zero_y_axis=TRUE,
+                                     include_zero_y_axis=FALSE,
                                      show_points=TRUE,
                                      show_labels=TRUE,
                                      date_break_format=NULL,

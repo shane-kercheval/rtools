@@ -1894,7 +1894,7 @@ rt_get_cohorted_conversion_rates <- function(dataset,
 #' @param snapshots the numeric snapshots
 #' @param snapshot_units the units of the snapshots e.g. `hours`, `days`, `weeks`
 #' @param date_floor how we should define the cohort group e.g. by `day`, `by week`, by `months`
-#' @param color_or_facet `color` or `facet`
+#' @param color_or_facet display snaphosts by `color` or `facet`
 #' @param year_over_year if true it displays the graph year-over-year; `color_or_facet` will be ignored
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
@@ -1957,9 +1957,22 @@ rt_explore_plot_conversion_rates <- function(dataset,
 
     } else {
 
-        color_variable <- 'Snapshot'
-        facet_variable <- group_variable
         subtitle <- paste0("by `", group_variable,"`")
+
+        if(color_or_facet == 'color') {
+
+            color_variable <- 'Snapshot'
+            facet_variable <- group_variable
+
+        } else if (color_or_facet == 'facet') {
+
+            color_variable <- group_variable
+            facet_variable <- 'Snapshot'
+
+        } else {
+
+            stopifnot(FALSE)
+        }
     }
 
     rt_explore_plot_time_series(dataset=snapshotted_conversions,
