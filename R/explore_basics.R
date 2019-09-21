@@ -525,7 +525,7 @@ rt_explore_plot_value_totals <- function(dataset,
         if(view_type == "Confidence Interval") {
 
             rt_plot_multinom_cis(values=dataset[[variable]],
-                                 groups=groups,
+                                 groups=NULL,
                                  ci_within_variable=FALSE,
                                  confidence_level = 0.95,
                                  show_confidence_values=show_variable_totals,
