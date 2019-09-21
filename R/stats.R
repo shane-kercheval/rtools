@@ -212,13 +212,213 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
     }
 }
 
-#' plots the proportions with confidence intervals according to prop.test
+#' plots the proportions with confidence intervals according to MultinomCI.
+#'
+#' According to the the descriptionof the MultinomCI package:
+#'
+#'    > Confidence intervals for multinomial proportions are often approximated by single binomial confidence intervals, which might in practice often yield satisfying results, but is properly speaking not correct. This function calculates simultaneous confidence intervals for multinomial proportions either according to the methods of Sison and Glaz, Goodman, Wald, Wald with continuity correction or Wilson.
+#'
+#' @param values character or factor vector
+#' @param groups character or factor vector of groups/categories to plot, seperated by color
+#' @param ci_within_variable if FALSE then group by group, else group by value (i.e. create confidence intervals within each value)
+#' @param confidence_level the confidence level (e.g. 0.95) passed to MultinomCI.
+#' @param show_confidence_values show the high/low confidence values
+#' @param axes_flip flip axes
+#' @param axis_limits custom limits for the corresponding axis (x if not axes_flip, y if axes_flip)
+#' @param text_size text size (proportion value)
+#' @param line_size the line size for the error bars
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#' @param x_label label for x-axis
+#' @param y_label label for y-axis
+#' @param group_name when using `groups`, used for the legend in the plot
+#' @param title title
+#' @param subtitle subtitle
+#' @param caption caption
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom purrr map2 map_dbl
+#' @importFrom scales percent pretty_breaks percent_format
+#' @importFrom dplyr mutate count bind_rows bind_cols select
+#' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point scale_y_continuous scale_color_manual coord_cartesian coord_flip
+#' @importFrom DescTools MultinomCI
+#' @export
+rt_plot_multinom_cis <- function(values,
+                                 groups=NULL,
+                                 ci_within_variable=FALSE,
+                                 confidence_level = 0.95,
+                                 show_confidence_values=TRUE,
+                                 axes_flip=FALSE,
+                                 axis_limits=NULL,
+                                 text_size=4,
+                                 line_size=0.35,
+                                 base_size=11,
+                                 x_label="",
+                                 y_label="",
+                                 group_name="",
+                                 title="",
+                                 subtitle=NULL,
+                                 caption=NULL) {
+
+    # if we use groups, the colors will be based on the groups variable, otherwise on the values
+    if(is.null(groups)) {
+
+        custom_colors <- rt_get_colors_from_values(values)
+
+    } else {
+
+        custom_colors <- rt_get_colors_from_values(groups)
+    }
+
+    estimates <- NULL
+
+    if(ci_within_variable) {
+
+        rt_stopif(is.null(groups))
+        temp_groups <- groups
+        groups <- values
+        values <- temp_groups
+    }
+
+    if(is.null(groups)) {
+
+        groups <- rep('remove__this__group____', length(values))
+    }
+
+    for(val in unique(groups)) {
+        #val <- (unique(groups) %>% rt_remove_val(NA))[1]
+
+        if(is.na(val)) {
+            indexes_to_ci <- which(is.na(groups))
+        } else {
+            indexes_to_ci <- which(groups == val)
+        }
+
+        num_occurances <- data.frame(categories=values[indexes_to_ci],
+                                     group=val,
+                                     stringsAsFactors = FALSE)
+
+        if(is.factor(values)) {
+            num_occurances <- num_occurances %>%
+                mutate(categories = factor(categories, levels=levels(values), ordered = TRUE))
+        }
+
+        num_occurances <- suppressWarnings(num_occurances %>% count(categories, group))
+
+        ci_estimates <- MultinomCI(x=num_occurances$n,
+                                   conf.level = confidence_level,
+                                   sides = c("two.sided", "left", "right"),
+                                   # cplus1 seems to account for really low sample sizes much better
+                                   method = 'cplus1') %>% #c("sisonglaz", "cplus1", "goodman", "wald", "waldcc", "wilson")) %>%
+            as.data.frame()
+        colnames(ci_estimates) <- c('proportions', 'conf_low', 'conf_high')
+        estimates <- bind_rows(estimates, bind_cols(num_occurances, as.data.frame(ci_estimates)))
+    }
+
+    if(is.factor(groups)) {
+        estimates <- estimates %>%
+            mutate(group = factor(group, levels=levels(groups), ordered = TRUE))
+    }
+
+    if(all(estimates$group == 'remove__this__group____')) {
+        estimates <- estimates %>% select(-group)
+        groups <- NULL
+    }
+
+    if(ci_within_variable) {
+        # earlier we swapped group/values, now we need to swap back
+        colnames(estimates) <- colnames(estimates)[c(2, 1, 3:6)]
+    }
+
+    if(is.null(caption)) {
+
+        caption <- paste("\nConfidence Level:", confidence_level)
+    }
+
+    if(is.null(groups)) {
+
+        plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=categories)) +
+            geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
+            geom_point(size=line_size*2) +
+            geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
+            theme_light(base_size = base_size) +
+            theme(legend.position = 'none',
+                  axis.text.x = element_text(angle = 30, hjust = 1)) +
+            labs(x=x_label,
+                 y=y_label,
+                 title=title,
+                 caption=caption)
+
+    } else {
+
+        plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=group)) +
+            geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=group),
+                          position=position_dodge(width=0.9),
+                          size=line_size) +
+            geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
+            geom_text(aes(label=percent(proportions)),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            scale_color_manual(values=custom_colors, na.value = '#2A3132') +
+            theme_light(base_size = base_size) +
+            theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+            labs(x=x_label,
+                 y=y_label,
+                 title=title,
+                 subtitle=subtitle,
+                 color=group_name,
+                 caption=caption)
+    }
+
+    if(axes_flip) {
+
+        plot_object <- plot_object +
+            coord_flip(ylim = axis_limits)
+
+    } else if (!is.null(axis_limits)) {
+
+        plot_object <- plot_object +
+            coord_cartesian(ylim = axis_limits)
+    }
+
+    if(show_confidence_values) {
+
+        if(axes_flip) {
+
+            # bottom / top
+            vjust_values <- c(2, -2.5)
+
+        } else {
+
+            # bottom / top
+            vjust_values <- c(1.1, -0.5)
+        }
+
+        plot_object <- plot_object +
+            geom_text(aes(label=percent(conf_low), y=conf_low),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=vjust_values[1], check_overlap = TRUE) +
+            geom_text(aes(label=percent(conf_high), y=conf_high),
+                      position=position_dodge(width=0.9),
+                      size=text_size, vjust=vjust_values[2], check_overlap = TRUE)
+    }
+
+    return (plot_object)
+}
+
+#' plots the proportions with confidence intervals according to prop.test. This should not be used for multi-nomial variables. Only use for >=1 binary variables.
+#'
+#' According to the the descriptionof the MultinomCI package:
+#'
+#'    > Confidence intervals for multinomial proportions are often approximated by single binomial confidence intervals, which might in practice often yield satisfying results, but is properly speaking not correct. This function calculates simultaneous confidence intervals for multinomial proportions either according to the methods of Sison and Glaz, Goodman, Wald, Wald with continuity correction or Wilson.
 #'
 #' @param numerators numerators
 #' @param denominators denominators
 #' @param categories categories
 #' @param groups vector of groups/categories to plot, seperated by color
-#' @param confidence_level the confidence level (e.g. 0.95) passed to prop.test
+#' @param confidence_level the confidence level (e.g. 0.95) passed to MultinomCI.
 #' @param show_confidence_values show the high/low confidence values
 #' @param axes_flip flip axes
 #' @param axis_limits custom limits for the corresponding axis (x if not axes_flip, y if axes_flip)
@@ -255,7 +455,7 @@ rt_plot_proportions <- function(numerators,
                                 subtitle=NULL,
                                 caption=NULL) {
 
-    
+
     # if we use groups, the colors will be based on the groups variable, otherwise on the categories
     if(is.null(groups)) {
 
