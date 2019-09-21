@@ -524,18 +524,21 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(view_type == "Confidence Interval") {
 
-            rt_plot_proportions(numerators=groups_by_variable$total,
-                                denominators=rep(sum(groups_by_variable$total), nrow(groups_by_variable)),
-                                categories=as.character(groups_by_variable[[variable]]),
-                                confidence_level = 0.95,
-                                show_confidence_values=show_variable_totals,
-                                text_size=4,
-                                line_size=0.35,
-                                base_size=base_size,
-                                x_label=variable,
-                                y_label="Percent of Dataset",
-                                subtitle = "",
-                                title=paste0("Percent of dataset containing `", variable, "` categories."))
+            rt_plot_multinom_cis(values=dataset[[variable]],
+                                 groups=groups,
+                                 ci_within_variable=FALSE,
+                                 confidence_level = 0.95,
+                                 show_confidence_values=show_variable_totals,
+                                 axes_flip=FALSE,
+                                 axis_limits=NULL,
+                                 text_size=4,
+                                 line_size=0.35,
+                                 base_size=base_size,
+                                 x_label=variable,
+                                 y_label="Percent of Dataset",
+                                 subtitle = "",
+                                 title=paste0("Percent of dataset containing `", variable, "` categories."))
+
         } else {
 
             if(is.null(sum_by_variable)) {
@@ -610,10 +613,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
             if(view_type == "Confidence Interval") {
 
-                t <- groups_by_both %>%
-                    group_by(!!symbol_comparison_variable) %>%
-                    mutate(group_sum = sum(total)) %>%
-                    ungroup()
+                ci_within_variable <- FALSE
 
                 y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
                 subtitle_label <- paste0("(each `", comparison_variable,"` category defines the sub-populations)")
@@ -621,10 +621,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
             } else {
 
-                t <- groups_by_both %>%
-                    group_by(!!symbol_variable) %>%
-                    mutate(group_sum = sum(total)) %>%
-                    ungroup()
+                ci_within_variable <- TRUE
 
                 y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
                 subtitle_label <- paste0("(each `", variable,"` category defines the sub-populations)")
@@ -632,20 +629,22 @@ rt_explore_plot_value_totals <- function(dataset,
 
             }
 
-            rt_plot_proportions(numerators=t$total,
-                                denominators=t$group_sum,
-                                categories=t[[variable]],
-                                groups=t[[comparison_variable]],
-                                confidence_level = 0.95,
-                                show_confidence_values=FALSE,
-                                text_size=4,
-                                line_size=0.35,
-                                base_size=base_size,
-                                x_label=variable,
-                                y_label=y_axis_label,
-                                group_name=comparison_variable,
-                                subtitle=subtitle_label,
-                                title=title_label)
+            rt_plot_multinom_cis(values=dataset[[variable]],
+                                 groups=dataset[[comparison_variable]],
+                                 ci_within_variable=ci_within_variable,
+                                 confidence_level=0.95,
+                                 show_confidence_values=FALSE,
+                                 #axes_flip=FALSE,
+                                 #axis_limits=NULL,
+                                 text_size=4,
+                                 line_size=0.35,
+                                 base_size=base_size,
+                                 x_label=variable,
+                                 y_label=y_axis_label,
+                                 group_name=comparison_variable,
+                                 subtitle=subtitle_label,
+                                 title=title_label)
+
         } else {
 
             if(!is.null(sum_by_variable)) {
