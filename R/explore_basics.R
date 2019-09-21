@@ -494,8 +494,6 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(view_type == "Confidence Interval") {
 
-            values <- dataset[[variable]]
-
             rt_plot_multinom_cis(values=dataset[[variable]],
                                  groups=NULL,
                                  ci_within_variable=FALSE,
@@ -510,11 +508,9 @@ rt_explore_plot_value_totals <- function(dataset,
                                  y_label="Percent of Dataset",
                                  subtitle = "",
                                  title=paste0("Percent of dataset containing `", variable, "` categories."))
-
         } else {
 
             if(is.null(sum_by_variable)) {
-
                 if(is.null(count_distinct_variable)) {
 
                     plot_title <- paste0("Count of records for each `", variable, "` category.")
@@ -527,8 +523,6 @@ rt_explore_plot_value_totals <- function(dataset,
                     plot_y_axis_label <- paste0("Count of Unique `", count_distinct_variable, "`")
                     plot_y_second_axis_label <- NULL
                 }
-
-
             } else {
 
                 plot_title <- paste0('Total `', sum_by_variable,'`, by `', variable,'`')
@@ -550,7 +544,6 @@ rt_explore_plot_value_totals <- function(dataset,
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-
         groups_by_both <- rt_explore_value_totals(dataset=dataset,
                                                   variable=variable,
                                                   second_variable = comparison_variable,
@@ -582,7 +575,6 @@ rt_explore_plot_value_totals <- function(dataset,
         }
 
         if(view_type %in% c("Confidence Interval", "Confidence Interval - within Variable")) {
-
             if(view_type == "Confidence Interval") {
 
                 ci_within_variable <- FALSE
@@ -598,7 +590,6 @@ rt_explore_plot_value_totals <- function(dataset,
                 y_axis_label <- paste0("Percent of `", comparison_variable,"` sub-population")
                 subtitle_label <- paste0("(each `", variable,"` category defines the sub-populations)")
                 title_label <- paste0("Percent of `", comparison_variable,"` represented in each `", variable,"` category.")
-
             }
 
             rt_plot_multinom_cis(values=dataset[[variable]],
