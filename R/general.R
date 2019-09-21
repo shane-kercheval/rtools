@@ -413,3 +413,43 @@ rt_get_colors_from_values <- function(x) {
         stopifnot(FALSE)
     }
 }
+
+rt_transform_multi_value_df <- function(dataset, variable, multi_value_delimiter) {
+    # the number of columns needed is the max number of values found (i.e. out of each row in the
+    # variable, the max number of multi_value_delimiter instances (+1) found)
+    # so if the most multi-values found corresponds to `a;b;c;d;e` then `;` was found 4 times and 5
+    # columns are needed
+    column_names <- colnames(dataset)
+    number_of_columns_needed <- max(str_count(string=dataset[[variable]],
+                                              pattern = multi_value_delimiter),
+                                    na.rm = TRUE) + 1
+    new_colname_names <- paste0("temp____", 1:number_of_columns_needed)
+    dataset <- suppressWarnings(dataset %>%
+                                    separate(col=!!sym(variable),
+                                             into=new_colname_names,
+                                             sep = multi_value_delimiter))
+    # if NA is a value corresponding to `temp____1` then it was NA to start with;
+    # if NA is a value corresponding to `temp____x` then there wasn't multiple values
+    # i.e. we can get rid of all NAs associated with `temp____x`
+    # first `gather` accordingly, then filter
+
+    columns_to_remove <- column_names %>% rt_remove_val(c(new_colname_names, variable))
+
+    if(length(columns_to_remove) == 0) {
+
+        dataset <- dataset %>% gather(key, value)
+
+    } else {
+
+        dataset <- dataset %>% gather(key, value, -columns_to_remove)
+    }
+
+    dataset <- dataset %>%
+        filter(key == 'temp____1' | !is.na(value)) %>%
+        select(-key)
+
+    dataset[, variable] <- dataset$value
+    dataset <- dataset %>% select(column_names)
+
+    return (dataset)
+}

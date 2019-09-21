@@ -407,3 +407,69 @@ test_that("rt_are_numerics_equal", {
     expect_false(rt_are_numerics_equal(n1=c(1.00049, 1, 1), n2=1.00049, num_decimals=4))
     expect_false(rt_are_numerics_equal(n1=c(0.9999, 2, 3), n2=c(1.0001, 2.0001, 3.0001), num_decimals=4))
 })
+
+test_that("rt_transform_multi_value_df", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    ##########################################################################################################
+    # test with factor
+    # change the levels to verify that the original levels are retained if order_by_count==FALSE
+    ##########################################################################################################
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    credit_data[2, 'purpose'] <- NA
+
+    # many variables
+    variable <- 'purpose'
+    transformed_df <- rt_transform_multi_value_df(dataset=credit_data,
+                                                  variable=variable,
+                                                  multi_value_delimiter=', ')
+    expect_true(rt_are_dataframes_equal(credit_data, transformed_df))
+
+    # only 1 variable
+    transformed_df <- rt_transform_multi_value_df(dataset=credit_data %>% select(checking_balance),
+                                                  variable='checking_balance',
+                                                  multi_value_delimiter=', ')
+    expect_true(rt_are_dataframes_equal(credit_data %>% select(checking_balance), transformed_df))
+
+    multi_value_credit_data <- credit_data %>%
+        mutate(purpose = case_when(
+            purpose == 'car' ~ 'car, car_test',
+            purpose == 'business' ~ 'business, business_test',
+            TRUE ~ as.character(purpose))) %>%
+        mutate(purpose = as.factor(purpose))
+
+    variable <- 'purpose'
+    transformed_df <- rt_transform_multi_value_df(dataset=multi_value_credit_data,
+                                                  variable=variable,
+                                                  multi_value_delimiter=', ')
+    expect_identical(colnames(multi_value_credit_data), colnames(transformed_df))
+    # when removing the _test values from purpose, the dataset should be the same as the original dataset
+    expect_true(rt_are_dataframes_equal(credit_data,
+                                        transformed_df %>% filter(!purpose %in% c('car_test', 'business_test'))))
+
+    test_df <- transformed_df %>% filter(purpose %in% c('car_test', 'business_test'))
+    original_df <- transformed_df %>% filter(purpose %in% c('car', 'business'))
+
+    # asside from purpose, the values of the other columns should not be changed
+    expect_true(rt_are_dataframes_equal(test_df %>% select(-purpose), original_df %>% select(-purpose)))
+    # the count of the original & _test values should be the same
+    expect_true(all(test_df %>% count(purpose) %>% pull(n) == original_df %>% count(purpose) %>% pull(n)))
+
+
+    # only 1 column
+    transformed_df <- rt_transform_multi_value_df(dataset=multi_value_credit_data %>% select(purpose),
+                                                  variable=variable,
+                                                  multi_value_delimiter=', ')
+    expect_identical(colnames(transformed_df), 'purpose')
+    # when removing the _test values from purpose, the dataset should be the same as the original dataset
+    expect_true(rt_are_dataframes_equal(credit_data %>% select(purpose),
+                                        transformed_df %>% filter(!purpose %in% c('car_test', 'business_test'))))
+
+    test_df <- transformed_df %>% filter(purpose %in% c('car_test', 'business_test'))
+    original_df <- transformed_df %>% filter(purpose %in% c('car', 'business'))
+    # the count of the original & _test values should be the same
+    expect_true(all(test_df %>% count(purpose) %>% pull(n) == original_df %>% count(purpose) %>% pull(n)))
+})
