@@ -5,11 +5,12 @@
 \title{returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable}
 \usage{
 rt_explore_plot_value_totals(dataset, variable,
-  comparison_variable = NULL, sum_by_variable = NULL,
-  count_distinct_variable = NULL, order_by_count = TRUE,
-  show_variable_totals = TRUE, show_comparison_totals = TRUE,
-  show_dual_axes = FALSE, view_type = "Bar",
-  multi_value_delimiter = NULL, reverse_stack = TRUE, base_size = 11)
+  comparison_variable = NULL, facet_variable = NULL,
+  sum_by_variable = NULL, count_distinct_variable = NULL,
+  order_by_count = TRUE, show_variable_totals = TRUE,
+  show_comparison_totals = TRUE, show_dual_axes = FALSE,
+  view_type = "Bar", multi_value_delimiter = NULL,
+  reverse_stack = TRUE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -17,6 +18,8 @@ rt_explore_plot_value_totals(dataset, variable,
 \item{variable}{the variable (e.g. factor) to get unique values from}
 
 \item{comparison_variable}{the additional variable to group by; must be a string/factor column}
+
+\item{facet_variable}{additional variable to facet by}
 
 \item{sum_by_variable}{the numeric variable to sum}
 

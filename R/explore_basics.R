@@ -1325,8 +1325,10 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
                 bootstraps(times=1000)
             #pull(splits) %>% pluck(1)
             #bs %>% mutate(statistic = map_dbl(splits, ~ rt_geometric_mean(as.data.frame(.)$amount)))
+
             bs <- bs %>%
-                unnest(map(splits, as.data.frame)) %>%
+                mutate(r=map(splits, as.data.frame)) %>%
+                unnest(r) %>%
                 group_by(!!symbol_comparison_variable, id) %>%
                 summarise(average_value = aggregation_function(value)) %>%
                 summarise(bootstrap_low = quantile(average_value, 0.025),

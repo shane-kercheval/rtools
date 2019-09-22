@@ -4,7 +4,8 @@
 \alias{rt_plot_multinom_cis}
 \title{plots the proportions with confidence intervals according to MultinomCI.}
 \usage{
-rt_plot_multinom_cis(values, groups = NULL, ci_within_variable = FALSE,
+rt_plot_multinom_cis(values, groups = NULL, facets = NULL,
+  facet_variable_name = NULL, ci_within_variable = FALSE,
   confidence_level = 0.95, show_confidence_values = TRUE,
   axes_flip = FALSE, axis_limits = NULL, text_size = 4,
   line_size = 0.35, base_size = 11, x_label = "", y_label = "",
@@ -14,6 +15,10 @@ rt_plot_multinom_cis(values, groups = NULL, ci_within_variable = FALSE,
 \item{values}{character or factor vector}
 
 \item{groups}{character or factor vector of groups/categories to plot, seperated by color}
+
+\item{facets}{character or factor vector of values that will be used to facet}
+
+\item{facet_variable_name}{the name of the facet variable (will plot in each facet header)}
 
 \item{ci_within_variable}{if FALSE then group by group, else group by value (i.e. create confidence intervals within each value)}
 
