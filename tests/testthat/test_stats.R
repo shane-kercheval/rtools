@@ -356,7 +356,7 @@ test_that('rt_plot_2_proportions_test', {
                    ))
 })
 
-test_that('rt_plot_proportions', {
+test_that('rt_plot_multinom_cis', {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
 
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
@@ -506,4 +506,172 @@ test_that('rt_plot_proportions', {
                                              caption="My Caption"))
 
 
+})
+
+test_that('rt_plot_multinom_cis__facet', {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    credit_data[2, 'default'] <- NA
+    variable <- 'checking_balance'
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__checking_balance__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=NULL,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=FALSE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=FALSE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8, 10))
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__checking_balance__default__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=credit_data$credit_history,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=FALSE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=FALSE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8, 10))
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__checking_balance__default__within__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=credit_data$credit_history,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=TRUE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=FALSE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8, 10))
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__checking_balance__default__within__flip__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=credit_data$credit_history,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=FALSE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=TRUE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8, 10))
+
+    credit_data$checking_balance <- factor(credit_data$checking_balance,
+                                           levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
+                                           ordered=TRUE)
+
+    # change the order of the secondary/comparison variable
+    credit_data$default <- factor(credit_data$default,
+                                  levels=c("yes", "no"),
+                                  ordered=TRUE)
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__checking_balance__default_fac__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=credit_data$credit_history,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=FALSE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=FALSE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8,10))
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__checking_balance__default_fac__within__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=credit_data$credit_history,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=TRUE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=FALSE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8, 10))
+
+    test_save_plot(file_name='data/rt_plot_multinom_cis__default_fac__within__flip__facet.png',
+                   plot=rt_plot_multinom_cis(values=credit_data$checking_balance,
+                                             groups=credit_data$credit_history,
+                                             facets=credit_data$default,
+                                             facet_variable_name='default',
+                                             ci_within_variable=FALSE,
+                                             confidence_level = 0.95,
+                                             show_confidence_values=TRUE,
+                                             axes_flip=TRUE,
+                                             axis_limits=NULL,
+                                             text_size=4,
+                                             line_size=0.35,
+                                             base_size=11,
+                                             x_label="Custom X",
+                                             y_label="Custom Y",
+                                             group_name="Group Name",
+                                             title="My Title",
+                                             subtitle="My Subtitle",
+                                             caption="My Caption"),
+                   size_inches = c(8, 10))
 })

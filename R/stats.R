@@ -220,6 +220,8 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 #'
 #' @param values character or factor vector
 #' @param groups character or factor vector of groups/categories to plot, seperated by color
+#' @param facets character or factor vector of values that will be used to facet
+#' @param facet_variable_name the name of the facet variable (will plot in each facet header)
 #' @param ci_within_variable if FALSE then group by group, else group by value (i.e. create confidence intervals within each value)
 #' @param confidence_level the confidence level (e.g. 0.95) passed to MultinomCI.
 #' @param show_confidence_values show the high/low confidence values
@@ -244,6 +246,8 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 #' @export
 rt_plot_multinom_cis <- function(values,
                                  groups=NULL,
+                                 facets=NULL,
+                                 facet_variable_name=NULL,
                                  ci_within_variable=FALSE,
                                  confidence_level = 0.95,
                                  show_confidence_values=TRUE,
@@ -259,74 +263,102 @@ rt_plot_multinom_cis <- function(values,
                                  subtitle=NULL,
                                  caption=NULL) {
 
-    # if we use groups, the colors will be based on the groups variable, otherwise on the values
-    if(is.null(groups)) {
+    helper_get_estimates <- function(local_values,
+                                     local_groups,
+                                     ci_within_variable) {
 
-        custom_colors <- rt_get_colors_from_values(values)
+        estimates <- NULL
+        if(ci_within_variable) {
+
+            rt_stopif(is.null(local_groups))
+            temp_groups <- local_groups
+            local_groups <- local_values
+            local_values <- temp_groups
+        }
+
+        if(is.null(local_groups)) {
+
+            local_groups <- rep('remove__this__group____', length(local_values))
+        }
+
+        for(val in unique(local_groups)) {
+            #val <- (unique(local_groups) %>% rt_remove_val(NA))[1]
+
+            if(is.na(val)) {
+                indexes_to_ci <- which(is.na(local_groups))
+            } else {
+                indexes_to_ci <- which(local_groups == val)
+            }
+
+            num_occurances <- data.frame(categories=local_values[indexes_to_ci],
+                                         group=val,
+                                         stringsAsFactors = FALSE)
+
+            if(is.factor(local_values)) {
+                num_occurances <- num_occurances %>%
+                    mutate(categories = factor(categories, levels=levels(local_values), ordered = TRUE))
+            }
+
+            num_occurances <- suppressWarnings(num_occurances %>% count(categories, group))
+
+            ci_estimates <- MultinomCI(x=num_occurances$n,
+                                       conf.level = confidence_level,
+                                       sides = c("two.sided", "left", "right"),
+                                       # cplus1 seems to account for really low sample sizes much better
+                                       method = 'cplus1') %>% #c("sisonglaz", "cplus1", "goodman", "wald", "waldcc", "wilson")) %>%
+                as.data.frame()
+            colnames(ci_estimates) <- c('proportions', 'conf_low', 'conf_high')
+            estimates <- bind_rows(estimates, bind_cols(num_occurances, as.data.frame(ci_estimates)))
+        }
+
+        if(is.factor(local_groups)) {
+            estimates <- estimates %>%
+                mutate(group = factor(group, levels=levels(local_groups), ordered = TRUE))
+        }
+
+        if(all(estimates$group == 'remove__this__group____')) {
+            estimates <- estimates %>% select(-group)
+            local_groups <- NULL
+        }
+
+        if(ci_within_variable) {
+            # earlier we swapped group/local_values, now we need to swap back
+            colnames(estimates) <- colnames(estimates)[c(2, 1, 3:6)]
+        }
+
+        return (estimates)
+    }
+
+    if(is.null(facets)) {
+
+        estimates <- helper_get_estimates(local_values=values,
+                                          local_groups=groups,
+                                          ci_within_variable=ci_within_variable)
 
     } else {
+        rt_stopif(is.null(facet_variable_name))
 
-        custom_colors <- rt_get_colors_from_values(groups)
-    }
+        # FYI should include NA
+        unique_facet_values <- unique(facets)
+        estimates <- NULL
+        for(facet_value in unique_facet_values) {
+            #facet_value <- unique_facet_values[1]
+            facet_indexes <- which(rt_equal_include_na(facets, facet_value))
+            local_values <- values[facet_indexes]
+            local_groups <- groups[facet_indexes]
+            temp <- helper_get_estimates(local_values=local_values,
+                                         local_groups=local_groups,
+                                         ci_within_variable=ci_within_variable)
 
-    estimates <- NULL
-
-    if(ci_within_variable) {
-
-        rt_stopif(is.null(groups))
-        temp_groups <- groups
-        groups <- values
-        values <- temp_groups
-    }
-
-    if(is.null(groups)) {
-
-        groups <- rep('remove__this__group____', length(values))
-    }
-
-    for(val in unique(groups)) {
-        #val <- (unique(groups) %>% rt_remove_val(NA))[1]
-
-        if(is.na(val)) {
-            indexes_to_ci <- which(is.na(groups))
-        } else {
-            indexes_to_ci <- which(groups == val)
+            temp[[facet_variable_name]] <- paste(facet_variable_name, '-', facet_value)
+            estimates <- bind_rows(estimates, temp)
         }
 
-        num_occurances <- data.frame(categories=values[indexes_to_ci],
-                                     group=val,
-                                     stringsAsFactors = FALSE)
-
-        if(is.factor(values)) {
-            num_occurances <- num_occurances %>%
-                mutate(categories = factor(categories, levels=levels(values), ordered = TRUE))
+        if(is.factor(unique_facet_values)) {
+            estimates[[facet_variable_name]] <- factor(estimates[[facet_variable_name]],
+                                                           levels= paste(facet_variable_name, '-', levels(unique_facet_values)),
+                                                           ordered=TRUE)
         }
-
-        num_occurances <- suppressWarnings(num_occurances %>% count(categories, group))
-
-        ci_estimates <- MultinomCI(x=num_occurances$n,
-                                   conf.level = confidence_level,
-                                   sides = c("two.sided", "left", "right"),
-                                   # cplus1 seems to account for really low sample sizes much better
-                                   method = 'cplus1') %>% #c("sisonglaz", "cplus1", "goodman", "wald", "waldcc", "wilson")) %>%
-            as.data.frame()
-        colnames(ci_estimates) <- c('proportions', 'conf_low', 'conf_high')
-        estimates <- bind_rows(estimates, bind_cols(num_occurances, as.data.frame(ci_estimates)))
-    }
-
-    if(is.factor(groups)) {
-        estimates <- estimates %>%
-            mutate(group = factor(group, levels=levels(groups), ordered = TRUE))
-    }
-
-    if(all(estimates$group == 'remove__this__group____')) {
-        estimates <- estimates %>% select(-group)
-        groups <- NULL
-    }
-
-    if(ci_within_variable) {
-        # earlier we swapped group/values, now we need to swap back
-        colnames(estimates) <- colnames(estimates)[c(2, 1, 3:6)]
     }
 
     if(is.null(caption)) {
@@ -334,8 +366,10 @@ rt_plot_multinom_cis <- function(values,
         caption <- paste("\nConfidence Level:", confidence_level)
     }
 
+    # if we use groups, the colors will be based on the groups variable, otherwise on the values
     if(is.null(groups)) {
 
+        custom_colors <- rt_get_colors_from_values(values)
         plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=categories)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
@@ -352,6 +386,7 @@ rt_plot_multinom_cis <- function(values,
 
     } else {
 
+        custom_colors <- rt_get_colors_from_values(groups)
         plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=group)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=group),
                           position=position_dodge(width=0.9),
@@ -372,6 +407,12 @@ rt_plot_multinom_cis <- function(values,
                  caption=caption)
     }
 
+    if(!is.null(facets)) {
+
+        plot_object <- plot_object +
+            facet_wrap(as.formula(paste("~", facet_variable_name)), ncol = 1, scales = 'free_y')
+    }
+
     if(axes_flip) {
 
         plot_object <- plot_object +
@@ -379,8 +420,11 @@ rt_plot_multinom_cis <- function(values,
 
     } else if (!is.null(axis_limits)) {
 
-        plot_object <- plot_object +
-            coord_cartesian(ylim = axis_limits)
+        plot_object <- plot_object + coord_cartesian(ylim = axis_limits, clip='off')
+
+    } else if (!is.null(facets)) {
+
+        plot_object <- plot_object + coord_cartesian(clip = "off")
     }
 
     if(show_confidence_values) {

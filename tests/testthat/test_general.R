@@ -202,6 +202,52 @@ test_that("rt_remove_val", {
     expect_identical(vector_b %>% rt_remove_val('d'), vector_b)
 })
 
+test_that("rt_equal_include_na", {
+
+    expect_true(rt_equal_include_na(0, 0))
+    expect_true(rt_equal_include_na(NA, NA))
+    expect_true(rt_equal_include_na('a', 'a'))
+    expect_true(all(rt_equal_include_na(x=c(1, NA, 'a'), y=c(1, NA, 'a'))))
+    expect_true(all(rt_equal_include_na(x=c(NA, NA, NA), y=c(NA, NA, NA))))
+
+    expect_error(rt_equal_include_na(NULL, 1))
+    expect_error(rt_equal_include_na(1, NULL))
+    expect_error(rt_equal_include_na(NULL, NULL))
+
+
+    expect_false(rt_equal_include_na('a', 'b'))
+    expect_false(rt_equal_include_na('a', 1))
+    expect_false(rt_equal_include_na(0.00001, 0))
+    expect_false(rt_equal_include_na(1, NA))
+    expect_false(rt_equal_include_na(NA, 1))
+    expect_identical(rt_equal_include_na(x=c(NA, NA, 'a'), y=c(1, NA, 'a')), c(FALSE, TRUE, TRUE))
+    expect_identical(rt_equal_include_na(x=c(1, NA, 'a'), y=c(1, NA, NA)), c(TRUE, TRUE, FALSE))
+
+
+    expect_identical(rt_equal_include_na(x=c(NA, 1, 'a'), y='a'), c(FALSE, FALSE, TRUE))
+    expect_identical(rt_equal_include_na(x=c(NA, 1, 'a'), y=NA), c(TRUE, FALSE, FALSE))
+
+    expect_identical(rt_equal_include_na(x=c(NA, 1, 'a'), y='a'), c(FALSE, FALSE, TRUE))
+    expect_identical(rt_equal_include_na(x=c(NA, 1, 'a'), y=NA), c(TRUE, FALSE, FALSE))
+
+    expect_identical(rt_equal_include_na(x='a', y=c(NA, 1, 'a')), c(FALSE, FALSE, TRUE))
+    expect_identical(rt_equal_include_na(x=NA, y=c(NA, 1, 'a')), c(TRUE, FALSE, FALSE))
+
+    # make sure I can use this as intended with e.g. dplyr filter
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_history_good <- credit_data %>% filter(credit_history == 'good')
+
+    check <- credit_data %>% filter(rt_equal_include_na(credit_history, 'good'))
+
+    expect_true(rt_are_dataframes_equal(credit_history_good, check))
+
+    check <- credit_data %>%
+        mutate(credit_history = ifelse(credit_history == 'good', NA, credit_history)) %>%
+        filter(rt_equal_include_na(credit_history, NA))
+    expect_true(rt_are_dataframes_equal(credit_history_good %>% select(-credit_history),
+                                        check %>% select(-credit_history)))
+})
+
 test_that("rt_ceiling_nearest_x", {
     nearest_x <- 0.05
     expect_equal(0, rt_ceiling_nearest_x(0, nearest_x))

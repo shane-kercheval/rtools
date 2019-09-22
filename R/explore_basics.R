@@ -406,6 +406,7 @@ rt_explore_value_totals <- function(dataset,
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
+#' @param facet_variable additional variable to facet by
 #' @param count_distinct_variable when aggregating, rather than counting the total number of records, count distinct occurances of this variabled (cannot be used with `sum_by_variable`)
 #' @param sum_by_variable the numeric variable to sum
 #' @param order_by_count if TRUE (the default) it will plot the bars from most to least frequent, otherwise it will order by the original factor levels if applicable
@@ -426,7 +427,7 @@ rt_explore_value_totals <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select
+#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select bind_rows
 #' @importFrom scales percent_format percent pretty_breaks format_format
 #' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
 #' @importFrom stats as.formula
@@ -434,6 +435,7 @@ rt_explore_value_totals <- function(dataset,
 rt_explore_plot_value_totals <- function(dataset,
                                          variable,
                                          comparison_variable=NULL,
+                                         facet_variable=NULL,
                                          sum_by_variable=NULL,
                                          count_distinct_variable=NULL,
                                          order_by_count=TRUE,
@@ -463,11 +465,38 @@ rt_explore_plot_value_totals <- function(dataset,
                                                                     "Stack Percent"))
     symbol_variable <- sym(variable)  # because we are using string variables
 
-    groups_by_variable <- rt_explore_value_totals(dataset=dataset,
-                                                  variable=variable,
-                                                  sum_by_variable=sum_by_variable,
-                                                  count_distinct=count_distinct_variable,
-                                                  multi_value_delimiter=multi_value_delimiter)
+    if(is.null(facet_variable)) {
+        groups_by_variable <- rt_explore_value_totals(dataset=dataset,
+                                                      variable=variable,
+                                                      sum_by_variable=sum_by_variable,
+                                                      count_distinct=count_distinct_variable,
+                                                      multi_value_delimiter=multi_value_delimiter)
+    } else {
+        # FYI should include NA
+        symbol_facet_variable <- sym(facet_variable)
+        unique_facet_values <- unique(dataset[[facet_variable]])
+        groups_by_variable <- NULL
+        for(facet_value in unique_facet_values) {
+            #facet_value <- unique_facet_values[1]
+
+            temp <- rt_explore_value_totals(dataset=dataset %>%
+                                                filter(rt_equal_include_na(!!symbol_facet_variable,
+                                                                           facet_value)),
+                                            variable=variable,
+                                            sum_by_variable=sum_by_variable,
+                                            count_distinct=count_distinct_variable,
+                                            multi_value_delimiter=multi_value_delimiter)
+
+            temp[[facet_variable]] <- paste(facet_variable, '-', facet_value)
+            groups_by_variable <- bind_rows(groups_by_variable, temp)
+        }
+
+        if(is.factor(unique_facet_values)) {
+            groups_by_variable[[facet_variable]] <- factor(groups_by_variable[[facet_variable]],
+                                                           levels= paste(facet_variable, '-', levels(unique_facet_values)),
+                                                           ordered=TRUE)
+        }
+    }
 
     if(is.null(sum_by_variable)) {
 
@@ -494,8 +523,18 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(view_type == "Confidence Interval") {
 
+            if(is.null(facet_variable)) {
+
+                facets <- NULL
+
+            } else {
+
+                facets <- dataset[[facet_variable]]
+            }
             rt_plot_multinom_cis(values=dataset[[variable]],
                                  groups=NULL,
+                                 facets=facets,
+                                 facet_variable_name=facet_variable,
                                  ci_within_variable=FALSE,
                                  confidence_level = 0.95,
                                  show_confidence_values=show_variable_totals,
@@ -533,7 +572,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
             private__create_bar_chart_single_var(groups_by_variable,
                                                  variable,
-                                                 symbol_variable,
+                                                 facet_variable,
                                                  show_dual_axes,
                                                  plot_y_second_axis_label,
                                                  show_variable_totals,
@@ -544,13 +583,45 @@ rt_explore_plot_value_totals <- function(dataset,
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-        groups_by_both <- rt_explore_value_totals(dataset=dataset,
-                                                  variable=variable,
-                                                  second_variable = comparison_variable,
-                                                  sum_by_variable=sum_by_variable,
-                                                  count_distinct=count_distinct_variable,
-                                                  multi_value_delimiter=multi_value_delimiter) %>%
-            rename(actual_percent=percent)
+
+        if(is.null(facet_variable)) {
+
+            groups_by_both <- rt_explore_value_totals(dataset=dataset,
+                                                      variable=variable,
+                                                      second_variable = comparison_variable,
+                                                      sum_by_variable=sum_by_variable,
+                                                      count_distinct=count_distinct_variable,
+                                                      multi_value_delimiter=multi_value_delimiter) %>%
+                rename(actual_percent=percent)
+
+        } else {
+            # FYI should include NA
+            symbol_facet_variable <- sym(facet_variable)
+            unique_facet_values <- unique(dataset[[facet_variable]])
+            groups_by_both <- NULL
+            for(facet_value in unique_facet_values) {
+                #facet_value <- unique_facet_values[1]
+
+                temp <- rt_explore_value_totals(dataset=dataset %>%
+                                                    filter(rt_equal_include_na(!!symbol_facet_variable,
+                                                                               facet_value)),
+                                                variable=variable,
+                                                second_variable = comparison_variable,
+                                                sum_by_variable=sum_by_variable,
+                                                count_distinct=count_distinct_variable,
+                                                multi_value_delimiter=multi_value_delimiter) %>%
+                    rename(actual_percent=percent)
+
+                temp[[facet_variable]] <- paste(facet_variable, '-', facet_value)
+                groups_by_both <- bind_rows(groups_by_both, temp)
+            }
+
+            if(is.factor(unique_facet_values)) {
+                groups_by_both[[facet_variable]] <- factor(groups_by_both[[facet_variable]],
+                                                               levels= paste(facet_variable, '-', levels(unique_facet_values)),
+                                                               ordered=TRUE)
+            }
+        }
 
         if(is.null(sum_by_variable)) {
 
@@ -563,7 +634,18 @@ rt_explore_plot_value_totals <- function(dataset,
 
         if(order_by_count) {
 
-            ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
+            if(is.null(facet_variable)) {
+
+                ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
+
+            } else {
+
+                ordered_levels <- suppressWarnings(groups_by_variable %>%
+                    group_by(!!symbol_variable) %>%
+                    summarise(total = sum(total, na.rm = TRUE)) %>%
+                    arrange(desc(total)) %>% rt_get_vector(variable))
+            }
+
             groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]], levels=ordered_levels)
             groups_by_both[[variable]] <- factor(groups_by_both[[variable]], levels=ordered_levels)
 
@@ -592,8 +674,18 @@ rt_explore_plot_value_totals <- function(dataset,
                 title_label <- paste0("Percent of `", comparison_variable,"` represented in each `", variable,"` category.")
             }
 
+            if(is.null(facet_variable)) {
+
+                facets <- NULL
+
+            } else {
+
+                facets <- dataset[[facet_variable]]
+            }
             rt_plot_multinom_cis(values=dataset[[variable]],
                                  groups=dataset[[comparison_variable]],
+                                 facets=facets,
+                                 facet_variable_name=facet_variable,
                                  ci_within_variable=ci_within_variable,
                                  confidence_level=0.95,
                                  show_confidence_values=FALSE,
@@ -686,9 +778,8 @@ rt_explore_plot_value_totals <- function(dataset,
             private__create_bar_chart_comparison_var(groups_by_variable,
                                                      groups_by_both,
                                                      variable,
-                                                     symbol_variable,
                                                      comparison_variable,
-                                                     symbol_comparison_variable,
+                                                     facet_variable,
                                                      count_distinct_variable,
                                                      view_type,
                                                      show_dual_axes,
@@ -2146,9 +2237,8 @@ rt_as_year_qtr_format <- function(x) {
 private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      groups_by_both,
                                                      variable,
-                                                     symbol_variable,
                                                      comparison_variable,
-                                                     symbol_comparison_variable,
+                                                     facet_variable,
                                                      count_distinct_variable,
                                                      view_type,
                                                      show_dual_axes,
@@ -2162,6 +2252,10 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      base_size) {
 
     stopifnot(view_type %in% c("Bar", "Facet by Comparison", "Stack", "Stack Percent"))
+
+    symbol_variable <- sym(variable)
+    symbol_comparison_variable <- sym(comparison_variable)
+
 
     if(view_type == "Facet by Comparison") {
 
@@ -2370,6 +2464,13 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                           check_overlap=TRUE)
         }
 
+        if(!is.null(facet_variable)) {
+
+            unique_values_plot <- unique_values_plot +
+                facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+                coord_cartesian(clip = "off")
+        }
+
         return (unique_values_plot +
                     labs(title = plot_title,
                          y=plot_y_axis_label,
@@ -2383,13 +2484,15 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
 private__create_bar_chart_single_var <- function(groups_by_variable,
                                                  variable,
-                                                 symbol_variable,
+                                                 facet_variable,
                                                  show_dual_axes,
                                                  plot_y_second_axis_label,
                                                  show_variable_totals,
                                                  plot_title,
                                                  plot_y_axis_label,
                                                  base_size) {
+
+    symbol_variable <- sym(variable)
     custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
 
     unique_values_plot <- groups_by_variable %>%
@@ -2422,6 +2525,13 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
             geom_text(aes(label = percent(percent), y = total), vjust=-0.25, check_overlap=TRUE) +
             geom_text(aes(label = private__standard_prettyNum(total), y = total),
                       vjust=1.25, check_overlap=TRUE)
+    }
+
+    if(!is.null(facet_variable)) {
+
+        unique_values_plot <- unique_values_plot +
+            facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+            coord_cartesian(clip = "off")
     }
 
     return (

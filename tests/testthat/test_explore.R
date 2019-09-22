@@ -1014,6 +1014,152 @@ test_that("rt_explore_plot_value_counts", {
                                                       base_size=11))
 })
 
+test_that("rt_explore_plot_value_counts__facet", {
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'checking_balance'
+    comparison_variable <- 'credit_history'
+    facet_variable <- 'default'
+
+    # make sure it handles NAs
+    credit_data[1, variable] <- NA
+    credit_data[2, comparison_variable] <- NA
+    credit_data[3, facet_variable] <- NA
+
+    # credit_data %>%
+    #     count(checking_balance, default) %>%
+    #     arrange(default, checking_balance) %>%
+    #     group_by(default) %>%
+    #     mutate(p=n/sum(n, na.rm = TRUE)) %>% ungroup()
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var__conf.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Confidence Interval',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var_sum__bar.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     sum_by_variable = 'amount',
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Bar',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    # credit_data %>%
+    #     count(checking_balance, default, wt=amount) %>%
+    #     arrange(default, checking_balance) %>%
+    #     group_by(default) %>%
+    #     mutate(p=n/sum(n, na.rm = TRUE)) %>% ungroup()
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var_unique__bar.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     #sum_by_variable = 'amount',
+                                                     count_distinct_variable = 'employment_duration',
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Bar',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+    # credit_data %>%
+    #     group_by(checking_balance, default) %>%
+    #     summarise(n=n_distinct(employment_duration)) %>%
+    #     ungroup() %>%
+    #     arrange(default, checking_balance) %>%
+    #     group_by(default) %>%
+    #     mutate(p=n/sum(n, na.rm = TRUE)) %>% ungroup()
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp_conf.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Confidence Interval',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp_conf2.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Confidence Interval - within Variable',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp_stack.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Stack',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp_stack_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Stack',
+                                                     order_by_count=TRUE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp_stack_perc.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Stack Percent',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+    # credit_data %>%
+    #     count(checking_balance, credit_history, default) %>%
+    #     arrange(default, checking_balance, credit_history) %>%
+    #     group_by(default, checking_balance) %>%
+    #     mutate(p=n/sum(n, na.rm = TRUE)) %>% ungroup() %>% as.data.frame()
+
+
+    # test factor order
+    temp_dataset <- credit_data
+    temp_dataset <- temp_dataset %>%
+        mutate(checking_balance = factor(as.character(checking_balance),
+                                         levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
+                                         ordered = TRUE),
+               default = factor(as.character(default),
+                                levels=c("yes", "no"),
+                                ordered = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var_factors.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp_dataset,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+})
+
 test_that("rt_explore_plot_value_counts: logical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
     credit_data[1, 'default'] <- NA

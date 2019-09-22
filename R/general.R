@@ -133,6 +133,24 @@ rt_remove_val <- function(vec, val) {
     return (vec[!vec %in% val])
 }
 
+#' There are times when you want to filter/match any value, *including* NA
+#' So if
+#'
+#' @param x single value or vector to compare with y
+#' @param y single value or vector to compare with x
+#'
+#' @export
+rt_equal_include_na <- function(x, y) {
+
+    rt_stopif(is.null(x) | is.null(y))
+    # if either x or y is NA, then they are equal only if both are NA
+    # otherwise, just use ==
+    #return (!xor(is.na(x), is.na(y)) | x == y)
+    return (ifelse(is.na(x) | is.na(y),
+                   is.na(x) & is.na(y),
+                   x == y))
+}
+
 #' returns numeric value of difftime (date_last - date_first)
 #'
 #' @param date_last the date to subtract from
