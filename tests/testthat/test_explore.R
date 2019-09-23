@@ -2087,6 +2087,127 @@ test_that("rt_explore_plot_boxplot", {
                                                   base_size=15))
 })
 
+test_that("rt_explore_plot_boxplot_facet", {
+    dataset <- read.csv("data/credit.csv", header=TRUE)
+    variable <- 'months_loan_duration'
+    comparison_variable <- 'default'
+    facet_variable <- 'phone'
+
+    expect_error(rt_explore_plot_boxplot(dataset=dataset,
+                                         variable=variable,
+                                         comparison_variable=NULL,
+                                         facet_variable=facet_variable,
+                                         y_zoom_min=NULL,
+                                         y_zoom_max=NULL,
+                                         base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__default_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset <- dataset
+    temp_dataset[1, 'default'] <- NA
+    temp_dataset[2, facet_variable] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset[1, 'checking_balance'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs2_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset[2, 'checking_balance'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs3_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+    temp_dataset[3, 'default'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs4_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_pretty_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=rt_pretty_dataset(dataset),
+                                                variable=rt_pretty_text(variable),
+                                                comparison_variable=rt_pretty_text(comparison_variable),
+                                                facet_variable=rt_pretty_text(facet_variable),
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_min_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=20,
+                                                y_zoom_max=NA,  # Check NA
+                                                base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_max_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NA,  # Check NA
+                                                y_zoom_max=40,
+                                                base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_zoom_both_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=20,
+                                                y_zoom_max=40,
+                                                base_size=15))
+})
+
 test_that("rt_explore_plot_boxplot - NA numeric values", {
     # there's a bug where the count of the records (below the median line) shows the number of total records
     # in the group, but it should show the total number of non-na values for which the boxplot is based on

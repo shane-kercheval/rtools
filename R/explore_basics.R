@@ -810,24 +810,33 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param variable the variable from which to create a boxplot
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
 #' @param color_variable if comparison_variable is used, then if color_variable is used the boxplots will be colored by this variable rather than each of the comparison_variable categories. `color_variable` must be categoric
+#' @param facet_variable  if comparison_variable is used, then if facet_variable is used the boxplots will be faceted by this variable `faceted` must be categoric
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge geom_hline
-#' @importFrom dplyr group_by summarise n
+#' @importFrom dplyr group_by summarise n filter bind_rows
 #' @importFrom scales pretty_breaks format_format
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
                                     variable,
                                     comparison_variable=NULL,
                                     color_variable=NULL,
+                                    facet_variable=NULL,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
+
+    if(!is.null(color_variable)) {
+        rt_stopif(is.null(comparison_variable))
+    }
+    if(!is.null(facet_variable)) {
+        rt_stopif(is.null(comparison_variable))
+    }
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
@@ -856,27 +865,92 @@ rt_explore_plot_boxplot <- function(dataset,
     } else {
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-
         if(is.null(color_variable)) {
 
             symbol_color_variable <- symbol_comparison_variable
-            aggregations <- suppressWarnings(
-                dataset %>%
-                    group_by(!!symbol_comparison_variable) %>%
-                    summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
-                              count = sum(!is.na(!!symbol_variable))) %>% as.data.frame())
-
-            custom_colors <- rt_get_colors_from_values(dataset[[comparison_variable]])
 
         } else {
 
             symbol_color_variable <- sym(color_variable)
+        }
 
-            aggregations <- suppressWarnings(
-                    dataset %>%
-                    group_by(!!symbol_comparison_variable, !!symbol_color_variable) %>%
-                    summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
-                              count = sum(!is.na(!!symbol_variable))) %>% as.data.frame())
+        if(!is.null(facet_variable)) {
+            facet_values <- dataset[[facet_variable]]
+
+            dataset[[facet_variable]] <- paste(facet_variable, '-', as.character(facet_values))
+
+            if(is.factor(facet_values)) {
+                dataset[[facet_variable]] <- factor(dataset[[facet_variable]],
+                                                    levels= paste(facet_variable, '-', levels(facet_values)),
+                                                    ordered=TRUE)
+            }
+        }
+
+        helper_get_aggregations <- function(local_dataset,
+                                            color_variable,
+                                            symbol_variable,
+                                            symbol_comparison_variable) {
+
+            if(is.null(color_variable)) {
+
+                local_aggregations <- suppressWarnings(
+                    local_dataset %>%
+                        group_by(!!symbol_comparison_variable) %>%
+                        summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
+                                  count = sum(!is.na(!!symbol_variable))) %>% as.data.frame())
+
+
+            } else {
+
+                symbol_color_variable <- sym(color_variable)
+                local_aggregations <- suppressWarnings(
+                    local_dataset %>%
+                        group_by(!!symbol_comparison_variable, !!symbol_color_variable) %>%
+                        summarise(median = round(median(!!symbol_variable, na.rm = TRUE), 4),
+                                  count = sum(!is.na(!!symbol_variable))) %>% as.data.frame())
+            }
+
+            return (local_aggregations)
+        }
+
+        aggregations <- NULL
+        if(is.null(facet_variable)) {
+
+            aggregations <- helper_get_aggregations(local_dataset=dataset,
+                                                    color_variable=color_variable,
+                                                    symbol_variable=symbol_variable,
+                                                    symbol_comparison_variable=symbol_comparison_variable)
+
+        } else {
+
+            unique_facet_values <- unique(dataset[[facet_variable]])
+            aggregations <- NULL
+            for(facet_value in unique_facet_values) {
+                #facet_value <- unique_facet_values[1]
+                symbol_facet_variable <- sym(facet_variable)
+                local_dataset <- dataset %>% filter(rt_equal_include_na(!!symbol_facet_variable, facet_value))
+
+                temp <- helper_get_aggregations(local_dataset=local_dataset,
+                                                color_variable=color_variable,
+                                                symbol_variable=symbol_variable,
+                                                symbol_comparison_variable=symbol_comparison_variable)
+
+                temp[[facet_variable]] <- facet_value
+                aggregations <- bind_rows(aggregations, temp)
+            }
+
+            if(is.factor(unique_facet_values)) {
+                aggregations[[facet_variable]] <- factor(aggregations[[facet_variable]],
+                                                         levels=levels(unique_facet_values),
+                                                         ordered=TRUE)
+            }
+        }
+
+        if(is.null(color_variable)) {
+
+            custom_colors <- rt_get_colors_from_values(dataset[[comparison_variable]])
+
+        } else {
 
             custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
         }
@@ -907,6 +981,13 @@ rt_explore_plot_boxplot <- function(dataset,
                  x=comparison_variable,
                  y=variable) +
             theme_light(base_size = base_size)
+
+        if(!is.null(facet_variable)) {
+
+            boxplot_plot <- boxplot_plot +
+                facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+                coord_cartesian(clip = "off")
+        }
 
         if(is.null(color_variable)) {
 
