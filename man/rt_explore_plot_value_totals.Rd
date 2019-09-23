@@ -37,7 +37,6 @@ rt_explore_plot_value_totals(dataset, variable,
 Options are:
     "Bar" - Default option, for either single variable or with comparison_variable, bar-chart
     "Confidence Interval" - for either single variable or with comparison variable; when comparison_variable is not NULL, the denominator/count used is the same as faceting
-    "Facet by Comparison" - valid when comparison_variable is not NULL, facet based on comparison_variable
     "Confidence Interval - within Variable" - valid when comparison_variable is not null, this provides confidence intervals similar to the "Stack" view
     "Stack" - valid when comparison_variable is not null, stack comparison variable within variable
     "Stack Percent" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)}

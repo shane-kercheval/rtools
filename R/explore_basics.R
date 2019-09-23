@@ -417,7 +417,6 @@ rt_explore_value_totals <- function(dataset,
 #'      Options are:
 #'          "Bar" - Default option, for either single variable or with comparison_variable, bar-chart
 #'          "Confidence Interval" - for either single variable or with comparison variable; when comparison_variable is not NULL, the denominator/count used is the same as faceting
-#'          "Facet by Comparison" - valid when comparison_variable is not NULL, facet based on comparison_variable
 #'          "Confidence Interval - within Variable" - valid when comparison_variable is not null, this provides confidence intervals similar to the "Stack" view
 #'          "Stack" - valid when comparison_variable is not null, stack comparison variable within variable
 #'          "Stack Percent" - valid when comparison_variable is not null, stack comparison variable within variable (i.e. for each variable value, the comparison_variable percentages are shown)
@@ -447,7 +446,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          reverse_stack=TRUE,
                                          base_size=11) {
 
-    stopifnot(view_type %in% c("Bar", "Confidence Interval", "Facet by Comparison", "Confidence Interval - within Variable", "Stack", "Stack Percent"))
+    stopifnot(view_type %in% c("Bar", "Confidence Interval", "Confidence Interval - within Variable", "Stack", "Stack Percent"))
 
     # we can't do confidence intervals if we are suming by a variable.
     # Confidence intervals are based on sample size, which come from the denominator of the proportion.
@@ -564,9 +563,18 @@ rt_explore_plot_value_totals <- function(dataset,
                 }
             } else {
 
-                plot_title <- paste0('Total `', sum_by_variable,'`, by `', variable,'`')
+
+
+                plot_title <- paste0('Sum of `', sum_by_variable,'`, by `', variable, '`')
+
+                if(!is.null(facet_variable)) {
+
+                    plot_title <- paste0(plot_title, ' and `', facet_variable,'`')
+                }
+
+                plot_subtitle <- NULL
                 #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
-                plot_y_axis_label <- plot_y_axis_label <- paste0('Total `' , sum_by_variable, '`')
+                plot_y_axis_label <- paste0('`' , sum_by_variable, '`')
                 plot_y_second_axis_label <- paste0('Percent of Total `', sum_by_variable, '`')
             }
 
@@ -721,15 +729,16 @@ rt_explore_plot_value_totals <- function(dataset,
 
                 if(is.null(count_distinct_variable)) {
 
-                    if(view_type == "Facet by Comparison") {
+                    # if(view_type == "Facet by Comparison") {
 
-                        plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
-                        plot_subtitle <- ""
+                    #     plot_title <- paste0("Distribution of `", variable, "` for each `", comparison_variable, "` category.")
+                    #     plot_subtitle <- ""
 
-                        plot_y_axis_label <- "Count"
-                        plot_y_second_axis_label <- "Percent of Sub-population"
+                    #     plot_y_axis_label <- "Count"
+                    #     plot_y_second_axis_label <- "Percent of Sub-population"
 
-                    } else if(view_type == "Stack") {
+                    # } else
+                    if(view_type == "Stack") {
 
                         plot_title <- paste0("Count of `", variable, "` by `", comparison_variable, "`")
                         plot_subtitle <- ""
@@ -2253,61 +2262,61 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                                      plot_y_axis_label,
                                                      base_size) {
 
-    stopifnot(view_type %in% c("Bar", "Facet by Comparison", "Stack", "Stack Percent"))
+    stopifnot(view_type %in% c("Bar", "Stack", "Stack Percent"))
 
     symbol_variable <- sym(variable)
     symbol_comparison_variable <- sym(comparison_variable)
 
 
-    if(view_type == "Facet by Comparison") {
+    # if(view_type == "Facet by Comparison") {
 
-        # if we Facet, the colors will be based on the primary variable
-        custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
+    #     # if we Facet, the colors will be based on the primary variable
+    #     custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
 
-        facet_groups <- suppressWarnings(groups_by_both %>%
-            select(-actual_percent, -group_percent) %>%
-            group_by(!!symbol_comparison_variable) %>%
-            mutate(facet_percent = total / sum(total)) %>%
-            mutate(total_facet_percent = sum(facet_percent),
-                   facet_group_total = sum(total)) %>%
-            ungroup())
-        # make sure total_facet_percent values are all 1 (out to 7 digits)
-        stopifnot(rt_are_numerics_equal(n1=facet_groups$total_facet_percent, n2=1, num_decimals=7))
+    #     facet_groups <- suppressWarnings(groups_by_both %>%
+    #         select(-actual_percent, -group_percent) %>%
+    #         group_by(!!symbol_comparison_variable) %>%
+    #         mutate(facet_percent = total / sum(total)) %>%
+    #         mutate(total_facet_percent = sum(facet_percent),
+    #                facet_group_total = sum(total)) %>%
+    #         ungroup())
+    #     # make sure total_facet_percent values are all 1 (out to 7 digits)
+    #     stopifnot(rt_are_numerics_equal(n1=facet_groups$total_facet_percent, n2=1, num_decimals=7))
 
-        unique_values_plot <- ggplot(data=facet_groups,
-                                     aes(x=!!symbol_variable, y=total, fill=!!symbol_variable)) +
-            geom_bar(stat = 'identity', alpha=0.75) +
-            facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1, scales = 'free_y') +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE))
+    #     unique_values_plot <- ggplot(data=facet_groups,
+    #                                  aes(x=!!symbol_variable, y=total, fill=!!symbol_variable)) +
+    #         geom_bar(stat = 'identity', alpha=0.75) +
+    #         facet_wrap(as.formula(paste("~", comparison_variable)), ncol = 1, scales = 'free_y') +
+    #         scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
+    #                                                                             preserve.width="none",
+    #                                                                             digits=4,
+    #                                                                             scientific=FALSE))
 
-        if(show_variable_totals) {
+    #     if(show_variable_totals) {
 
-            unique_values_plot <- unique_values_plot +
-                geom_text(aes(x=!!symbol_variable, label = private__standard_prettyNum(total),
-                              y = total),
-                          vjust=1.25, check_overlap=TRUE)
+    #         unique_values_plot <- unique_values_plot +
+    #             geom_text(aes(x=!!symbol_variable, label = private__standard_prettyNum(total),
+    #                           y = total),
+    #                       vjust=1.25, check_overlap=TRUE)
 
-            if(is.null(count_distinct_variable)) {
+    #         if(is.null(count_distinct_variable)) {
 
-                unique_values_plot <- unique_values_plot +
-                    geom_text(aes(x=!!symbol_variable, label = percent(facet_percent), y = total),
-                              vjust=-0.25, check_overlap=TRUE)
-            }
-        }
+    #             unique_values_plot <- unique_values_plot +
+    #                 geom_text(aes(x=!!symbol_variable, label = percent(facet_percent), y = total),
+    #                           vjust=-0.25, check_overlap=TRUE)
+    #         }
+    #     }
 
-        return (unique_values_plot +
-                    labs(title = plot_title,
-                         y=plot_y_axis_label,
-                         fill=comparison_variable,
-                         x=variable) +
-                    scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
-                    theme_light(base_size = base_size) +
-                    theme(legend.position = 'none',
-                          axis.text.x = element_text(angle = 30, hjust = 1)))
-    } else {
+    #     return (unique_values_plot +
+    #                 labs(title = plot_title,
+    #                      y=plot_y_axis_label,
+    #                      fill=comparison_variable,
+    #                      x=variable) +
+    #                 scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
+    #                 theme_light(base_size = base_size) +
+    #                 theme(legend.position = 'none',
+    #                       axis.text.x = element_text(angle = 30, hjust = 1)))
+    # } else {
 
         # if we Stack/Bar, the colors will be based on the comparison variable
         custom_colors <- rt_get_colors_from_values(groups_by_both[[comparison_variable]])
@@ -2481,7 +2490,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
                     theme_light(base_size = base_size) +
                     theme(axis.text.x = element_text(angle = 30, hjust = 1)))
-    }
+    # }
 }
 
 private__create_bar_chart_single_var <- function(groups_by_variable,

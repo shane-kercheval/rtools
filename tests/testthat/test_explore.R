@@ -873,12 +873,20 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                                      show_dual_axes=TRUE,
                                                      order_by_count=FALSE))
 
+    # test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__facet.png',
+    #                plot=rt_explore_plot_value_totals(dataset=credit_data,
+    #                                                  variable=variable,
+    #                                                  comparison_variable=comparison_variable,
+    #                                                  count_distinct_variable=count_distinct,
+    #                                                  view_type="Facet by Comparison",
+    #                                                  order_by_count=FALSE))
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__facet.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable=comparison_variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=comparison_variable,
                                                      count_distinct_variable=count_distinct,
-                                                     view_type="Facet by Comparison",
+                                                     view_type="Bar",
                                                      order_by_count=FALSE))
 })
 
@@ -1555,16 +1563,6 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                               order_by_count=FALSE,
                                               show_variable_totals=TRUE,
                                               show_comparison_totals=TRUE,
-                                              view_type="Facet by Comparison",
-                                              show_dual_axes=TRUE))
-
-    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
-                                              variable=variable,
-                                              comparison_variable=NULL,
-                                              sum_by_variable=NULL,
-                                              order_by_count=FALSE,
-                                              show_variable_totals=TRUE,
-                                              show_comparison_totals=TRUE,
                                               view_type="Confidence Interval - within Variable",
                                               show_dual_axes=TRUE))
 
@@ -1609,16 +1607,6 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                               order_by_count=FALSE,
                                               show_variable_totals=TRUE,
                                               show_comparison_totals=TRUE,
-                                              view_type="Facet by Comparison",
-                                              show_dual_axes=TRUE))
-
-    expect_error(rt_explore_plot_value_totals(dataset=credit_data,
-                                              variable=variable,
-                                              comparison_variable=NULL,
-                                              sum_by_variable=sum_by_variable,
-                                              order_by_count=FALSE,
-                                              show_variable_totals=TRUE,
-                                              show_comparison_totals=TRUE,
                                               view_type="Stack Percent",
                                               show_dual_axes=TRUE))
 
@@ -1651,12 +1639,23 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
     test_save_plot(file_name='data/plot_value_totals__var__comp__facet.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=comparison_variable,
                                                      sum_by_variable=NULL,
                                                      order_by_count=FALSE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
-                                                     view_type="Facet by Comparison",
+                                                     view_type="Bar",
+                                                     show_dual_axes=TRUE))
+
+    test_save_plot(file_name='data/plot_value_totals__var__comp__facet.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     facet_variable=comparison_variable,
+                                                     sum_by_variable=NULL,
+                                                     order_by_count=FALSE,
+                                                     show_variable_totals=TRUE,
+                                                     show_comparison_totals=TRUE,
+                                                     view_type="Bar",
                                                      show_dual_axes=TRUE))
 
     test_save_plot(file_name='data/plot_value_totals__var__comp__CI_var.png',
@@ -1709,12 +1708,12 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
     test_save_plot(file_name='data/plot_value_totals__var__comp__sum__facet.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=comparison_variable,
                                                      sum_by_variable=sum_by_variable,
                                                      order_by_count=FALSE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
-                                                     view_type="Facet by Comparison",
+                                                     view_type="Bar",
                                                      show_dual_axes=TRUE))
 
     expect_error(rt_explore_plot_value_totals(dataset=credit_data,
