@@ -423,6 +423,7 @@ rt_explore_value_totals <- function(dataset,
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
 #' @param reverse_stack reverse stack from the default stacking order (defaulted to `TRUE`)
+#' @param simple_mode changes to single color for single bar charts and removes percentages
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -444,6 +445,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                          view_type="Bar",
                                          multi_value_delimiter=NULL,
                                          reverse_stack=TRUE,
+                                         simple_mode=FALSE,
                                          base_size=11) {
 
     stopifnot(view_type %in% c("Bar", "Confidence Interval", "Confidence Interval - within Variable", "Stack", "Stack Percent"))
@@ -538,6 +540,7 @@ rt_explore_plot_value_totals <- function(dataset,
                                  confidence_level = 0.95,
                                  show_confidence_values=show_variable_totals,
                                  axes_flip=FALSE,
+                                 simple_mode=simple_mode,
                                  axis_limits=NULL,
                                  text_size=4,
                                  line_size=0.35,
@@ -581,6 +584,7 @@ rt_explore_plot_value_totals <- function(dataset,
             private__create_bar_chart_single_var(groups_by_variable,
                                                  variable,
                                                  facet_variable,
+                                                 simple_mode,
                                                  show_dual_axes,
                                                  plot_y_second_axis_label,
                                                  show_variable_totals,
@@ -811,6 +815,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param comparison_variable the additional variable to group by; must be a string/factor column
 #' @param color_variable if comparison_variable is used, then if color_variable is used the boxplots will be colored by this variable rather than each of the comparison_variable categories. `color_variable` must be categoric
 #' @param facet_variable  if comparison_variable is used, then if facet_variable is used the boxplots will be faceted by this variable `faceted` must be categoric
+#' @param simple_mode if a comparison variable is used (and no color variable), use a single color
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
@@ -825,6 +830,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                     comparison_variable=NULL,
                                     color_variable=NULL,
                                     facet_variable=NULL,
+                                    simple_mode=FALSE,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
                                     base_size=11) {
@@ -948,8 +954,14 @@ rt_explore_plot_boxplot <- function(dataset,
 
         if(is.null(color_variable)) {
 
-            custom_colors <- rt_get_colors_from_values(dataset[[comparison_variable]])
+            if(simple_mode) {
 
+                custom_colors <- rep(rt_colors()[1], length(unique(dataset[[comparison_variable]])))
+
+            } else {
+
+                custom_colors <- rt_get_colors_from_values(dataset[[comparison_variable]])
+            }
         } else {
 
             custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
@@ -2577,6 +2589,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 private__create_bar_chart_single_var <- function(groups_by_variable,
                                                  variable,
                                                  facet_variable,
+                                                 simple_mode,
                                                  show_dual_axes,
                                                  plot_y_second_axis_label,
                                                  show_variable_totals,
@@ -2585,7 +2598,15 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
                                                  base_size) {
 
     symbol_variable <- sym(variable)
-    custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
+
+    if(simple_mode) {
+
+        custom_colors <- rep(rt_colors()[1], length(unique(groups_by_variable[[variable]])))
+
+    } else {
+
+        custom_colors <- rt_get_colors_from_values(groups_by_variable[[variable]])
+    }
 
     unique_values_plot <- groups_by_variable %>%
         ggplot(aes(x=!!symbol_variable, y=total, fill=!!symbol_variable)) +
@@ -2614,9 +2635,13 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     if(show_variable_totals) {
 
         unique_values_plot <- unique_values_plot +
-            geom_text(aes(label = percent(percent), y = total), vjust=-0.25, check_overlap=TRUE) +
             geom_text(aes(label = private__standard_prettyNum(total), y = total),
                       vjust=1.25, check_overlap=TRUE)
+
+        if(!simple_mode) {
+            unique_values_plot <- unique_values_plot +
+                geom_text(aes(label = percent(percent), y = total), vjust=-0.25, check_overlap=TRUE)
+        }
     }
 
     if(!is.null(facet_variable)) {

@@ -226,6 +226,7 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 #' @param confidence_level the confidence level (e.g. 0.95) passed to MultinomCI.
 #' @param show_confidence_values show the high/low confidence values
 #' @param axes_flip flip axes
+#' @param simple_mode if groups aren't used, only uses 1 color for all error bars
 #' @param axis_limits custom limits for the corresponding axis (x if not axes_flip, y if axes_flip)
 #' @param text_size text size (proportion value)
 #' @param line_size the line size for the error bars
@@ -252,6 +253,7 @@ rt_plot_multinom_cis <- function(values,
                                  confidence_level = 0.95,
                                  show_confidence_values=TRUE,
                                  axes_flip=FALSE,
+                                 simple_mode=FALSE,
                                  axis_limits=NULL,
                                  text_size=4,
                                  line_size=0.35,
@@ -369,7 +371,15 @@ rt_plot_multinom_cis <- function(values,
     # if we use groups, the colors will be based on the groups variable, otherwise on the values
     if(is.null(groups)) {
 
-        custom_colors <- rt_get_colors_from_values(values)
+        if(simple_mode) {
+
+            custom_colors <- rep(rt_colors()[1], length(unique(values)))
+        
+        } else {
+
+            custom_colors <- rt_get_colors_from_values(values)
+        }
+
         plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=categories)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +

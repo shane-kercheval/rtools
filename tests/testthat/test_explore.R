@@ -947,6 +947,23 @@ test_that("rt_explore_plot_value_counts", {
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data %>%
+                                                         mutate(checking_balance = as.character(checking_balance)),
+                                                     variable=variable,
+                                                     order_by_count=FALSE,
+                                                     simple_mode=TRUE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_counts__comparison__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data %>%
+                                                         mutate(checking_balance = as.character(checking_balance)),
+                                                     variable=variable,
+                                                     comparison_variable='default',
+                                                     simple_mode=TRUE,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
     # plot without order
     temp_dataset <- credit_data
     temp_dataset <- temp_dataset %>%
@@ -1047,11 +1064,30 @@ test_that("rt_explore_plot_value_counts__facet", {
                                                      order_by_count=FALSE,
                                                      base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     simple_mode=TRUE,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var__conf.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      #comparison_variable=comparison_variable,
                                                      facet_variable=facet_variable,
+                                                     view_type = 'Confidence Interval',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var__conf__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     simple_mode=TRUE,
                                                      view_type = 'Confidence Interval',
                                                      order_by_count=FALSE,
                                                      base_size=11))
@@ -1062,6 +1098,17 @@ test_that("rt_explore_plot_value_counts__facet", {
                                                      #comparison_variable=comparison_variable,
                                                      sum_by_variable = 'amount',
                                                      facet_variable=facet_variable,
+                                                     view_type = 'Bar',
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var_sum__bar__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     sum_by_variable = 'amount',
+                                                     facet_variable=facet_variable,
+                                                     simple_mode=TRUE,
                                                      view_type = 'Bar',
                                                      order_by_count=FALSE,
                                                      base_size=11))
@@ -1082,6 +1129,18 @@ test_that("rt_explore_plot_value_counts__facet", {
                                                      view_type = 'Bar',
                                                      order_by_count=FALSE,
                                                      base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var_unique__bar__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     #sum_by_variable = 'amount',
+                                                     count_distinct_variable = 'employment_duration',
+                                                     facet_variable=facet_variable,
+                                                     view_type = 'Bar',
+                                                     simple_mode=TRUE,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
     # credit_data %>%
     #     group_by(checking_balance, default) %>%
     #     summarise(n=n_distinct(employment_duration)) %>%
@@ -1095,6 +1154,15 @@ test_that("rt_explore_plot_value_counts__facet", {
                                                      variable=variable,
                                                      comparison_variable=comparison_variable,
                                                      facet_variable=facet_variable,
+                                                     order_by_count=FALSE,
+                                                     base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_comp__simple.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable=facet_variable,
+                                                     simple_mode=TRUE,
                                                      order_by_count=FALSE,
                                                      base_size=11))
 
@@ -2000,6 +2068,15 @@ test_that("rt_explore_plot_boxplot", {
                                                   y_zoom_max=NULL,
                                                   base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison__simple.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                simple_mode=TRUE,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
@@ -2016,8 +2093,39 @@ test_that("rt_explore_plot_boxplot", {
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
+
+    # simple should have no effect
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_color__defualt__simple.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable='checking_balance',
+                                                color_variable='default',
+                                                simple_mode=TRUE,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
     temp_dataset <- dataset
     temp_dataset[1, 'default'] <- NA
+
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot__default__NAs.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='default',
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot__default__NAs__simple.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='default',
+                                                simple_mode = TRUE,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
@@ -2110,6 +2218,16 @@ test_that("rt_explore_plot_boxplot_facet", {
                                                 y_zoom_max=NULL,
                                                 base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison_facet__simple.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                facet_variable=facet_variable,
+                                                simple_mode=TRUE,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
@@ -2131,6 +2249,26 @@ test_that("rt_explore_plot_boxplot_facet", {
     temp_dataset <- dataset
     temp_dataset[1, 'default'] <- NA
     temp_dataset[2, facet_variable] <- NA
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot__NAs_facet.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='default',
+                                                facet_variable=facet_variable,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot__NAs_facet__simple.png',
+                   plot=rt_explore_plot_boxplot(dataset=temp_dataset,
+                                                variable=variable,
+                                                comparison_variable='default',
+                                                facet_variable=facet_variable,
+                                                simple_mode=TRUE,
+                                                y_zoom_min=NULL,
+                                                y_zoom_max=NULL,
+                                                base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,

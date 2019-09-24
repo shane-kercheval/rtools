@@ -7,9 +7,10 @@
 rt_plot_multinom_cis(values, groups = NULL, facets = NULL,
   facet_variable_name = NULL, ci_within_variable = FALSE,
   confidence_level = 0.95, show_confidence_values = TRUE,
-  axes_flip = FALSE, axis_limits = NULL, text_size = 4,
-  line_size = 0.35, base_size = 11, x_label = "", y_label = "",
-  group_name = "", title = "", subtitle = NULL, caption = NULL)
+  axes_flip = FALSE, simple_mode = FALSE, axis_limits = NULL,
+  text_size = 4, line_size = 0.35, base_size = 11, x_label = "",
+  y_label = "", group_name = "", title = "", subtitle = NULL,
+  caption = NULL)
 }
 \arguments{
 \item{values}{character or factor vector}
@@ -27,6 +28,8 @@ rt_plot_multinom_cis(values, groups = NULL, facets = NULL,
 \item{show_confidence_values}{show the high/low confidence values}
 
 \item{axes_flip}{flip axes}
+
+\item{simple_mode}{if groups aren't used, only uses 1 color for all error bars}
 
 \item{axis_limits}{custom limits for the corresponding axis (x if not axes_flip, y if axes_flip)}
 
