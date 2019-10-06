@@ -1075,7 +1075,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 
         plot_title=paste0("Median `", numeric_variable, "`, by ", paste0(paste0("`", c(categoric_variable, color_variable, facet_variable), "`"), collapse = ", "))
         plot_y=paste0("Median `", numeric_variable, "`")
-        plot_caption="The number above the top of the bars is the median value;\nthe number below the top of the bars is the total number of non-missing values for the group."
+        plot_caption="The number above the point is the median value;\nthe number below the point is the total number of non-missing values for the group;\nThe bottom and top of the error-bar gives the 5th and 95th percentile."
 
         unique_values_plot <- aggregated_data %>%
             ggplot(aes(x=!!symbol_categoric, y=median_value, color=!!symbol_color)) +
