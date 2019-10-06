@@ -834,6 +834,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param facet_variable additional categoric variable to facet by
 #' @param show_variable_totals if TRUE (the default) the graph will display the totals for the variable
 #' @param show_comparison_totals if TRUE (the default) the graph will display the totals for the comparison_variable
+#' @param simple_mode simplifies the coloring scheme and text
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -850,6 +851,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
                                                           facet_variable=NULL,
                                                           show_variable_totals=TRUE,
                                                           show_comparison_totals=TRUE,
+                                                          simple_mode=FALSE,
                                                           base_size=11) {
 
     stopifnot(aggregation_type %in% c('Total', 'Mean', 'Average Value Per Record', 'Median', 'Boxplot'))
@@ -871,6 +873,24 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         }
 
         return (aggregated_data)
+    }
+    helper_get_colors <- function(dataset, categoric_variable, color_variable, simple_mode) {
+        if(is.null(color_variable)) {
+
+            if(simple_mode) {
+
+                custom_colors <- rep(rt_colors()[1], length(unique(dataset[[categoric_variable]])))
+
+            } else {
+
+                custom_colors <- rt_get_colors_from_values(dataset[[categoric_variable]])
+            }
+        } else {
+
+            custom_colors <- rt_get_colors_from_values(dataset[[color_variable]])
+        }
+
+        return (custom_colors)
     }
     plot_bar_mean_value <- function(aggregated_data,
                                     categoric_variable,
@@ -894,13 +914,17 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             symbol_facet <- sym(facet_variable)
         }
 
+        custom_colors <- helper_get_colors(dataset=aggregated_data,
+                                           categoric_variable=categoric_variable,
+                                           color_variable=color_variable,
+                                           simple_mode=simple_mode)
+
         if(is.null(color_variable)) {
 
-            custom_colors <- rt_get_colors_from_values(aggregated_data[[categoric_variable]])
             symbol_color <- symbol_categoric
 
         } else {
-            custom_colors <- rt_get_colors_from_values(aggregated_data[[color_variable]])
+
             symbol_color <- sym(color_variable)
         }
 
@@ -920,6 +944,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             theme_light(base_size = base_size)
 
         if(show_variable_totals) {
+
             unique_values_plot <- unique_values_plot +
                 geom_text(aes(label = private__standard_prettyNum(mean_value), y = mean_value),
                           vjust=-0.25, check_overlap=TRUE, position=position_dodge(0.9)) +
@@ -957,6 +982,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
                                      #show_dual_axes=FALSE,
                                      view_type="Bar",
                                      multi_value_delimiter=NULL,
+                                     simple_mode=simple_mode,
                                      #reverse_stack=TRUE,
                                      base_size=base_size)
 
@@ -1033,13 +1059,17 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             symbol_facet <- sym(facet_variable)
         }
 
+        custom_colors <- helper_get_colors(dataset=aggregated_data,
+                                           categoric_variable=categoric_variable,
+                                           color_variable=color_variable,
+                                           simple_mode=simple_mode)
+
         if(is.null(color_variable)) {
 
-            custom_colors <- rt_get_colors_from_values(aggregated_data[[categoric_variable]])
             symbol_color <- symbol_categoric
 
         } else {
-            custom_colors <- rt_get_colors_from_values(aggregated_data[[color_variable]])
+
             symbol_color <- sym(color_variable)
         }
 
@@ -1093,7 +1123,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
                                 comparison_variable=categoric_variable,
                                 color_variable=color_variable,
                                 facet_variable=facet_variable,
-                                simple_mode=FALSE,
+                                simple_mode=simple_mode,
                                 # y_zoom_min=y_zoom_min,
                                 # y_zoom_max=y_zoom_max,
                                 base_size=base_size)

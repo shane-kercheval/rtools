@@ -3054,6 +3054,18 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
                                                                       show_comparison_totals=TRUE,
                                                                       base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__total_s.png',
+                   plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
+                                                                      categoric_variable=categoric_variable,
+                                                                      numeric_variable=numeric_variable,
+                                                                      aggregation_type='Total',
+                                                                      color_variable=color_variable,
+                                                                      facet_variable=facet_variable,
+                                                                      show_variable_totals=TRUE,
+                                                                      show_comparison_totals=TRUE,
+                                                                      simple_mode=TRUE,
+                                                                      base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__total2.png',
                    plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
                                                                       categoric_variable=categoric_variable,
@@ -3075,6 +3087,18 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
                                                                       facet_variable=facet_variable,
                                                                       show_variable_totals=TRUE,
                                                                       show_comparison_totals=TRUE,
+                                                                      base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__mean_s.png',
+                   plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
+                                                                      categoric_variable=categoric_variable,
+                                                                      numeric_variable=numeric_variable,
+                                                                      aggregation_type='Mean',
+                                                                      color_variable=color_variable,
+                                                                      facet_variable=facet_variable,
+                                                                      show_variable_totals=TRUE,
+                                                                      show_comparison_totals=TRUE,
+                                                                      simple_mode=TRUE,
                                                                       base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__mean2.png',
@@ -3100,6 +3124,18 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
                                                                       show_comparison_totals=TRUE,
                                                                       base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__ave_per_rec_s.png',
+                   plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
+                                                                      categoric_variable=categoric_variable,
+                                                                      numeric_variable=numeric_variable,
+                                                                      aggregation_type='Average Value Per Record',
+                                                                      color_variable=color_variable,
+                                                                      facet_variable=facet_variable,
+                                                                      show_variable_totals=TRUE,
+                                                                      show_comparison_totals=TRUE,
+                                                                      simple_mode=TRUE,
+                                                                      base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__ave_per_rec2.png',
                    plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
                                                                       categoric_variable=categoric_variable,
@@ -3123,6 +3159,18 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
                                                                       show_comparison_totals=TRUE,
                                                                       base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__median_s.png',
+                   plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
+                                                                      categoric_variable=categoric_variable,
+                                                                      numeric_variable=numeric_variable,
+                                                                      aggregation_type='Median',
+                                                                      color_variable=color_variable,
+                                                                      facet_variable=facet_variable,
+                                                                      show_variable_totals=TRUE,
+                                                                      show_comparison_totals=TRUE,
+                                                                      simple_mode=TRUE,
+                                                                      base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__median2.png',
                    plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
                                                                       categoric_variable=categoric_variable,
@@ -3143,6 +3191,18 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
                                                                       facet_variable=facet_variable,
                                                                       show_variable_totals=TRUE,
                                                                       show_comparison_totals=TRUE,
+                                                                      base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__boxplot_s.png',
+                   plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
+                                                                      categoric_variable=categoric_variable,
+                                                                      numeric_variable=numeric_variable,
+                                                                      aggregation_type='Boxplot',
+                                                                      color_variable=color_variable,
+                                                                      facet_variable=facet_variable,
+                                                                      show_variable_totals=TRUE,
+                                                                      show_comparison_totals=TRUE,
+                                                                      simple_mode=TRUE,
                                                                       base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__boxplot2.png',
@@ -3196,6 +3256,18 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
                                                                       show_variable_totals=TRUE,
                                                                       show_comparison_totals=TRUE,
                                                                       base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__mean__color_s.png',
+                  plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
+                                                                     categoric_variable=categoric_variable,
+                                                                     numeric_variable=numeric_variable,
+                                                                     aggregation_type='Mean',
+                                                                     color_variable=color_variable,
+                                                                     facet_variable=facet_variable,
+                                                                     show_variable_totals=TRUE,
+                                                                     show_comparison_totals=TRUE,
+                                                                     simple_mode=TRUE,
+                                                                     base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__mean__color2.png',
                    plot=rt_explore_plot_categoric_numeric_aggregation(dataset=dataset,
