@@ -4846,6 +4846,29 @@ test_that('rt_explore_plot_conversion_rates', {
                                      date_break_format=NULL,
                                      date_breaks_width=NULL))
 
+    # there was a bug where unique values were being removed (e.g. so duplicated first_visit's would be removed)
+    # so the above and below conversion rates, which should be (about) the same, were actually different
+    # the graphs won't actually be the same because by doing round_date we lose some precision on the date,
+    # and therefore the date-diff between the first-visit and the conversion-date, but they should be close
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month__floor_bug.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
+                                                             mutate(first_visit = round_date(first_visit, unit='days')),
+                                                         first_date='first_visit',
+                                                         second_date='conversion_date',
+                                                         reference_date=mock_reference_date,
+                                                         snapshots=c(6, 7, 10, 14),
+                                                         snapshot_units='days',
+                                                         date_floor='month',
+                                                         color_or_facet='color',
+                                                         year_over_year=FALSE,
+                                                         y_zoom_min=NULL,
+                                                         y_zoom_max=NULL,
+                                                         include_zero_y_axis=TRUE,
+                                                         show_points=TRUE,
+                                                         show_labels=TRUE,
+                                                         date_break_format=NULL,
+                                                         date_breaks_width=NULL))
+
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_facet.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
@@ -5038,6 +5061,31 @@ test_that('rt_explore_plot_conversion_rates', {
                                      show_labels=TRUE,
                                      date_break_format=NULL,
                                      date_breaks_width=NULL))
+
+
+    # there was a bug where unique values were being removed (e.g. so duplicated first_visit's would be removed)
+    # so the above and below conversion rates, which should be (about) the same, were actually different
+    # the graphs won't actually be the same because by doing round_date we lose some precision on the date,
+    # and therefore the date-diff between the first-visit and the conversion-date, but they should be close
+    test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month__groups__floor_bug.png',
+                   plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
+                                                             mutate(first_visit = round_date(first_visit, unit='days')),
+                                                         first_date='first_visit',
+                                                         second_date='conversion_date',
+                                                         group_variable='group',
+                                                         reference_date=mock_reference_date,
+                                                         snapshots=c(6, 7, 10, 14),
+                                                         snapshot_units='days',
+                                                         date_floor='month',
+                                                         color_or_facet='color',
+                                                         year_over_year=FALSE,
+                                                         y_zoom_min=NULL,
+                                                         y_zoom_max=NULL,
+                                                         include_zero_y_axis=TRUE,
+                                                         show_points=TRUE,
+                                                         show_labels=TRUE,
+                                                         date_break_format=NULL,
+                                                         date_breaks_width=NULL))
 
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_facet__groups.png',

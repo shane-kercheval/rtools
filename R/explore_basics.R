@@ -2301,6 +2301,12 @@ rt_get_cohorted_conversion_rates <- function(dataset,
     symbol_first_date <- sym(first_date)
     symbol_second_date <- sym(second_date)
 
+    # this fixes a bug; I didn't realize crossing removes duplicates; so if, for example, the first-date
+    # is `day` units, and there are multiple records that have the same date, they would be removed.
+    # i'm simply add a temporary id (named so it doesn't interfer with other columns) so that there are no
+    # duplicated values/rows
+    dataset$ced54308f6c411e9802a5aa538984bd8 <- 1:nrow(dataset)
+
     if(is.null(group_variable)) {
 
         snapshotted_conversions <- dataset %>%
