@@ -817,6 +817,14 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                               count_distinct_variable=count_distinct,
                                               view_type="Confidence Interval - within Variable"))
 
+    # credit_data %>%
+    #     group_by(checking_balance, default) %>%
+    #     summarise(distinct_cohorts = n_distinct(id)) %>%
+    #     ungroup()
+    # credit_data %>%
+    #     group_by(checking_balance) %>%
+    #     summarise(distinct_prim = n_distinct(id)) %>%
+    #     ungroup()
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
@@ -840,8 +848,14 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                                      order_by_count=TRUE))
 
     temp <- credit_data %>% unite(cohort, age, purpose)
-    # temp %>% group_by(checking_balance) %>% summarise(distinct_cohorts = n_distinct(cohort),
-    #                                                   perc_distinct = distinct_cohorts / length(unique(temp$cohort)))
+    # temp %>%
+    #     group_by(checking_balance, default) %>%
+    #     summarise(distinct_cohorts = n_distinct(cohort)) %>%
+    #     ungroup()
+    # temp %>%
+    #     group_by(checking_balance) %>%
+    #     summarise(distinct_prim = n_distinct(cohort)) %>%
+    #     ungroup()
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__purpose.png',
                    plot=rt_explore_plot_value_totals(dataset=temp,
                                                      variable=variable,
@@ -850,6 +864,39 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                                      show_dual_axes = TRUE,
                                                      order_by_count=FALSE))
 
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__temp__distinct__facet.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp,
+                                                     variable=variable,
+                                                     #comparison_variable=comparison_variable,
+                                                     facet_variable=comparison_variable,
+                                                     count_distinct_variable='cohort',
+                                                     view_type="Bar",
+                                                     order_by_count=FALSE))
+    # temp %>%
+    #     group_by(checking_balance, default, phone) %>%
+    #     summarise(distinct_cohorts = n_distinct(cohort)) %>%
+    #     ungroup()
+    # temp %>%
+    #     group_by(checking_balance, phone) %>%
+    #     summarise(distinct_prim = n_distinct(cohort)) %>%
+    #     ungroup()
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__temp__distinct__comp__facet.png',
+                   plot=rt_explore_plot_value_totals(dataset=temp,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
+                                                     facet_variable='phone',
+                                                     count_distinct_variable='cohort',
+                                                     view_type="Bar",
+                                                     order_by_count=FALSE))
+
+    # credit_data %>%
+    #     group_by(checking_balance, default) %>%
+    #     summarise(distinct_cohorts = n_distinct(id)) %>%
+    #     ungroup()
+    # credit_data %>%
+    #     group_by(checking_balance) %>%
+    #     summarise(distinct_prim = n_distinct(id)) %>%
+    #     ungroup()
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp_order_by_count.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
@@ -888,6 +935,9 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                                      count_distinct_variable=count_distinct,
                                                      view_type="Bar",
                                                      order_by_count=FALSE))
+
+
+
 })
 
 test_that("rt_get_colors_from_values", {

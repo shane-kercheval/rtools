@@ -2743,6 +2743,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
     #                 theme(legend.position = 'none',
     #                       axis.text.x = element_text(angle = 30, hjust = 1)))
     # } else {
+        plot_caption <- NULL
 
         # if we Stack/Bar, the colors will be based on the comparison variable
         custom_colors <- rt_get_colors_from_values(groups_by_both[[comparison_variable]])
@@ -2778,7 +2779,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 # create the plot
                 unique_values_plot <- ggplot()
 
-                if(is.null(count_distinct_variable)) {
+                # if(is.null(count_distinct_variable)) {
 
                     unique_values_plot <- unique_values_plot +
                         geom_bar(data = groups_by_variable,
@@ -2787,7 +2788,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                                  stat = 'identity',
                                  position = 'dodge',
                                  alpha = 0.3)
-                }
+                # }
                 unique_values_plot <- unique_values_plot +
                     geom_bar(data = groups_by_both,
                              aes(x = !!symbol_variable,
@@ -2826,7 +2827,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
         # we will only show variable totals if show_variable_totals and the variable values aren't filled
         #(i.e. all 100%); and we aren't showing the primary variable totals when counting distinct values
-        if(show_variable_totals && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
+        if(show_variable_totals && view_type != "Stack Percent") {
 
             if(view_type == "Stack") {
 
@@ -2839,12 +2840,26 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
             } else {
 
+
+                # if we are not counting distinct, add percentages
+                if(is.null(count_distinct_variable)) {
+                    
+                    unique_values_plot <- unique_values_plot +
+                        geom_text(data = groups_by_variable,
+                                  aes(x=!!symbol_variable,
+                                      label = percent(percent),
+                                      y = total),
+                                  vjust=-1.5, check_overlap=TRUE)
+
+                } else {
+                    # if we are counting distinct, we can add a caption explainining that the outter
+                    # gray boxes are the distinct number for that group.
+                    # i.e. if Thre are "ids" that we are counting that are in both groups (i.e. 
+                    # if the groups aren't mutually exclusive, then the total won't be the sum of the 2 groups)
+                    plot_caption <- NULL  # TODO ADD EXPLANATION
+                }
+
                 unique_values_plot <- unique_values_plot +
-                    geom_text(data = groups_by_variable,
-                              aes(x=!!symbol_variable,
-                                  label = percent(percent),
-                                  y = total),
-                              vjust=-1.5, check_overlap=TRUE) +
                     geom_text(data = groups_by_variable,
                               aes(x=!!symbol_variable,
                                   label = private__standard_prettyNum(total),
@@ -2910,9 +2925,10 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
         return (unique_values_plot +
                     labs(title = plot_title,
-                         y=plot_y_axis_label,
+                         y= plot_y_axis_label,
                          fill = comparison_variable,
-                         x = variable) +
+                         x = variable,
+                         caption = plot_caption) +
                     scale_fill_manual(values=custom_colors, na.value = '#2A3132') +
                     theme_light(base_size = base_size) +
                     theme(axis.text.x = element_text(angle = 30, hjust = 1)))
