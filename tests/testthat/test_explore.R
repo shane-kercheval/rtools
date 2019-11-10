@@ -1050,25 +1050,24 @@ test_that("rt_explore_plot_value_counts__facet", {
     credit_data[2, comparison_variable] <- NA
     credit_data[3, facet_variable] <- NA
 
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     facet_variable='default',
+                                                     order_by_count = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__no_order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     facet_variable='default',
+                                                     order_by_count = FALSE))
+
+
     # credit_data %>%
     #     count(checking_balance, default) %>%
     #     arrange(default, checking_balance) %>%
     #     group_by(default) %>%
     #     mutate(p=n/sum(n, na.rm = TRUE)) %>% ungroup()
-
-    # test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__order.png',
-    #                plot=rt_explore_plot_value_totals(dataset=credit_data,
-    #                                                  variable=variable,
-    #                                                  facet_variable='default',
-    #                                                  order_by_count = TRUE))
-    #
-    # test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__no_order.png',
-    #                plot=rt_explore_plot_value_totals(dataset=credit_data,
-    #                                                  variable=variable,
-    #                                                  facet_variable='default',
-    #                                                  order_by_count = FALSE))
-
-
     test_save_plot(file_name='data/rt_explore_plot_value_totals__facet_var.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
