@@ -529,7 +529,8 @@ rt_explore_plot_value_totals <- function(dataset,
         if(order_by_count) {
 
             ordered_levels <- groups_by_variable %>% arrange(desc(total)) %>% rt_get_vector(variable)
-            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]], levels = ordered_levels)
+            groups_by_variable[[variable]] <- factor(groups_by_variable[[variable]],
+                                                     levels = unique(ordered_levels))
 
         } else {
 

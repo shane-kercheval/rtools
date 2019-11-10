@@ -1053,12 +1053,20 @@ test_that("rt_explore_plot_value_counts__facet", {
     test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
+                                                     facet_variable=facet_variable,
+                                                     order_by_count = TRUE))
+
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__comp__order.png',
+                   plot=rt_explore_plot_value_totals(dataset=credit_data,
+                                                     variable=variable,
+                                                     comparison_variable=comparison_variable,
                                                      facet_variable='default',
                                                      order_by_count = TRUE))
 
-    test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__no_order.png',
+    test_save_plot(file_name='data/rt_explore_plot_value_totals__var__facet__comp__no_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
+                                                     comparison_variable=comparison_variable,
                                                      facet_variable='default',
                                                      order_by_count = FALSE))
 
