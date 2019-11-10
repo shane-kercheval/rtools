@@ -2777,19 +2777,13 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
                 comparison_position <- position_dodge(width = 0.9)
                 # create the plot
-                unique_values_plot <- ggplot()
-
-                # if(is.null(count_distinct_variable)) {
-
-                    unique_values_plot <- unique_values_plot +
-                        geom_bar(data = groups_by_variable,
-                                 aes(x = !!symbol_variable,
-                                     y = total),
-                                 stat = 'identity',
-                                 position = 'dodge',
-                                 alpha = 0.3)
-                # }
-                unique_values_plot <- unique_values_plot +
+                unique_values_plot <- ggplot() +
+                    geom_bar(data = groups_by_variable,
+                             aes(x = !!symbol_variable,
+                                 y = total),
+                             stat = 'identity',
+                             position = 'dodge',
+                             alpha = 0.3) +
                     geom_bar(data = groups_by_both,
                              aes(x = !!symbol_variable,
                                  y = total,
