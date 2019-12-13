@@ -53,9 +53,6 @@ test_that("rt_explore_categoric_summary", {
     rds_file <- 'data/rt_explore_categoric_summary_iris.RDS'
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
 
-
-    system.time(rt_explore_categoric_summary(dataset=flights))
-
     result <- rt_explore_categoric_summary(dataset=flights)
     rds_file <- 'data/rt_explore_categoric_summary_flights.RDS'
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
