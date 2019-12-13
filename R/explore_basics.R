@@ -30,33 +30,45 @@ rt_value_counts <- function(values) {
 #' rt_explore_numeric_summary(iris)
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr select_if
+#' @importFrom dplyr select_if bind_cols mutate
 #' @importFrom moments skewness kurtosis
 #' @importFrom stats sd quantile
 #' @export
 rt_explore_numeric_summary <- function(dataset) {
 
     dataset <- dataset %>% select_if(is.numeric)
+    dataset <- as.matrix(dataset)
 
-    results <- data.frame(
-        feature=colnames(dataset),
-        non_nulls=apply(dataset, 2, function(x) sum(!is.na(x))),
-        nulls=apply(dataset, 2, function(x) sum(is.na(x))),
-        perc_nulls=apply(dataset, 2, function(x) round(sum(is.na(x)) / nrow(dataset), 4)),
-        num_zeros=apply(dataset, 2, function(x) sum(x == 0, na.rm=TRUE)),
-        perc_zeros=apply(dataset, 2, function(x) round(sum(x == 0, na.rm=TRUE) / nrow(dataset), 4)),
-        mean=apply(dataset, 2, function(x) round(mean(x, na.rm=TRUE), 4)),
-        st_dev=apply(dataset, 2, function(x) round(sd(x, na.rm=TRUE), 4)),
-        coef_of_var=apply(dataset, 2, function(x) round(sd(x, na.rm=TRUE) / mean(x, na.rm=TRUE), 4)),
-        skewness=apply(dataset, 2, function(x) round(skewness(x, na.rm=TRUE), 4)),
-        kurtosis=apply(dataset, 2, function(x) round(kurtosis(x, na.rm=TRUE), 4)),
-        min=apply(dataset, 2, function(x) min(x, na.rm=TRUE)),
-        percentile_10=apply(dataset, 2, function(x) quantile(x, .10, na.rm=TRUE)),
-        percentile_25=apply(dataset, 2, function(x) quantile(x, .25, na.rm=TRUE)),
-        percentile_50=apply(dataset, 2, function(x) quantile(x, .50, na.rm=TRUE)),
-        percentile_75=apply(dataset, 2, function(x) quantile(x, .75, na.rm=TRUE)),
-        percentile_90=apply(dataset, 2, function(x) quantile(x, .90, na.rm=TRUE)),
-        max=apply(dataset, 2, function(x) max(x, na.rm=TRUE)))
+    results <- data.frame(num_zeros=colSums(dataset == 0, na.rm=TRUE)) %>%
+        # use mutate so i can access previous columns
+        mutate(
+            perc_zeros=round(num_zeros / nrow(dataset), 4),
+            mean=colMeans(dataset, na.rm=TRUE),
+            st_dev=apply(dataset, 2, function(x) sd(x, na.rm=TRUE)),
+            coef_of_var=round(st_dev / mean, 4),
+            skewness=apply(dataset, 2, function(x) round(skewness(x, na.rm=TRUE), 4)),
+            kurtosis=apply(dataset, 2, function(x) round(kurtosis(x, na.rm=TRUE), 4)),
+            min=apply(dataset, 2, function(x) min(x, na.rm=TRUE)),
+            percentile_10=apply(dataset, 2, function(x) quantile(x, .10, na.rm=TRUE)),
+            percentile_25=apply(dataset, 2, function(x) quantile(x, .25, na.rm=TRUE)),
+            percentile_50=apply(dataset, 2, function(x) quantile(x, .50, na.rm=TRUE)),
+            percentile_75=apply(dataset, 2, function(x) quantile(x, .75, na.rm=TRUE)),
+            percentile_90=apply(dataset, 2, function(x) quantile(x, .90, na.rm=TRUE)),
+            max=apply(dataset, 2, function(x) max(x, na.rm=TRUE))
+        ) %>%
+        mutate(
+            mean = round(mean, 4),
+            st_dev = round(st_dev, 4)
+        )
+
+    dataset <- is.na(dataset)
+    results <- bind_cols(
+        data.frame(
+            feature=colnames(dataset),
+            non_nulls=colSums(!dataset),
+            nulls=colSums(dataset)) %>%
+        mutate(perc_nulls=round(nulls / nrow(dataset), 4)),
+        results)
 
     rownames(results) <- NULL
 
@@ -2786,7 +2798,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
 
             # if we are not counting distinct, add percentages
             if(is.null(count_distinct_variable)) {
-                
+
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_variable,
                               aes(x=!!symbol_variable,
@@ -2797,7 +2809,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             } else {
                 # if we are counting distinct, we can add a caption explainining that the outter
                 # gray boxes are the distinct number for that group.
-                # i.e. if Thre are "ids" that we are counting that are in both groups (i.e. 
+                # i.e. if Thre are "ids" that we are counting that are in both groups (i.e.
                 # if the groups aren't mutually exclusive, then the total won't be the sum of the 2 groups)
                 plot_caption <- NULL  # TODO ADD EXPLANATION
             }

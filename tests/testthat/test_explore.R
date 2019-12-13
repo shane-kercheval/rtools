@@ -33,8 +33,11 @@ test_that("rt_explore_numeric_summary", {
     temp_iris[1, 'Petal.Width'] <- 0
 
     result <- rt_explore_numeric_summary(dataset=temp_iris)
-
     rds_file <- 'data/rt_explore_numeric_summary_iris.RDS'
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
+
+    result <- rt_explore_numeric_summary(dataset=flights)
+    rds_file <- 'data/rt_explore_numeric_summary_flights.RDS'
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
 })
 
@@ -48,6 +51,13 @@ test_that("rt_explore_categoric_summary", {
     result <- rt_explore_categoric_summary(dataset=temp_iris)
 
     rds_file <- 'data/rt_explore_categoric_summary_iris.RDS'
+    expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
+
+
+    system.time(rt_explore_categoric_summary(dataset=flights))
+
+    result <- rt_explore_categoric_summary(dataset=flights)
+    rds_file <- 'data/rt_explore_categoric_summary_flights.RDS'
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=result, rds_file=rds_file))
 })
 
