@@ -85,29 +85,35 @@ rt_explore_numeric_summary <- function(dataset) {
 #' rt_explore_numeric_summary(iris)
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr select_if
+#' @importFrom dplyr select_if mutate bind_cols
 #' @export
 rt_explore_categoric_summary <- function(dataset) {
 
     dataset <- dataset %>% select_if(function(x) !is.numeric(x))
 
     results <- data.frame(
-        feature=colnames(dataset),
-        non_nulls=apply(dataset, 2, function(x) sum(!is.na(x))),
-        nulls=apply(dataset, 2, function(x) sum(is.na(x))),
-        perc_nulls=apply(dataset, 2, function(x) round(sum(is.na(x)) / nrow(dataset), 4)),
-        top=apply(dataset, 2, function(x) {
+            top=apply(dataset, 2, function(x) {
 
-            value_counts <- rt_value_counts(x)
-            if(is.null(nrow(value_counts)) || all(is.na(value_counts))) {
-                "NA"
-            } else {
-                as.character(value_counts[1, 'values'])
-            }
-        }),
-        unique=apply(dataset, 2, function(x) length(unique(x)) ),
-        perc_unique=apply(dataset, 2, function(x) length(unique(x)) / nrow(dataset)))
+                value_counts <- rt_value_counts(x)
+                if(is.null(nrow(value_counts)) || all(is.na(value_counts))) {
+                    "NA"
+                } else {
+                    as.character(value_counts[1, 'values'])
+                }
+            }),
+            unique=apply(dataset, 2, function(x) length(unique(x)) )
+        ) %>%
+        mutate(perc_unique=unique / nrow(dataset))
 
+    dataset <- as.matrix(is.na(dataset))
+    results <- bind_cols(
+        data.frame(
+                feature=colnames(dataset),
+                non_nulls=colSums(!dataset),
+                nulls=colSums(dataset)
+            ) %>%
+            mutate(perc_nulls=round(nulls / nrow(dataset), 4)),
+        results)
 
     rownames(results) <- NULL
 
