@@ -9,11 +9,13 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     dplyr,
+    DescTools,
     forcats,
     fpp2,
-    DescTools,
     gapminder,
     ggplot2,
+    grid,
+    gridExtra,
     Hmisc,
     lubridate,
     magrittr,
