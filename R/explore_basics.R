@@ -515,7 +515,7 @@ private__explore_value_totals <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select bind_rows
 #' @importFrom scales percent_format percent pretty_breaks format_format
-#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
+#' @importFrom ggplot2 ggplot aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
 #' @importFrom stats as.formula
 #' @export
 rt_explore_plot_value_totals <- function(dataset,
@@ -886,10 +886,12 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select bind_rows
-#' @importFrom scales percent_format percent pretty_breaks format_format
-#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
-#' @importFrom stats as.formula
+#' @importFrom dplyr rename
+#' @importFrom forcats fct_rev
+#' @importFrom scales pretty_breaks
+#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradient scale_x_discrete scale_y_continuous labs theme element_blank element_text geom_bar theme_light theme coord_flip scale_y_reverse
+#' @importFrom grid textGrob gpar grid.rect
+#' @importFrom gridExtra grid.arrange arrangeGrob
 #' @export
 rt_explore_plot_categoric_heatmap <- function(dataset,
                                               x_variable,
@@ -924,7 +926,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     xy_heatmap <- totals %>%
         ggplot(aes(x=x_var, y=fct_rev(y_var), fill=count)) +
         geom_tile(color='white') +
-        geom_text(aes(label = count), color=text_color, size=rel(3)) +
+        geom_text(aes(label = count), color=text_color, size=3) +
         scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2]) +
         scale_x_discrete(position = "top") +
         labs(y='', x=NULL) +
@@ -1013,19 +1015,19 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
                         labels = rt_pretty_numerics,
                         position = "right")
 
-    grob.title <- grid::textGrob("Main Title", hjust = 0.5, vjust = 0.5, gp = grid::gpar(fontsize = 20))
+    grob.title <- textGrob("Main Title", hjust = 0.5, vjust = 0.5, gp = gpar(fontsize = 20))
 
-    gridExtra::grid.arrange(gridExtra::arrangeGrob(grid::grid.rect(gp=grid::gpar(col="white")),
-                                                   y_plot,
-                                                   nrow=2,
-                                                   heights=c(4.5, 10)),
-                            gridExtra::arrangeGrob(x_plot, xy_heatmap,
-                                                   nrow=2,
-                                                   heights=c(5.5, 10)),
-                            nrow = 1, ncol = 2,
-                            widths = c(5, 10),
-                            #heights = c(1, 1),
-                            top = grob.title)
+    grid.arrange(arrangeGrob(grid.rect(gp=gpar(col="white")),
+                                        y_plot,
+                                        nrow=2,
+                                        heights=c(4.5, 10)),
+                 arrangeGrob(x_plot, xy_heatmap,
+                                        nrow=2,
+                                        heights=c(5.5, 10)),
+                 nrow = 1, ncol = 2,
+                 widths = c(5, 10),
+                 #heights = c(1, 1),
+                 top = grob.title)
 }
 
 #' returns a graph for categoric/numeric variables based on the aggregation_type
@@ -1577,7 +1579,7 @@ rt_explore_plot_boxplot <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes aes geom_histogram geom_freqpoly geom_density labs theme_light coord_cartesian scale_color_manual
+#' @importFrom ggplot2 ggplot aes geom_histogram geom_freqpoly geom_density labs theme_light coord_cartesian scale_color_manual
 #' @export
 rt_explore_plot_histogram <- function(dataset,
                                       variable,
