@@ -263,6 +263,7 @@ rt_explore_plot_correlations <- function(dataset,
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable (e.g. factor) to get unique values from
 #' @param second_variable group by a second variable
+#' @param facet_variable group by a third variable. However, the `percent` & `group percent` are still relative to only `variable` & `second_variable` which is NOT equivalent to grouping by a third variable and calculating the percent of all the data. `percent` will sum to 1 for each facet value. The naming convention for appearing in the table will be `[variable name] - [variable - value]`. This variable is meant to correspond to faceting the data in a graph.
 #' @param count_distinct count the distinct number of values in this column
 #' @param sum_by_variable the numeric variable to sum
 #' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
@@ -281,9 +282,60 @@ rt_explore_plot_correlations <- function(dataset,
 rt_explore_value_totals <- function(dataset,
                                     variable,
                                     second_variable=NULL,
+                                    facet_variable=NULL,
                                     count_distinct=NULL,
                                     sum_by_variable=NULL,
                                     multi_value_delimiter=NULL) {
+
+    if(is.null(facet_variable)) {
+
+        results <- private__explore_value_totals(dataset=dataset,
+                                                 variable=variable,
+                                                 second_variable = second_variable,
+                                                 sum_by_variable=sum_by_variable,
+                                                 count_distinct=count_distinct,
+                                                 multi_value_delimiter=multi_value_delimiter)
+
+    } else {
+        # FYI should include NA
+        symbol_facet_variable <- sym(facet_variable)
+        unique_facet_values <- unique(dataset[[facet_variable]])
+        results <- NULL
+
+        for(facet_value in unique_facet_values) {
+            #facet_value <- unique_facet_values[1]
+
+            temp <- private__explore_value_totals(dataset=dataset %>%
+                                                      filter(rt_equal_include_na(!!symbol_facet_variable,
+                                                                                 facet_value)),
+                                                  variable=variable,
+                                                  second_variable=second_variable,
+                                                  sum_by_variable=sum_by_variable,
+                                                  count_distinct=count_distinct,
+                                                  multi_value_delimiter=multi_value_delimiter)
+
+            #temp[[facet_variable]] <- facet_value
+            temp[[facet_variable]] <- paste(facet_variable, '-', facet_value)
+            results <- bind_rows(results, temp)
+        }
+
+        if(is.factor(unique_facet_values)) {
+            results[[facet_variable]] <- factor(results[[facet_variable]],
+                                                #levels= levels(unique_facet_values),
+                                                levels= paste(facet_variable, '-', levels(unique_facet_values)),
+                                                ordered=TRUE)
+        }
+    }
+
+    return(results)
+}
+
+private__explore_value_totals <- function(dataset,
+                                          variable,
+                                          second_variable=NULL,
+                                          count_distinct=NULL,
+                                          sum_by_variable=NULL,
+                                          multi_value_delimiter=NULL) {
 
     # if either is NULL make sure both aren't not null
     if(!is.null(sum_by_variable) || !is.null(count_distinct)) {
@@ -631,44 +683,14 @@ rt_explore_plot_value_totals <- function(dataset,
 
         symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
 
-        if(is.null(facet_variable)) {
-
-            groups_by_both <- rt_explore_value_totals(dataset=dataset,
-                                                      variable=variable,
-                                                      second_variable = comparison_variable,
-                                                      sum_by_variable=sum_by_variable,
-                                                      count_distinct=count_distinct_variable,
-                                                      multi_value_delimiter=multi_value_delimiter) %>%
-                rename(actual_percent=percent)
-
-        } else {
-            # FYI should include NA
-            symbol_facet_variable <- sym(facet_variable)
-            unique_facet_values <- unique(dataset[[facet_variable]])
-            groups_by_both <- NULL
-            for(facet_value in unique_facet_values) {
-                #facet_value <- unique_facet_values[1]
-
-                temp <- rt_explore_value_totals(dataset=dataset %>%
-                                                    filter(rt_equal_include_na(!!symbol_facet_variable,
-                                                                               facet_value)),
-                                                variable=variable,
-                                                second_variable = comparison_variable,
-                                                sum_by_variable=sum_by_variable,
-                                                count_distinct=count_distinct_variable,
-                                                multi_value_delimiter=multi_value_delimiter) %>%
-                    rename(actual_percent=percent)
-
-                temp[[facet_variable]] <- paste(facet_variable, '-', facet_value)
-                groups_by_both <- bind_rows(groups_by_both, temp)
-            }
-
-            if(is.factor(unique_facet_values)) {
-                groups_by_both[[facet_variable]] <- factor(groups_by_both[[facet_variable]],
-                                                               levels= paste(facet_variable, '-', levels(unique_facet_values)),
-                                                               ordered=TRUE)
-            }
-        }
+        groups_by_both <- rt_explore_value_totals(dataset=dataset,
+                                                  variable=variable,
+                                                  second_variable = comparison_variable,
+                                                  sum_by_variable=sum_by_variable,
+                                                  facet_variable=facet_variable,
+                                                  count_distinct=count_distinct_variable,
+                                                  multi_value_delimiter=multi_value_delimiter) %>%
+            rename(actual_percent=percent)
 
         if(is.null(sum_by_variable)) {
 
@@ -841,6 +863,140 @@ rt_explore_plot_value_totals <- function(dataset,
                                                      base_size)
         }
     }
+}
+
+#' returns a heat map with histogram on top/side showing distribution of both features.
+#'
+#' If `multi_value_delimiter` is not NULL, then it counts all the values found after it splits/separates the
+#'      variable by the delimiter. If `sum_by_variable` is NULL, it counts the values and the denominator for
+#'      the `percent` column returned is the total number of records. If `sum_by_variable` is not NULL, then
+#'      when multiple values are found, each value is weighted by the value found in `sum_by_variable`, and
+#'      the denominator for the `percent` column returned is the `sum` of `sum_by_variable` (before the values
+#'      are split).
+#'
+#' Currently only works when using only `variable` (not `comparison_variable`)
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param x_variable the variable (e.g. factor) to get unique values from
+#' @param y_variable the additional variable to group by; must be a string/factor column
+#' @param count_distinct_variable when aggregating, rather than counting the total number of records, count distinct occurances of this variabled (cannot be used with `sum_by_variable`)
+#' @param sum_by_variable the numeric variable to sum
+#' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
+#'      this variable to the delimiter will cause the function to count seperate values
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select bind_rows
+#' @importFrom scales percent_format percent pretty_breaks format_format
+#' @importFrom ggplot2 ggplot aes aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
+#' @importFrom stats as.formula
+#' @export
+rt_explore_plot_categoric_heatmap <- function(dataset,
+                                              x_variable,
+                                              y_variable,
+                                              sum_by_variable=NULL,
+                                              count_distinct_variable=NULL,
+                                              multi_value_delimiter=NULL,
+                                              base_size=11) {
+
+    symbol_x_variable <- sym(x_variable)
+    symbol_y_variable <- sym(y_variable)
+
+    ###############################################
+    # Create Heatmap of counts of both variables
+    ###############################################
+    totals <- rt_explore_value_totals(dataset=dataset,
+                                      variable=x_variable,
+                                      second_variable=y_variable) %>%
+        rename(x_var=!!symbol_x_variable,
+               y_var=!!symbol_y_variable)
+
+    colors_low_high <- c('white', 'red')
+    text_color <- 'black'
+
+    xy_heatmap <- totals %>%
+        ggplot(aes(x=x_var, y=fct_rev(y_var), fill=count)) +
+        geom_tile(color='white') +
+        geom_text(aes(label = count), color=text_color, size=rel(3)) +
+        scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2]) +
+        scale_x_discrete(position = "top") +
+        labs(y='', x=NULL) +
+        theme(legend.position = 'none',
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank(),
+              axis.text = element_blank(),
+              axis.ticks = element_blank(),
+              axis.title = element_text(size=30))
+
+    ###############################################
+    # Create histogram of the of the X variable
+    ###############################################
+    totals <- rt_explore_value_totals(dataset = dataset,
+                                      variable = x_variable,
+                                      second_variable = NULL,
+                                      facet_variable = NULL) %>%
+        rename(x_var=!!symbol_x_variable)
+
+    x_plot <- totals %>%
+        ggplot(aes(x=x_var, y=count, fill=x_var)) +
+        geom_bar(stat='identity', fill=rt_colors()[1]) +
+        geom_text(aes(label=x_var, y=max(count)), hjust = 1, angle=90) +
+        scale_x_discrete(position = "top") +
+        scale_y_continuous(breaks=pretty_breaks(5),
+                           labels = rt_pretty_numerics) +
+        labs(y='Count',
+             x=x_variable) +
+        #scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2], limits=c(0, max(totals$count))) +
+        #scale_fill_manual(values=rep(rt_colors()[1], 4), na.value = '#2A3132') +
+        theme_light(base_size = base_size) +
+        theme(legend.position = 'none',
+              axis.text.x = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank())
+
+    ###############################################
+    # Create histogram of the of the Y variable
+    ###############################################
+    totals <- rt_explore_value_totals(dataset = dataset,
+                                      variable = y_variable,
+                                      second_variable = NULL,
+                                      facet_variable = NULL) %>%
+        rename(y_var=!!symbol_y_variable)
+
+    y_plot <- totals %>%
+        ggplot(aes(x=fct_rev(y_var), y=count, fill=y_var)) +
+        geom_bar(stat = 'identity', fill = rt_colors()[2]) +
+        labs(y='Count',
+             x=y_variable) +
+        scale_x_discrete(position = "bottom") +
+        geom_text(aes(label=y_var, y=max(count)), hjust = 0) +
+        theme_light(base_size = base_size) +
+        theme(legend.position = 'none',
+              axis.text.x = element_text(angle = 90, hjust = 1),
+              #axis.text.y = element_text(angle = 0, hjust = 0),
+              axis.text.y = element_blank(),
+              panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+              panel.background = element_blank()) +
+        coord_flip() +
+        scale_y_reverse(breaks=pretty_breaks(5),
+                        labels = rt_pretty_numerics,
+                        position = "right")
+
+    grob.title <- grid::textGrob("Main Title", hjust = 0.5, vjust = 0.5, gp = grid::gpar(fontsize = 20))
+
+    gridExtra::grid.arrange(gridExtra::arrangeGrob(grid::grid.rect(gp=grid::gpar(col="white")),
+                                                   y_plot,
+                                                   nrow=2,
+                                                   heights=c(4.5, 10)),
+                            gridExtra::arrangeGrob(x_plot, xy_heatmap,
+                                                   nrow=2,
+                                                   heights=c(5.5, 10)),
+                            nrow = 1, ncol = 2,
+                            widths = c(5, 10),
+                            #heights = c(1, 1),
+                            top = grob.title)
 }
 
 #' returns a graph for categoric/numeric variables based on the aggregation_type

@@ -87,31 +87,31 @@ rt_pretty_dataset <- function(dataset) {
 #' @export
 rt_pretty_numerics <- function(values) {
 
-    if(max(values) > 1000000) {
+    if(max(values, na.rm = TRUE) > 1000000) {
 
         values <- paste0(round(values / 1000000, 2), 'M')
 
-    } else if(max(values) > 100000) {
+    } else if(max(values, na.rm = TRUE) > 100000) {
 
         values <- paste0(round(values / 1000, 1), 'K')
 
-    } else if(max(values) > 10000) {
+    } else if(max(values, na.rm = TRUE) > 10000) {
 
         values <- paste0(round(values / 1000, 1), 'K')
 
-    } else if(max(values) > 1000) {
+    } else if(max(values, na.rm = TRUE) > 1000) {
 
         values <- paste0(round(values / 1000, 2), 'K')
 
-    } else if(max(values) > 100) {
+    } else if(max(values, na.rm = TRUE) > 100) {
 
         values <- round(values, 0)
 
-    } else if(max(values) > 1) {
+    } else if(max(values, na.rm = TRUE) > 1) {
 
         values <- round(values, 1)
 
-    } else if(max(values) > 0.1) {
+    } else if(max(values, na.rm = TRUE) > 0.1) {
 
         values <- round(values, 2)
 
