@@ -637,7 +637,7 @@ test_that("rt_explore_value_totals__facet", {
     ##########################################################################################################
     # variable
     ##########################################################################################################
-    value_counts <- credit_data %>% rt_explore_value_totals(variable = variable, facet_variable = 'default')
+    value_counts <- credit_data %>% rt_explore_value_totals(variable = 'checking_balance', facet_variable = 'default')
 
     default_na <- value_counts %>% filter(is.na(default))
     expect_equal(nrow(default_na), 1)
