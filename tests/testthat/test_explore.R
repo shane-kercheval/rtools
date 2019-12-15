@@ -2406,6 +2406,9 @@ test_that("rt_explore_plot_categoric_heatmap", {
                                                           y_variable='origin',
                                                           count_distinct_variable = 'flight'))
 
+    if(file.exists("Rplots.pdf")) {
+        file.remove("Rplots.pdf")
+    }
 })
 
 test_that("rt_explore_plot_categoric_heatmap_NAs", {
@@ -2450,6 +2453,9 @@ test_that("rt_explore_plot_categoric_heatmap_NAs", {
                                                           x_variable='purpose',
                                                           y_variable='credit_history',
                                                           count_distinct_variable = 'id'))
+    if(file.exists("Rplots.pdf")) {
+        file.remove("Rplots.pdf")
+    }
 })
 
 test_that("rt_explore_plot_boxplot", {
