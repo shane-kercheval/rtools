@@ -6,8 +6,8 @@
 variable represented by `sum_by_variable` across (i.e. grouped by) `variable`}
 \usage{
 rt_explore_value_totals(dataset, variable, second_variable = NULL,
-  count_distinct = NULL, sum_by_variable = NULL,
-  multi_value_delimiter = NULL)
+  facet_variable = NULL, count_distinct = NULL,
+  sum_by_variable = NULL, multi_value_delimiter = NULL)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -15,6 +15,8 @@ rt_explore_value_totals(dataset, variable, second_variable = NULL,
 \item{variable}{the variable (e.g. factor) to get unique values from}
 
 \item{second_variable}{group by a second variable}
+
+\item{facet_variable}{group by a third variable. However, the `percent` & `group percent` are still relative to only `variable` & `second_variable` which is NOT equivalent to grouping by a third variable and calculating the percent of all the data. `percent` will sum to 1 for each facet value. The naming convention for appearing in the table will be `[variable name] - [variable - value]`. This variable is meant to correspond to faceting the data in a graph.}
 
 \item{count_distinct}{count the distinct number of values in this column}
 
