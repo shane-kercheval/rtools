@@ -2408,6 +2408,50 @@ test_that("rt_explore_plot_categoric_heatmap", {
 
 })
 
+test_that("rt_explore_plot_categoric_heatmap_NAs", {
+
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data$id <- 1:nrow(credit_data)
+
+    credit_data[1, 'purpose'] <- NA
+    credit_data[2, 'purpose'] <- NA
+    credit_data[2, 'purpose2'] <- NA
+    credit_data[2, 'credit_history'] <- NA
+    credit_data[4, 'id'] <- NA
+
+    credit_data$purpose2 <- credit_data$purpose
+
+    # table(credit_data$purpose, credit_data$purpose2)
+    # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
+    test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables_NAs.png',
+                   plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
+                                                          x_variable='purpose',
+                                                          y_variable='purpose2'),
+                   size_inches = c(4, 4))
+
+    #credit_data %>% group_by(purpose, credit_history) %>% summarise(sum=sum(amount)) %>% View()
+    test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__sum_by__NA.png',
+                   plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
+                                                          x_variable='purpose',
+                                                          y_variable='credit_history',
+                                                          sum_by_variable = 'amount'))
+
+    # credit_data[5, c('purpose', 'credit_history', 'amount')]
+    # car | poor | 4870
+    credit_data[5, 'amount'] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__sum_by__NA2.png',
+                   plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
+                                                          x_variable='purpose',
+                                                          y_variable='credit_history',
+                                                          sum_by_variable = 'amount'))
+
+    test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__count_distinct__NA.png',
+                   plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
+                                                          x_variable='purpose',
+                                                          y_variable='credit_history',
+                                                          count_distinct_variable = 'id'))
+})
+
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'months_loan_duration'

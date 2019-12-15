@@ -904,6 +904,23 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     symbol_x_variable <- sym(x_variable)
     symbol_y_variable <- sym(y_variable)
 
+    add_na_values <- function(dataset, x) {
+        is_na <- is.na(dataset[[x]])
+        if(any(is_na)) {
+
+            # add NA as a factor level
+            dataset[[x]] <- factor(dataset[[x]],
+                                   levels = c(levels(dataset[[x]]), "<NA>"),
+                                   ordered = TRUE)
+            dataset[is_na, x] <- '<NA>'
+        }
+
+        return (dataset)
+    }
+
+    dataset <- dataset %>% add_na_values(x_variable)
+    dataset <- dataset %>% add_na_values(y_variable)
+
     ###############################################
     # Create Heatmap of counts of both variables
     ###############################################
