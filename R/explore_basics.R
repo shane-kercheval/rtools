@@ -1034,7 +1034,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 
     grob.title <- textGrob("Main Title", hjust = 0.5, vjust = 0.5, gp = gpar(fontsize = 20))
 
-    grid.arrange(arrangeGrob(grid.rect(gp=gpar(col="white")),
+    final_plot <- grid.arrange(arrangeGrob(grid.rect(gp=gpar(col="white")),
                                         y_plot,
                                         nrow=2,
                                         heights=c(4.5, 10)),
@@ -1045,6 +1045,8 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
                  widths = c(5, 10),
                  #heights = c(1, 1),
                  top = grob.title)
+
+    return (final_plot)
 }
 
 #' returns a graph for categoric/numeric variables based on the aggregation_type
