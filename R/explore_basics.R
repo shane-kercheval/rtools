@@ -907,9 +907,16 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     ###############################################
     totals <- rt_explore_value_totals(dataset=dataset,
                                       variable=x_variable,
-                                      second_variable=y_variable) %>%
+                                      second_variable=y_variable,
+                                      sum_by_variable = sum_by_variable,
+                                      count_distinct = count_distinct_variable) %>%
         rename(x_var=!!symbol_x_variable,
                y_var=!!symbol_y_variable)
+
+    if(!is.null(sum_by_variable)) {
+
+        totals <- totals %>% rename(count = sum)
+    }
 
     colors_low_high <- c('white', 'red')
     text_color <- 'black'
@@ -935,8 +942,19 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     totals <- rt_explore_value_totals(dataset = dataset,
                                       variable = x_variable,
                                       second_variable = NULL,
-                                      facet_variable = NULL) %>%
+                                      sum_by_variable = sum_by_variable,
+                                      count_distinct = count_distinct_variable) %>%
         rename(x_var=!!symbol_x_variable)
+
+    if(is.null(sum_by_variable)) {
+
+        y_label <- 'Count'
+
+    } else {
+
+        y_label <- paste0('Sum of `', sum_by_variable,'`')
+        totals <- totals %>% rename(count = sum)
+    }
 
     x_plot <- totals %>%
         ggplot(aes(x=x_var, y=count, fill=x_var)) +
@@ -945,7 +963,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
         scale_x_discrete(position = "top") +
         scale_y_continuous(breaks=pretty_breaks(5),
                            labels = rt_pretty_numerics) +
-        labs(y='Count',
+        labs(y=y_label,
              x=x_variable) +
         #scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2], limits=c(0, max(totals$count))) +
         #scale_fill_manual(values=rep(rt_colors()[1], 4), na.value = '#2A3132') +
@@ -962,13 +980,24 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     totals <- rt_explore_value_totals(dataset = dataset,
                                       variable = y_variable,
                                       second_variable = NULL,
-                                      facet_variable = NULL) %>%
+                                      sum_by_variable = sum_by_variable,
+                                      count_distinct = count_distinct_variable) %>%
         rename(y_var=!!symbol_y_variable)
+
+    if(is.null(sum_by_variable)) {
+
+        y_label <- 'Count'
+
+    } else {
+
+        y_label <- paste0('Sum of `', sum_by_variable,'`')
+        totals <- totals %>% rename(count = sum)
+    }
 
     y_plot <- totals %>%
         ggplot(aes(x=fct_rev(y_var), y=count, fill=y_var)) +
         geom_bar(stat = 'identity', fill = rt_colors()[2]) +
-        labs(y='Count',
+        labs(y=y_label,
              x=y_variable) +
         scale_x_discrete(position = "bottom") +
         geom_text(aes(label=y_var, y=max(count)), hjust = 0) +

@@ -2360,6 +2360,8 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
 test_that("rt_explore_plot_categoric_heatmap", {
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data$id <- 1:nrow(credit_data)
+
     credit_data$purpose2 <- credit_data$purpose
 
     # table(credit_data$purpose, credit_data$purpose2)
@@ -2373,16 +2375,23 @@ test_that("rt_explore_plot_categoric_heatmap", {
     # table(fct_lump(flights$dest, n = 10), flights$origin) %>% t()
     # flights %>% ggplot(aes(x=origin)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights.png',
-                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>% mutate(dest=fct_lump(dest,
-                                                                                                   n = 10)),
+                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
+                                                              mutate(dest=fct_lump(dest, n = 10)),
                                                           x_variable='origin',
                                                           y_variable='dest'))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights2.png',
-                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>% mutate(dest=fct_lump(dest,
-                                                                                                   n = 10)),
+                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
+                                                              mutate(dest=fct_lump(dest, n = 10)),
                                                           x_variable='dest',
                                                           y_variable='origin'))
+
+    test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights__sum_by.png',
+                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
+                                                              mutate(dest=fct_lump(dest, n = 10)),
+                                                          x_variable='dest',
+                                                          y_variable='origin',
+                                                          sum_by_variable = 'dep_delay'))
 
 })
 
