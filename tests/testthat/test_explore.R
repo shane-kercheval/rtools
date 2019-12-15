@@ -612,6 +612,154 @@ test_that("rt_explore_value_totals", {
     expect_true(rt_are_numerics_equal(get_group_percent_totals(actual_df), 1, num_decimals = 8))
 })
 
+test_that("rt_explore_value_totals__facet", {
+
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+
+    ##########################################################################################################
+    # test with factor
+    # change the levels to verify that the original levels are retained if order_by_count==FALSE
+    ##########################################################################################################
+    custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
+    credit_data$checking_balance <- factor(credit_data$checking_balance, levels=custom_levels)
+    credit_data$id <- 1:nrow(credit_data)
+    # make sure it handles NAs
+    credit_data[1, 'checking_balance'] <- NA
+    credit_data[2, 'default'] <- NA
+    credit_data[3, 'id'] <- NA
+    credit_data[4, 'amount'] <- NA
+
+    sum_by_variable <- 'amount'
+    count_distinct <- 'id'
+
+    # already have unit tests to check the non-facet numbers, so we only have to verify that
+    # if we filter by facet variables, we should get the same values
+    ##########################################################################################################
+    # variable
+    ##########################################################################################################
+    value_counts <- credit_data %>% rt_explore_value_totals(variable = variable, facet_variable = 'default')
+
+    default_na <- value_counts %>% filter(is.na(default))
+    expect_equal(nrow(default_na), 1)
+    expect_equal(default_na$count, 1)
+    expect_equal(default_na$percent, 1)
+    expect_equal(as.character(default_na$checking_balance), "1 - 200 DM")
+
+    expected <- credit_data %>% filter(default == 'yes') %>% rt_explore_value_totals(variable = 'checking_balance')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - yes') %>%
+                                            select(-default)))
+
+    expected <- credit_data %>% filter(default == 'no') %>% rt_explore_value_totals(variable = 'checking_balance')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - no') %>%
+                                            select(-default)))
+    ##########################################################################################################
+    # comparison variable
+    ##########################################################################################################
+    value_counts <- credit_data %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                facet_variable = 'default')
+
+    default_na <- value_counts %>% filter(is.na(default))
+    expect_equal(nrow(default_na), 1)
+    expect_equal(default_na$count, 1)
+    expect_equal(default_na$percent, 1)
+    expect_equal(as.character(default_na$checking_balance), "1 - 200 DM")
+
+    expected <- credit_data %>%
+        filter(default == 'yes') %>%
+        rt_explore_value_totals(variable = 'checking_balance', second_variable = 'purpose')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - yes') %>%
+                                            select(-default)))
+
+    expected <- credit_data %>%
+        filter(default == 'no') %>%
+        rt_explore_value_totals(variable = 'checking_balance', second_variable = 'purpose')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - no') %>%
+                                            select(-default)))
+
+    ##########################################################################################################
+    # sum_by variable
+    ##########################################################################################################
+    value_counts <- credit_data %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                sum_by_variable = 'amount',
+                                facet_variable = 'default')
+
+    default_na <- value_counts %>% filter(is.na(default))
+    expect_equal(nrow(default_na), 1)
+    expect_equal(default_na$sum, 5951)
+    expect_equal(default_na$percent, 1)
+    expect_equal(default_na$group_percent, 1)
+    expect_equal(as.character(default_na$checking_balance), "1 - 200 DM")
+
+    expected <- credit_data %>%
+        filter(default == 'yes') %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                sum_by_variable = 'amount')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - yes') %>%
+                                            select(-default)))
+
+    expected <- credit_data %>%
+        filter(default == 'no') %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                sum_by_variable = 'amount')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - no') %>%
+                                            select(-default)))
+
+    ##########################################################################################################
+    # count_distinct variable
+    ##########################################################################################################
+    value_counts <- credit_data %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                count_distinct = 'id',
+                                facet_variable = 'default')
+
+    default_na <- value_counts %>% filter(is.na(default))
+    expect_equal(nrow(default_na), 1)
+    expect_equal(default_na$count, 1)
+    expect_equal(default_na$percent, 1)
+    expect_equal(default_na$group_percent, 1)
+    expect_equal(as.character(default_na$checking_balance), "1 - 200 DM")
+
+    expected <- credit_data %>%
+        filter(default == 'yes') %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                count_distinct = 'id')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - yes') %>%
+                                            select(-default)))
+
+    expected <- credit_data %>%
+        filter(default == 'no') %>%
+        rt_explore_value_totals(variable = 'checking_balance',
+                                second_variable = 'purpose',
+                                count_distinct = 'id')
+    expect_true(rt_are_dataframes_equal(expected,
+                                        value_counts %>%
+                                            filter(default == 'default - no') %>%
+                                            select(-default)))
+
+})
+
 test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
 
     # when using a second categoric variable and sum_by, and all the second categorical has a value of zero
