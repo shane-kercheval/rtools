@@ -2394,11 +2394,11 @@ test_that("rt_explore_plot_categoric_heatmap", {
                                                           y_variable='origin',
                                                           sum_by_variable = 'dep_delay'))
 
-    flights %>%
-        mutate(dest=fct_lump(dest, n = 10)) %>%
-        group_by(dest, origin) %>%
-        summarise(n=n_distinct(flight)) %>%
-        View()
+    # flights %>%
+    #     mutate(dest=fct_lump(dest, n = 10)) %>%
+    #     group_by(dest, origin) %>%
+    #     summarise(n=n_distinct(flight)) %>%
+    #     View()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights__count_distinct.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
                                                               mutate(dest=fct_lump(dest, n = 10)),
