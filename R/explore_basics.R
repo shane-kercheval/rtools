@@ -1030,7 +1030,27 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
                         labels = rt_pretty_numerics,
                         position = "right")
 
-    grob.title <- textGrob("Main Title", hjust = 0.5, vjust = 0.5, gp = gpar(fontsize = 20))
+    if(!is.null(sum_by_variable)) {
+
+        plot_title <- paste0("Sum of `",
+                             sum_by_variable,
+                             "`, by `", x_variable,
+                             "` and `", y_variable, "`")
+
+    } else if(!is.null(count_distinct_variable)) {
+
+        plot_title <- paste0("Count of Unique `",
+                             count_distinct_variable,
+                             "`, by `", x_variable,
+                             "` and `", y_variable, "`")
+
+    } else {
+
+        plot_title <- paste0("Count of records for `", x_variable,
+                             "` and `", y_variable, "`")
+    }
+
+    grob.title <- textGrob(plot_title, hjust = 0.5, vjust = 0.5, gp = gpar(fontsize = 20))
 
     final_plot <- grid.arrange(arrangeGrob(grid.rect(gp=gpar(col="white")),
                                         y_plot,
