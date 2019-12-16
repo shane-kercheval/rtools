@@ -2458,6 +2458,35 @@ test_that("rt_explore_plot_categoric_heatmap_NAs", {
     }
 })
 
+test_that("rt_explore_plot_numeric_heatmap", {
+
+    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data[1, 'age'] <- NA
+    credit_data[2, 'age'] <- NA
+    credit_data[2, 'amount'] <- NA
+    credit_data[3, 'amount'] <- NA
+
+    rt_explore_plot_numeric_heatmap(dataset = credit_data,
+                                    x_variable = 'age',
+                                    y_variable = 'amount')
+
+
+    # table(credit_data$purpose, credit_data$purpose2)
+    # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
+    test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap.png',
+                   plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
+                                                        x_variable = 'age',
+                                                        y_variable = 'amount'),
+                   size_inches = c(4, 4))
+
+
+
+    if(file.exists("Rplots.pdf")) {
+        file.remove("Rplots.pdf")
+    }
+})
+
+
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
     variable <- 'months_loan_duration'

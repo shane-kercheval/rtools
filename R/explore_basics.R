@@ -867,22 +867,14 @@ rt_explore_plot_value_totals <- function(dataset,
 
 #' returns a heat map with histogram on top/side showing distribution of both features.
 #'
-#' If `multi_value_delimiter` is not NULL, then it counts all the values found after it splits/separates the
-#'      variable by the delimiter. If `sum_by_variable` is NULL, it counts the values and the denominator for
-#'      the `percent` column returned is the total number of records. If `sum_by_variable` is not NULL, then
-#'      when multiple values are found, each value is weighted by the value found in `sum_by_variable`, and
-#'      the denominator for the `percent` column returned is the `sum` of `sum_by_variable` (before the values
-#'      are split).
-#'
-#' Currently only works when using only `variable` (not `comparison_variable`)
-#'
 #' @param dataset dataframe containing numberic columns
-#' @param x_variable the variable (e.g. factor) to get unique values from
-#' @param y_variable the additional variable to group by; must be a string/factor column
+#' @param x_variable the categoric variable to show on the x-axis
+#' @param y_variable the categoric variable to show on the y-axis
 #' @param count_distinct_variable when aggregating, rather than counting the total number of records, count distinct occurances of this variabled (cannot be used with `sum_by_variable`)
 #' @param sum_by_variable the numeric variable to sum
-#' @param multi_value_delimiter if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
+#' @param multi_value_delimiter (currently not implemented) if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
+#' @param rev_na_factor_y if TRUE, the <NA> factor is added as the first level (top of graph) rather than last level (bottom of graph)
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -899,18 +891,24 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
                                               sum_by_variable=NULL,
                                               count_distinct_variable=NULL,
                                               multi_value_delimiter=NULL,
+                                              rev_na_factor_y=FALSE,
                                               base_size=11) {
 
     symbol_x_variable <- sym(x_variable)
     symbol_y_variable <- sym(y_variable)
 
-    add_na_values <- function(dataset, x) {
+    add_na_values <- function(dataset, x, rev_na_factor=FALSE) {
         is_na <- is.na(dataset[[x]])
         if(any(is_na)) {
 
             # add NA as a factor level
+            if(rev_na_factor) {
+                new_levels <- c("<NA>", levels(dataset[[x]]))
+            } else {
+                new_levels <- c(levels(dataset[[x]]), "<NA>")
+            }
             dataset[[x]] <- factor(dataset[[x]],
-                                   levels = c(levels(dataset[[x]]), "<NA>"),
+                                   levels = new_levels,
                                    ordered = TRUE)
             dataset[is_na, x] <- '<NA>'
         }
@@ -919,7 +917,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     }
 
     dataset <- dataset %>% add_na_values(x_variable)
-    dataset <- dataset %>% add_na_values(y_variable)
+    dataset <- dataset %>% add_na_values(y_variable, rev_na_factor = rev_na_factor_y)
 
     ###############################################
     # Create Heatmap of counts of both variables
@@ -1047,6 +1045,78 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
                  top = grob.title)
 
     return (final_plot)
+}
+
+#' returns a heat map with histogram on top/side showing distribution of both features.
+#'
+#' @param dataset dataframe containing numberic columns
+#' @param x_variable the numeric variable to show on the x-axis
+#' @param y_variable the numeric variable to show on the y-axis
+#' @param n_cuts the number of cut points (will generate `n_cuts`-1 groups)
+#' @param x_cut_sequence a vector of cut points; if not NULL, overrides `n_cuts` for the x variable
+#' @param y_cut_sequence a vector of cut points; if not NULL, overrides `n_cuts` for the y variable
+#' @param count_distinct_variable when aggregating, rather than counting the total number of records, count distinct occurances of this variabled (cannot be used with `sum_by_variable`)
+#' @param sum_by_variable the numeric variable to sum
+#' @param multi_value_delimiter (currently not implemented) if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
+#'      this variable to the delimiter will cause the function to count seperate values
+#' @param base_size uses ggplot's base_size parameter for controling the size of the text
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr rename
+#' @importFrom forcats fct_rev
+#' @importFrom scales pretty_breaks
+#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradient scale_x_discrete scale_y_continuous labs theme element_blank element_text geom_bar theme_light theme coord_flip scale_y_reverse
+#' @importFrom grid textGrob gpar grid.rect
+#' @importFrom gridExtra grid.arrange arrangeGrob
+#' @export
+rt_explore_plot_numeric_heatmap <- function(dataset,
+                                              x_variable,
+                                              y_variable,
+                                              n_cuts=6,
+                                              x_cut_sequence=NULL,
+                                              y_cut_sequence=NULL,
+                                              sum_by_variable=NULL,
+                                              count_distinct_variable=NULL,
+                                              multi_value_delimiter=NULL,
+                                              rev_na_factor_y=FALSE,
+                                              base_size=11) {
+
+    if(is.null(x_cut_sequence)) {
+
+        x_cut_sequence <- seq(min(dataset[[x_variable]], na.rm = TRUE),
+                              max(dataset[[x_variable]], na.rm = TRUE),
+                              length.out = n_cuts)
+    }
+
+    if(is.null(y_cut_sequence)) {
+
+        y_cut_sequence <- seq(min(dataset[[y_variable]], na.rm = TRUE),
+                              max(dataset[[y_variable]], na.rm = TRUE),
+                              length.out = n_cuts)
+    }
+
+    dataset[[x_variable]] <- cut(dataset[[x_variable]],
+                                 breaks = x_cut_sequence,
+                                 include.lowest = TRUE,
+                                 ordered_result = TRUE,
+                                 dig.lab = 5)
+    dataset[[y_variable]] <- cut(dataset[[y_variable]],
+                                 breaks = y_cut_sequence,
+                                 include.lowest = TRUE,
+                                 ordered_result = TRUE,
+                                 dig.lab = 5)
+    dataset[[y_variable]] <- fct_rev(dataset[[y_variable]])
+
+    return (
+        dataset %>%
+            rt_explore_plot_categoric_heatmap(x_variable=x_variable,
+                                              y_variable=y_variable,
+                                              sum_by_variable = sum_by_variable,
+                                              count_distinct_variable = count_distinct_variable,
+                                              multi_value_delimiter = multi_value_delimiter,
+                                              base_size = base_size,
+                                              rev_na_factor_y = TRUE)
+    )
 }
 
 #' returns a graph for categoric/numeric variables based on the aggregation_type
