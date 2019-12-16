@@ -1073,7 +1073,6 @@ rt_explore_plot_numeric_heatmap <- function(dataset,
                                               sum_by_variable=NULL,
                                               count_distinct_variable=NULL,
                                               multi_value_delimiter=NULL,
-                                              rev_na_factor_y=FALSE,
                                               base_size=11) {
 
     if(is.null(x_cut_sequence)) {
