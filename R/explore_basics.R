@@ -1062,12 +1062,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr rename
 #' @importFrom forcats fct_rev
-#' @importFrom scales pretty_breaks
-#' @importFrom ggplot2 ggplot aes geom_tile geom_text scale_fill_gradient scale_x_discrete scale_y_continuous labs theme element_blank element_text geom_bar theme_light theme coord_flip scale_y_reverse
-#' @importFrom grid textGrob gpar grid.rect
-#' @importFrom gridExtra grid.arrange arrangeGrob
 #' @export
 rt_explore_plot_numeric_heatmap <- function(dataset,
                                               x_variable,
