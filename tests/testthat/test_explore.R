@@ -2466,11 +2466,6 @@ test_that("rt_explore_plot_numeric_heatmap", {
     credit_data[2, 'amount'] <- NA
     credit_data[3, 'amount'] <- NA
 
-    rt_explore_plot_numeric_heatmap(dataset = credit_data,
-                                    x_variable = 'age',
-                                    y_variable = 'amount')
-
-
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap.png',
@@ -2479,7 +2474,38 @@ test_that("rt_explore_plot_numeric_heatmap", {
                                                         y_variable = 'amount'),
                    size_inches = c(4, 4))
 
+    test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__n_cut_10.png',
+                   plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
+                                                        x_variable = 'age',
+                                                        y_variable = 'amount',
+                                                        n_cuts = 10),
+                   size_inches = c(4, 4))
 
+
+    x_cut_sequence <- c(18, 21, 25, 30, 50, 100)
+    y_cut_sequence <- c(100, 500, 1000, 2500, 5000, 10000, 100000)
+
+    test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__custom_x_cut.png',
+                   plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
+                                                        x_variable = 'age',
+                                                        y_variable = 'amount',
+                                                        x_cut_sequence = x_cut_sequence),
+                   size_inches = c(4, 4))
+
+    test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__custom_y_cut.png',
+                   plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
+                                                        x_variable = 'age',
+                                                        y_variable = 'amount',
+                                                        y_cut_sequence = y_cut_sequence),
+                   size_inches = c(4, 4))
+
+    test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__custom_x_y_cut.png',
+                   plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
+                                                        x_variable = 'age',
+                                                        y_variable = 'amount',
+                                                        x_cut_sequence = x_cut_sequence,
+                                                        y_cut_sequence = y_cut_sequence),
+                   size_inches = c(4, 4))
 
     if(file.exists("Rplots.pdf")) {
         file.remove("Rplots.pdf")
