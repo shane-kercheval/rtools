@@ -954,15 +954,15 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
               axis.ticks = element_blank(),
               axis.title = element_text(size=30))
 
-    if(is.null(include_percentages)) {
-
-        xy_heatmap <- xy_heatmap + geom_text(aes(label = count), color=text_color, size=3)
-
-    } else {
+    if(include_percentages) {
 
         xy_heatmap <- xy_heatmap +
             geom_text(aes(label = count), color=text_color, size=3, vjust=-0.25) +
             geom_text(aes(label = percent_format()(percent)), color=text_color, size=3, vjust=1.25)
+
+    } else {
+
+        xy_heatmap <- xy_heatmap + geom_text(aes(label = count), color=text_color, size=3)
     }
 
     ###############################################

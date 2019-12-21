@@ -2377,7 +2377,8 @@ test_that("rt_explore_plot_categoric_heatmap", {
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables__no_percentages.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
                                                           x_variable='purpose',
-                                                          y_variable='purpose2'),
+                                                          y_variable='purpose2',
+                                                          include_percentages = FALSE),
                    size_inches = c(4, 4))
 
     # table(fct_lump(flights$dest, n = 10), flights$origin) %>% t()
