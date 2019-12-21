@@ -7,7 +7,7 @@
 rt_explore_plot_categoric_heatmap(dataset, x_variable, y_variable,
   sum_by_variable = NULL, count_distinct_variable = NULL,
   multi_value_delimiter = NULL, rev_na_factor_y = FALSE,
-  base_size = 11)
+  include_percentages = TRUE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -24,6 +24,8 @@ rt_explore_plot_categoric_heatmap(dataset, x_variable, y_variable,
 this variable to the delimiter will cause the function to count seperate values}
 
 \item{rev_na_factor_y}{if TRUE, the <NA> factor is added as the first level (top of graph) rather than last level (bottom of graph)}
+
+\item{include_percentages}{in addition to the total count, also display the percent (out of the total number of records; or total sum_by_variable if used )}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

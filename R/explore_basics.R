@@ -875,6 +875,7 @@ rt_explore_plot_value_totals <- function(dataset,
 #' @param multi_value_delimiter (currently not implemented) if the variable contains multiple values (e.g. "A", "A, B", ...) then setting
 #'      this variable to the delimiter will cause the function to count seperate values
 #' @param rev_na_factor_y if TRUE, the <NA> factor is added as the first level (top of graph) rather than last level (bottom of graph)
+#' @param include_percentages in addition to the total count, also display the percent (out of the total number of records; or total sum_by_variable if used )
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
@@ -892,6 +893,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
                                               count_distinct_variable=NULL,
                                               multi_value_delimiter=NULL,
                                               rev_na_factor_y=FALSE,
+                                              include_percentages=TRUE,
                                               base_size=11) {
 
     symbol_x_variable <- sym(x_variable)
@@ -941,7 +943,6 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
     xy_heatmap <- totals %>%
         ggplot(aes(x=x_var, y=fct_rev(y_var), fill=count)) +
         geom_tile(color='white') +
-        geom_text(aes(label = count), color=text_color, size=3) +
         scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2]) +
         scale_x_discrete(position = "top") +
         labs(y='', x=NULL) +
@@ -952,6 +953,17 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
               axis.text = element_blank(),
               axis.ticks = element_blank(),
               axis.title = element_text(size=30))
+
+    if(is.null(include_percentages)) {
+
+        xy_heatmap <- xy_heatmap + geom_text(aes(label = count), color=text_color, size=3)
+
+    } else {
+
+        xy_heatmap <- xy_heatmap +
+            geom_text(aes(label = count), color=text_color, size=3, vjust=-0.25) +
+            geom_text(aes(label = percent_format()(percent)), color=text_color, size=3, vjust=1.25)
+    }
 
     ###############################################
     # Create histogram of the of the X variable
@@ -1085,15 +1097,15 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 #' @importFrom forcats fct_rev
 #' @export
 rt_explore_plot_numeric_heatmap <- function(dataset,
-                                              x_variable,
-                                              y_variable,
-                                              n_cuts=6,
-                                              x_cut_sequence=NULL,
-                                              y_cut_sequence=NULL,
-                                              sum_by_variable=NULL,
-                                              count_distinct_variable=NULL,
-                                              multi_value_delimiter=NULL,
-                                              base_size=11) {
+                                            x_variable,
+                                            y_variable,
+                                            n_cuts=6,
+                                            x_cut_sequence=NULL,
+                                            y_cut_sequence=NULL,
+                                            sum_by_variable=NULL,
+                                            count_distinct_variable=NULL,
+                                            multi_value_delimiter=NULL,
+                                            base_size=11) {
 
     if(is.null(x_cut_sequence)) {
 
@@ -2635,7 +2647,7 @@ rt_get_cohorted_conversion_rates <- function(dataset,
             rename(Snapshot=snapshots) %>%
             filter(youngest_age >= Snapshot) %>%
             group_by(cohort, Snapshot) %>%
-            # make sure that y happened after x (i.e. time_units_from_x_to_y is positie)
+            # make sure that y happened after x (i.e. time_units_from_x_to_y is positive)
             summarise(converted_within_threshold=sum(time_units_from_x_to_y > 0 & time_units_from_x_to_y <= Snapshot, na.rm = TRUE) / n()) %>%
             ungroup() %>%
             mutate(cohort = ymd(cohort),

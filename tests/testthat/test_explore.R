@@ -2372,6 +2372,14 @@ test_that("rt_explore_plot_categoric_heatmap", {
                                                           y_variable='purpose2'),
                    size_inches = c(4, 4))
 
+    # table(credit_data$purpose, credit_data$purpose2)
+    # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
+    test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables__no_percentages.png',
+                   plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
+                                                          x_variable='purpose',
+                                                          y_variable='purpose2'),
+                   size_inches = c(4, 4))
+
     # table(fct_lump(flights$dest, n = 10), flights$origin) %>% t()
     # flights %>% ggplot(aes(x=origin)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights.png',
@@ -2511,7 +2519,6 @@ test_that("rt_explore_plot_numeric_heatmap", {
         file.remove("Rplots.pdf")
     }
 })
-
 
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
