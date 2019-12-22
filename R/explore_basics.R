@@ -2689,6 +2689,8 @@ rt_get_cohorted_conversion_rates <- function(dataset,
 
 #' shows conversion rates (y-axis) of a particular cohort based on various 'snapshots' in time (a line is a snapshot in time).
 #'
+#' Assumes each record is an individual entity. Meaning, for example, 1 person isn't represented multiple times. Each person should only have 1 record with a date of the first time they did event A, and the first time they did event B. It is *not* meant to show retention (where people have the same event >= 0 times per period).
+#'
 #' Each record in the cohort must have had enough time to convert, in order to be shown in the graph.
 #' For example, say the snapshots we are interested in are at day 1 and day 7. If the cohort refers to
 #'  February, and it is March 3rd, every record in the February cohort has had at least 1 day of "activity" or
