@@ -5700,3 +5700,81 @@ test_that('rt_explore_plot_cohorted_adoption', {
                                                           #date_break_format='%Y-%W',
                                                           base_size=11))
 })
+
+test_that('adf', {
+
+    # conversion_data <- readRDS(file = 'data/conversions.RDS')
+    # # converted_conversion_data <- conversion_data %>%
+    # #     private__plot_time_series_change__date_floor(date_variable='create_date_time',
+    # #                                                  date_floor='month',
+    # #                                                  date_breaks_width=NULL,
+    # #                                                  date_break_format=NULL)
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    # rt_explore_plot_time_series(dataset=conversion_data %>% filter(create_date_time >= ymd('2019-01-01'),
+    #                                                        create_date_time < ymd('2019-12-01')),
+    #                             variable = 'create_date_time',
+    #                            # color_variable = 'continent',
+    #                             date_floor = 'month',
+    #                             show_labels = TRUE,
+    #                             show_points = TRUE)
+    #
+    #
+    # rt_explore_plot_time_series_change(dataset=conversion_data %>% filter(create_date_time >= ymd('2019-01-01'),
+    #                                                                create_date_time < ymd('2019-12-01')),
+    #                             date_variable = 'create_date_time',
+    #                             color_variable = 'continent',
+    #                             facet_variable = 'continent',
+    #                             date_floor = 'quarter')
+    #
+    # rt_explore_plot_time_series_change(dataset=conversion_data %>%
+    #                                        filter(create_date_time >= ymd('2019-01-01'),
+    #                                               create_date_time < ymd('2019-12-01')) %>%
+    #                                        mutate(lead_source = fct_lump(lead_source, n=3)),
+    #
+    #                                    date_variable = 'create_date_time',
+    #                                    color_variable = 'continent',
+    #                                    facet_variable = 'lead_source',
+    #                                    date_floor = 'quarter',
+    #                                    show_labels = TRUE)
+    #
+    # rt_explore_plot_time_series_change(dataset=conversion_data %>%
+    #                                        filter(create_date_time >= ymd('2019-01-01'),
+    #                                               create_date_time < ymd('2019-12-01')) %>%
+    #                                        mutate(lead_source = fct_lump(lead_source, n=3)),
+    #
+    #                                    date_variable = 'create_date_time',
+    #                                    color_variable = NULL,
+    #                                    facet_variable = NULL,
+    #                                    date_floor = 'week',
+    #                                    show_labels = TRUE)
+    #
+    # rt_explore_plot_time_series_change(dataset=conversion_data %>%
+    #                                        filter(create_date_time >= ymd('2019-01-01'),
+    #                                               create_date_time < ymd('2019-12-01')) %>%
+    #                                        mutate(lead_source = fct_lump(lead_source, n=3)),
+    #
+    #                                    date_variable = 'create_date_time',
+    #                                    color_variable = NULL,
+    #                                    facet_variable = NULL,
+    #                                    date_floor = 'quarter',
+    #                                    show_labels = TRUE)
+    #
+    #
+    # rt_explore_plot_time_series_change(dataset=conversion_data %>%
+    #                                        filter(create_date_time >= ymd('2019-01-01'),
+    #                                               create_date_time < ymd('2019-12-01')) %>%
+    #                                        mutate(lead_source = fct_lump(lead_source, n=3)),
+    #
+    #                                    date_variable = 'create_date_time',
+    #                                    color_variable = 'continent',
+    #                                    facet_variable = 'lead_source',
+    #                                    show_labels = TRUE,
+    #                                    percent_change = TRUE,
+    #                                    date_floor = 'quarter')
+})
