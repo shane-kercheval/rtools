@@ -2570,28 +2570,24 @@ rt_explore_plot_time_series_change <- function(dataset,
     stopifnot(!(!is.null(aggregation_variable) &&
         (is.null(aggregation_function) || is.null(aggregation_function_name))))
 
-    title_context <- NULL
-    x_label_context <- NULL
+    dataset <- private__plot_time_series_change__floor_date(dataset, date_variable, date_floor)
 
-    dataset <- dataset %>% filter(!is.na(!!sym(date_variable)))
-    if(is.null(date_floor)) {
+    change_gain_loss_total <- private_create_gain_loss_total(dataset,
+                                                             date_variable,
+                                                             date_floor,
+                                                             facet_variable,
+                                                             percent_change,
+                                                             aggregation_variable,
+                                                             aggregation_function)
 
-        dataset[[date_variable]] <- as.Date(dataset[[date_variable]])
-
-    } else {
-
-        title_context <- paste0(str_to_title(date_floor), "ly")
-        if(title_context == "Dayly") {
-            title_context <- "Daily"
-        }
-        x_label_context <- paste0("(", date_floor, ")")
-
-        dataset[[date_variable]] <- as.Date(floor_date(dataset[[date_variable]], unit=date_floor, week_start = 1))
-    }
-
-    sym_aggregation_variable <- private_symbol_if_not_null(aggregation_variable)
-    sym_color_variable <- private_symbol_if_not_null(color_variable)
-    sym_facet_variable <- private_symbol_if_not_null(facet_variable)
+    change_gain_loss_by_group <- private_create_gain_loss_total_by_group(dataset,
+                                                                         date_variable,
+                                                                         date_floor,
+                                                                         color_variable,
+                                                                         facet_variable,
+                                                                         percent_change,
+                                                                         aggregation_variable,
+                                                                         aggregation_function)
 
     if(is.null(color_variable)) {
 
@@ -2622,23 +2618,6 @@ rt_explore_plot_time_series_change <- function(dataset,
     # NULL  | NOT
     # NOT   | NULL
     # NOT   | NOT
-    change_gain_loss_total <- private_create_gain_loss_total(dataset,
-                                                             date_variable,
-                                                             date_floor,
-                                                             facet_variable,
-                                                             percent_change,
-                                                             aggregation_variable,
-                                                             aggregation_function)
-
-    change_gain_loss_by_group <- private_create_gain_loss_total_by_group(dataset,
-                                                                         date_variable,
-                                                                         date_floor,
-                                                                         color_variable,
-                                                                         facet_variable,
-                                                                         percent_change,
-                                                                         aggregation_variable,
-                                                                         aggregation_function)
-
     if(is.null(color_variable) && is.null(facet_variable)) {
 
         ggplot_object <- change_gain_loss_total %>%
@@ -2654,20 +2633,6 @@ rt_explore_plot_time_series_change <- function(dataset,
 
     } else if (is.null(color_variable) && !is.null(facet_variable)) {
 
-        # change_gain_loss_by_group <- dataset %>%
-        #     #rename(color_var = !!sym_color_variable) %>%
-        #     filter(!is.na(!!symbol_date_variable)) %>%
-        #     count(!!symbol_date_variable, !!sym_facet_variable, !!sym("")) %>%
-        #     arrange(!!symbol_date_variable) %>%
-        #     group_by(!!sym_facet_variable, !!sym("")) %>%
-        #     mutate(previous_period = lag(!!symbol_date_variable),
-        #            period_label = paste(previous_period, '->', !!symbol_date_variable),
-        #            previous_n = lag(n),
-        #            gain_loss = n - previous_n,
-        #            percent_change = (n - previous_n) / previous_n) %>%
-        #     ungroup() %>%
-        #     filter(!is.na(previous_period))
-
         ggplot_object <- change_gain_loss_by_group %>%
             ggplot(aes(x=period_label, y=!!symbol_y, fill=ifelse(!!symbol_y < 0, TRUE, FALSE))) +
             geom_bar(stat='identity') +
@@ -2681,20 +2646,6 @@ rt_explore_plot_time_series_change <- function(dataset,
             facet_wrap(facets = facet_variable , ncol = 1, scales = 'free_y', strip.position = "right")
 
     } else if (!is.null(color_variable) && is.null(facet_variable)) {
-
-        # change_gain_loss_by_group <- dataset %>%
-        #     #rename(color_var = !!sym_color_variable) %>%
-        #     filter(!is.na(!!symbol_date_variable)) %>%
-        #     count(!!symbol_date_variable, !!sym_color_variable) %>%
-        #     arrange(!!symbol_date_variable) %>%
-        #     group_by(!!sym_color_variable) %>%
-        #     mutate(previous_period = lag(!!symbol_date_variable),
-        #            period_label = paste(previous_period, '->', !!symbol_date_variable),
-        #            previous_n = lag(n),
-        #            gain_loss = n - previous_n,
-        #            percent_change = (n - previous_n) / previous_n) %>%
-        #     ungroup() %>%
-        #     filter(!is.na(previous_period))
 
         ggplot_object <- change_gain_loss_by_group %>%
             ggplot(aes(x=period_label, y=!!symbol_y)) +
@@ -2715,20 +2666,6 @@ rt_explore_plot_time_series_change <- function(dataset,
                  subtitle = paste0("by `", color_variable, "`"))
 
     } else {
-
-        # change_gain_loss_by_group <- dataset %>%
-        #     #rename(color_var = !!sym_color_variable) %>%
-        #     filter(!is.na(!!symbol_date_variable)) %>%
-        #     count(!!symbol_date_variable, !!sym_color_variable, !!sym_facet_variable) %>%
-        #     arrange(!!symbol_date_variable) %>%
-        #     group_by(!!sym_color_variable, !!sym_facet_variable) %>%
-        #     mutate(previous_period = lag(!!symbol_date_variable),
-        #            period_label = paste(previous_period, '->', !!symbol_date_variable),
-        #            previous_n = lag(n),
-        #            gain_loss = n - previous_n,
-        #            percent_change = (n - previous_n) / previous_n) %>%
-        #     ungroup() %>%
-        #     filter(!is.na(previous_period))
 
         ggplot_object <- change_gain_loss_by_group %>%
             ggplot(aes(x=period_label, y=!!symbol_y)) +
@@ -2871,14 +2808,14 @@ private_create_gain_loss_total <- function(dataset,
         if(is.null(facet_variable)) {
 
             change_gain_loss_total <- change_gain_loss_total %>%
-                group_by(!!symbol_variable) %>%
+                group_by(!!sym(date_variable)) %>%
                 summarise(n=aggregation_function(!!sym(aggregation_variable)))
 
 
         } else {
 
             change_gain_loss_total <- change_gain_loss_total %>%
-                group_by(!!symbol_variable, !!sym(facet_variable)) %>%
+                group_by(!!sym(date_variable), !!sym(facet_variable)) %>%
                 summarise(n=aggregation_function(!!sym(aggregation_variable)))
 
         }
@@ -2919,8 +2856,9 @@ private_create_gain_loss_total <- function(dataset,
             column_y <- 'gain_loss'
         }
 
+        reorder_val <- abs(private__replace_na_with_0(change_gain_loss_total[[column_y]]))
         change_gain_loss_total[[facet_variable]] <- fct_reorder(.f=change_gain_loss_total[[facet_variable]],
-                                                                .x=abs(change_gain_loss_total[[column_y]]),
+                                                                .x=reorder_val,
                                                                 #!!symbol_y,
                                                                 .fun=sum,
                                                                 .desc = TRUE)
@@ -2929,6 +2867,26 @@ private_create_gain_loss_total <- function(dataset,
     change_gain_loss_total <- change_gain_loss_total %>% filter(!is.na(previous_period))
 
     return (change_gain_loss_total)
+}
+
+private__replace_na_with_0 <- function(x) {
+
+    return (ifelse(is.na(x) | is.nan(x) | is.infinite(x), 0, x))
+}
+
+private__plot_time_series_change__floor_date <- function(dataset, date_variable, date_floor) {
+
+    dataset <- dataset %>% filter(!is.na(!!sym(date_variable)))
+    if(is.null(date_floor)) {
+
+        dataset[[date_variable]] <- as.Date(dataset[[date_variable]])
+
+    } else {
+
+        dataset[[date_variable]] <- as.Date(floor_date(dataset[[date_variable]], unit=date_floor, week_start = 1))
+    }
+
+    return(dataset)
 }
 
 private_create_gain_loss_total_by_group <- function(dataset,
@@ -3004,8 +2962,9 @@ private_create_gain_loss_total_by_group <- function(dataset,
             column_y <- 'gain_loss'
         }
 
+        reorder_val <- abs(private__replace_na_with_0(change_gain_loss_by_group[[column_y]]))
         change_gain_loss_by_group[[facet_variable]] <- fct_reorder(.f=change_gain_loss_by_group[[facet_variable]],
-                                                                   .x=abs(change_gain_loss_by_group[[column_y]]),
+                                                                   .x=reorder_val,
                                                                    #!!symbol_y,
                                                                    .fun=sum,
                                                                    .desc = TRUE)
