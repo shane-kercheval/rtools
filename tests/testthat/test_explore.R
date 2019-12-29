@@ -5701,7 +5701,7 @@ test_that('rt_explore_plot_cohorted_adoption', {
                                                           base_size=11))
 })
 
-test_that('private__plot_time_series_change__floor_date', {
+test_that('private_create_gain_loss_total', {
 
     replace_na_with_0 <- function(x) {
 
