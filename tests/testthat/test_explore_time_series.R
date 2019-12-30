@@ -316,6 +316,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'week'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_sum_month.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -325,6 +326,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'month'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_sum_quarter.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -334,6 +336,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'quarter'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_sum_year.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -353,6 +356,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'week'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_average_month.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -362,6 +366,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'month'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_average_quarter.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -371,6 +376,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'quarter'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_average_year.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -381,7 +387,6 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_labels = TRUE,
                                                     date_floor = 'year'))
 
-
     test_save_plot(file_name='data/rt_explore_plot_time_series_median_week.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -391,6 +396,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'week'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_median_month.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -400,6 +406,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'month'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_median_quarter.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -409,6 +416,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'quarter'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_median_year.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -441,6 +449,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'week'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_month_color.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -459,6 +468,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'month'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_quarter_color.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -477,6 +487,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                                     show_points = TRUE,
                                                     show_labels = TRUE,
                                                     date_floor = 'quarter'))
+
     test_save_plot(file_name='data/rt_explore_plot_time_series_year_color.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
