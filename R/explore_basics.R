@@ -2811,13 +2811,11 @@ private_create_gain_loss_total <- function(dataset,
                 group_by(!!sym(date_variable)) %>%
                 summarise(n=aggregation_function(!!sym(aggregation_variable)))
 
-
         } else {
 
             change_gain_loss_total <- change_gain_loss_total %>%
                 group_by(!!sym(date_variable), !!sym(facet_variable)) %>%
                 summarise(n=aggregation_function(!!sym(aggregation_variable)))
-
         }
     }
 
@@ -2833,9 +2831,9 @@ private_create_gain_loss_total <- function(dataset,
     if(is.null(facet_variable)) {
 
         change_gain_loss_total <- change_gain_loss_total %>%
-            mutate(previous_period = lag(!!sym(date_variable)),
+            mutate(previous_period = dplyr::lag(!!sym(date_variable)),
                    period_label = paste(previous_period, '->', !!sym(date_variable)),
-                   previous_n = lag(n),
+                   previous_n = dplyr::lag(n),
                    gain_loss = n - previous_n,
                    percent_change = (n - previous_n) / previous_n)
 
@@ -2843,9 +2841,9 @@ private_create_gain_loss_total <- function(dataset,
 
         change_gain_loss_total <- change_gain_loss_total %>%
             group_by(!!sym(facet_variable)) %>%
-            mutate(previous_period = lag(!!sym(date_variable)),
+            mutate(previous_period = dplyr::lag(!!sym(date_variable)),
                    period_label = paste(previous_period, '->', !!sym(date_variable)),
-                   previous_n = lag(n),
+                   previous_n = dplyr::lag(n),
                    gain_loss = n - previous_n,
                    percent_change = (n - previous_n) / previous_n) %>%
             ungroup()
