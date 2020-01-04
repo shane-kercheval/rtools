@@ -20,6 +20,49 @@ rt_value_counts <- function(values) {
     return (data.frame(table(values)) %>% rename(frequency = Freq) %>% arrange(desc(frequency)))
 }
 
+#' formats a number
+#'
+#' @param values numeric values
+#' @param accuracy refer to `label_comma` documentation
+#'
+#' @importFrom scales label_comma
+#' @export
+rt_pretty_number <- function(values, accuracy=NULL) {
+
+    return ( label_comma()(values) )
+}
+
+#' formats a date
+#'
+#' @param date_floor date floor
+#' @param date_break_format format
+#'
+#' @importFrom scales date_format
+#' @export
+rt_pretty_date_label <- function(date_floor, date_break_format) {
+
+    if(is.null(date_floor) || date_floor != 'quarter') {
+
+        return (date_format(date_break_format))
+
+    } else {  # not NULL && quarter
+
+        return (rt_as_year_qtr_format)
+    }
+}
+
+#' formats a percent
+#'
+#' @param values numeric values
+#' @param accuracy refer to `label_comma` documentation
+#'
+#' @importFrom scales label_percent
+#' @export
+rt_pretty_percent <- function(values, accuracy=NULL) {
+
+    return ( label_percent(big.mark=",")(values) )
+}
+
 #' returns a dataframe containing summary statistics for numeric columns passsed to `dataset`
 #'
 #' @param dataset dataframe containing numeric columns
@@ -514,7 +557,7 @@ private__explore_value_totals <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise mutate ungroup arrange n count desc select bind_rows
-#' @importFrom scales percent_format percent pretty_breaks format_format
+#' @importFrom scales pretty_breaks
 #' @importFrom ggplot2 ggplot aes geom_bar scale_y_continuous geom_text labs theme_light theme element_text position_fill position_dodge scale_fill_manual sec_axis facet_wrap
 #' @importFrom stats as.formula
 #' @export
@@ -958,7 +1001,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 
         xy_heatmap <- xy_heatmap +
             geom_text(aes(label = count), color=text_color, size=3, vjust=-0.25) +
-            geom_text(aes(label = percent_format()(percent)), color=text_color, size=3, vjust=1.25)
+            geom_text(aes(label = rt_pretty_percent(percent, accuracy=0.1)), color=text_color, size=3, vjust=1.25)
 
     } else {
 
@@ -1160,7 +1203,7 @@ rt_explore_plot_numeric_heatmap <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise n
-#' @importFrom scales pretty_breaks format_format
+#' @importFrom scales pretty_breaks
 #' @importFrom ggplot2 ggplot aes geom_bar geom_point geom_errorbar scale_y_continuous geom_text labs theme_light theme element_text position_dodge scale_fill_manual scale_color_manual facet_wrap coord_cartesian
 #' @importFrom stats as.formula
 #' @export
@@ -1252,10 +1295,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         unique_values_plot <- aggregated_data %>%
             ggplot(aes(x=!!symbol_categoric, y=mean_value, fill=!!symbol_color)) +
             geom_bar(stat = 'identity', alpha=0.75, position = position_dodge(0.9)) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1267,9 +1307,9 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = private__standard_prettyNum(mean_value), y = mean_value),
+                geom_text(aes(label = rt_pretty_number(mean_value), y = mean_value),
                           vjust=-0.25, check_overlap=TRUE, position=position_dodge(0.9)) +
-                geom_text(aes(label = private__standard_prettyNum(num_records), y = mean_value),
+                geom_text(aes(label = rt_pretty_number(num_records), y = mean_value),
                           vjust=1.25, check_overlap=TRUE, position=position_dodge(0.9))
         }
 
@@ -1403,10 +1443,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             geom_point(position=position_dodge(0.9),) +
             geom_errorbar(aes(ymin = percentile_5th, ymax = percentile_95th),
                           position=position_dodge(0.9),) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1417,9 +1454,9 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 
         if(show_variable_totals) {
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = private__standard_prettyNum(median_value), y = median_value),
+                geom_text(aes(label = rt_pretty_number(median_value), y = median_value),
                           vjust=-0.4, check_overlap=TRUE, position=position_dodge(0.9)) +
-                geom_text(aes(label = private__standard_prettyNum(num_records), y = median_value),
+                geom_text(aes(label = rt_pretty_number(num_records), y = median_value),
                           vjust=1.4, check_overlap=TRUE, position=position_dodge(0.9))
         }
         if(is.null(color_variable)) {
@@ -1470,7 +1507,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge geom_hline
 #' @importFrom dplyr group_by summarise n filter bind_rows
-#' @importFrom scales pretty_breaks format_format
+#' @importFrom scales pretty_breaks
 #' @export
 rt_explore_plot_boxplot <- function(dataset,
                                     variable,
@@ -1504,13 +1541,13 @@ rt_explore_plot_boxplot <- function(dataset,
             geom_hline(yintercept = plot_labels[['avg']], show.legend = FALSE, color=rt_colors()[1], size=.7) +
             geom_text(data = plot_labels,
                       mapping = aes(y=y_position, x=0, group=1,
-                                    label = private__standard_prettyNum(med)),
+                                    label = rt_pretty_number(med)),
                       vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
             scale_x_discrete(breaks = NULL) +
-            labs(caption = paste("\n", private__standard_prettyNum(plot_labels[['cnt']]),
+            labs(caption = paste("\n", rt_pretty_number(plot_labels[['cnt']]),
                                  'Non-NA Values',
-                                 "\nAverage (blue line): ", private__standard_prettyNum(plot_labels[['avg']])),
+                                 "\nAverage (blue line): ", rt_pretty_number(plot_labels[['avg']])),
                  y=variable,
                  x='') +
             theme_light(base_size = base_size)
@@ -1618,20 +1655,20 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_color_variable)) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
             geom_boxplot(position=position_dodge(0.9)) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
                                     color=!!symbol_color_variable,
-                                    label = private__standard_prettyNum(median)),
+                                    label = rt_pretty_number(median)),
                       position=position_dodge(0.9),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = private__standard_prettyNum(count)),
+                                    label = rt_pretty_number(count)),
                       position=position_dodge(0.9),
                       vjust=1.3,
                       check_overlap = TRUE) +
@@ -1781,7 +1818,7 @@ rt_explore_plot_histogram <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text
-#' @importFrom scales pretty_breaks format_format
+#' @importFrom scales pretty_breaks
 #' @importFrom dplyr arrange desc
 #' @importFrom tidyr unite
 #' @export
@@ -1861,8 +1898,8 @@ rt_explore_plot_scatter <- function(dataset,
     }
 
     scatter_plot <- scatter_plot +
-        scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
         theme_light(base_size = base_size) +
         labs(x=comparison_variable,
              y=variable)
@@ -1880,10 +1917,7 @@ rt_explore_plot_scatter <- function(dataset,
 
         scatter_plot <- scatter_plot +
             scale_size_continuous(breaks=pretty_breaks(10),
-                                  labels = format_format(big.mark=",",
-                                                         preserve.width="none",
-                                                         digits=4,
-                                                         scientific=FALSE))
+                                  labels = rt_pretty_number)
     }
 
     x_zooms <- NULL
@@ -1929,7 +1963,7 @@ rt_explore_plot_scatter <- function(dataset,
         if(length(label_variables) == 1 && is.numeric(dataset[[label_variables]])) {
 
             scatter_plot <- scatter_plot +
-                geom_text(aes(label = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)(custom_label_column_dtyqpdhjdemn)),
+                geom_text(aes(label = rt_pretty_number(custom_label_column_dtyqpdhjdemn)),
                           vjust=-0.5, check_overlap=TRUE, size=label_size)
         } else {
 
@@ -1969,7 +2003,7 @@ rt_explore_plot_scatter <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by filter n ungroup summarise rename
 #' @importFrom ggplot2 ggplot aes geom_boxplot geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text labs theme element_text geom_line scale_x_continuous expand_limits geom_ribbon
-#' @importFrom scales pretty_breaks format_format
+#' @importFrom scales pretty_breaks
 #' @importFrom rsample bootstraps
 #' @importFrom tidyr unnest
 #' @export
@@ -2008,16 +2042,16 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = private__standard_prettyNum(median)),
+                                    label = rt_pretty_number(median)),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = private__standard_prettyNum(count)),
+                                    label = rt_pretty_number(count)),
                       vjust=1.3,
                       check_overlap = TRUE) +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
             labs(title=paste0("`", variable, "` grouped by `", comparison_variable, "`"),
                  caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
@@ -2032,7 +2066,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             summarise(agg_variable = aggregation_function(!!symbol_variable))
         aggregate_plot <- ggplot(t, aes(x=!!symbol_comparison_variable)) +
             geom_line(aes(y=agg_variable)) +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
             expand_limits(y=0) +
             labs(title = paste0(aggregation_function_name, " of `", variable, "` by `", comparison_variable, "`"),
                  y = paste0(aggregation_function_name, " of `", variable, "`"),
@@ -2045,7 +2079,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 
         if(show_labels) {
             aggregate_plot <- aggregate_plot +
-                geom_text(aes(y=agg_variable, label = private__standard_prettyNum(agg_variable)), check_overlap = TRUE, vjust=-0.5)
+                geom_text(aes(y=agg_variable, label = rt_pretty_number(agg_variable)), check_overlap = TRUE, vjust=-0.5)
         }
 
         if(show_resampled_confidence_interval) {
@@ -2076,7 +2110,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
     }
 
     aggregate_plot <- aggregate_plot +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",", preserve.width="none", digits=4, scientific=FALSE)) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
         theme_light(base_size = base_size)
 
     x_zooms <- NULL
@@ -2148,7 +2182,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 #' @importFrom ggplot2 ggplot aes labs geom_line expand_limits theme_light theme element_text coord_cartesian scale_color_manual geom_text geom_point scale_x_date facet_wrap
 #' @importFrom lubridate floor_date year
 #' @importFrom stringr str_to_title str_trim str_replace str_detect
-#' @importFrom scales date_format pretty_breaks format_format percent_format
+#' @importFrom scales pretty_breaks
 #' @export
 rt_explore_plot_time_series <- function(dataset,
                                         variable,
@@ -2274,7 +2308,7 @@ rt_explore_plot_time_series <- function(dataset,
         if(year_over_year) {
 
             year_factor_levels <- as.character(sort(unique(year(dataset[[variable]]))))
-            temp_string_date <- private__custom_date_format(date_floor, date_break_format)(dataset[[variable]])
+            temp_string_date <- rt_pretty_date_label(date_floor, date_break_format)(dataset[[variable]])
             temp_string_date <- str_replace(temp_string_date, paste0(as.character(year(dataset[[variable]])), "-"), "")
             dataset$cohort___ <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
             dataset$year_factor___ <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
@@ -2294,7 +2328,7 @@ rt_explore_plot_time_series <- function(dataset,
             ggplot_object <- dataset %>%
                 ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
-                scale_x_date(labels = private__custom_date_format(date_floor, date_break_format), breaks=date_breaks_width, limits=date_limits) +
+                scale_x_date(labels = rt_pretty_date_label(date_floor, date_break_format), breaks=date_breaks_width, limits=date_limits) +
                 labs(title=str_trim(paste(title_context, 'Count of Records')),
                      x=str_trim(paste(variable, x_label_context)),
                      y='Count')
@@ -2339,7 +2373,7 @@ rt_explore_plot_time_series <- function(dataset,
         if(year_over_year) {
 
             year_factor_levels <- as.character(sort(unique(year(dataset[[variable]]))))
-            temp_string_date <- private__custom_date_format(date_floor, date_break_format)(dataset[[variable]])
+            temp_string_date <- rt_pretty_date_label(date_floor, date_break_format)(dataset[[variable]])
             temp_string_date <- str_replace(temp_string_date, paste0(as.character(year(dataset[[variable]])), "-"), "")
             dataset$cohort___ <- factor(temp_string_date, levels = sort(unique(temp_string_date)), ordered = TRUE)
             dataset$year_factor___ <- factor(year(dataset[[variable]]), levels = year_factor_levels, ordered = TRUE)
@@ -2362,7 +2396,7 @@ rt_explore_plot_time_series <- function(dataset,
             ggplot_object <- dataset %>%
                 ggplot(aes(x=!!symbol_variable, y=total, color=!!sym_color_variable)) +
                 scale_color_manual(values=custom_colors, na.value = '#2A3132') +
-                scale_x_date(labels = private__custom_date_format(date_floor, date_break_format), breaks=date_breaks_width, limits=date_limits) +
+                scale_x_date(labels = rt_pretty_date_label(date_floor, date_break_format), breaks=date_breaks_width, limits=date_limits) +
                 labs(title=str_trim(paste(title_context,
                                           paste(comparison_function_name,
                                                 comparison_variable,
@@ -2379,16 +2413,12 @@ rt_explore_plot_time_series <- function(dataset,
     if(format_as_percent) {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent)
 
     } else {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(10),
-                               labels = format_format(big.mark=",",
-                                                      preserve.width="none",
-                                                      digits=4,
-                                                      scientific=FALSE))
+            scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_number)
     }
 
     if(include_zero_y_axis) {
@@ -2406,13 +2436,13 @@ rt_explore_plot_time_series <- function(dataset,
         if(format_as_percent) {
 
             ggplot_object <- ggplot_object +
-                geom_text(aes(label = percent_format()(total)),
+                geom_text(aes(label = rt_pretty_percent(total)),
                               check_overlap = TRUE,
                               vjust=-0.5)
         } else {
 
             ggplot_object <- ggplot_object +
-                geom_text(aes(label = private__standard_prettyNum(total)),
+                geom_text(aes(label = rt_pretty_number(total)),
                               check_overlap = TRUE,
                               vjust=-0.5)
         }
@@ -2526,7 +2556,7 @@ private__time_series_date_break_format <- function(date_break_format, date_floor
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange desc mutate group_by ungroup
-#' @importFrom scales percent pretty_breaks format_format
+#' @importFrom scales pretty_breaks
 #' @importFrom ggplot2 ggplot aes labs geom_polygon geom_text scale_fill_manual theme_classic theme element_blank element_text
 #' @export
 rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", caption="", proportionate=FALSE) {
@@ -2560,7 +2590,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
     df <- cbind(df, df_steps)
     df <- df %>%
         mutate(conversion_rate = percent(value / step_values[1]),
-               value = private__standard_prettyNum(value)) %>%
+               value = rt_pretty_number(value)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
         # # need to make sure the label is only associated with one point so it's not overlapping
@@ -2843,7 +2873,7 @@ rt_explore_plot_conversion_rates <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr mutate group_by ungroup summarise filter bind_rows
 #' @importFrom stringr str_detect
-#' @importFrom scales date_format pretty_breaks format_format percent_format
+#' @importFrom scales pretty_breaks
 #' @importFrom ggplot2 ggplot aes geom_line geom_text geom_point labs expand_limits theme_light coord_cartesian scale_color_manual scale_x_continuous scale_y_continuous
 #' @importFrom lubridate floor_date
 #' @export
@@ -2902,7 +2932,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
         # unit_index <- 30
         adoption_df <- bind_rows(adoption_df,
             dataset %>%
-            mutate(cohort=private__custom_date_format(date_floor, date_break_format)(floor_date(x=!!symbol_first_date,
+            mutate(cohort=rt_pretty_date_label(date_floor, date_break_format)(floor_date(x=!!symbol_first_date,
                                                                     unit=date_floor,
                                                                     week_start=1))) %>%
             group_by(cohort) %>%
@@ -2924,12 +2954,8 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
         filter(cohort %in% tail(sort(unique(adoption_df$cohort)), n = last_n_cohorts)) %>%
         ggplot(aes(x=day, y=converted_within_threshold, color=cohort)) +
         geom_line() +
-        scale_x_continuous(breaks=pretty_breaks(10),
-                           labels = format_format(big.mark=",",
-                                                  preserve.width="none",
-                                                  digits=4,
-                                                  scientific=FALSE)) +
-        scale_y_continuous(breaks=pretty_breaks(10), labels=percent_format()) +
+        scale_x_continuous(breaks=pretty_breaks(10), labels=rt_pretty_number) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_percent) +
         theme_light(base_size=base_size) +
         labs(title=paste0("Adoption from `", first_date, "` to `", second_date, "`"),
              y="Conversion Rate",
@@ -2955,7 +2981,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
     if(show_labels) {
 
         ggplot_object <- ggplot_object +
-            geom_text(aes(label = percent_format()(converted_within_threshold)),
+            geom_text(aes(label = rt_pretty_percent(converted_within_threshold)),
                       check_overlap = TRUE,
                       vjust=-0.5)
     }
@@ -3074,27 +3100,21 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
     if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE),
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(10),
-                                                   labels = percent_format(),
+                                                   labels = rt_pretty_percent,
                                                    name=plot_y_second_axis_label))
 
     } else if(view_type == "Stack Percent") {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format())
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent)
 
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE))
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number)
     }
 
     # we will only show variable totals if show_variable_totals and the variable values aren't filled
@@ -3107,7 +3127,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 geom_text(data = groups_by_variable,
                           aes(x=!!symbol_variable,
                               y = total,
-                              label = private__standard_prettyNum(total)),
+                              label = rt_pretty_number(total)),
                           vjust=-0.25, check_overlap=TRUE)
 
         } else {
@@ -3119,7 +3139,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_variable,
                               aes(x=!!symbol_variable,
-                                  label = percent(percent),
+                                  label = rt_pretty_percent(percent),
                                   y = total),
                               vjust=-1.5, check_overlap=TRUE)
 
@@ -3134,7 +3154,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
                           aes(x=!!symbol_variable,
-                              label = private__standard_prettyNum(total),
+                              label = rt_pretty_number(total),
                               y = total),
                           vjust=-0.25, check_overlap=TRUE)
 
@@ -3149,7 +3169,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = total,
-                              label = private__standard_prettyNum(total),
+                              label = rt_pretty_number(total),
                               group = !!symbol_comparison_variable),
                           position = position_stack(reverse=reverse_stack, vjust = .5),
                           check_overlap=TRUE)
@@ -3160,7 +3180,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = 0.5 * total,
-                              label = private__standard_prettyNum(total),
+                              label = rt_pretty_number(total),
                               group = !!symbol_comparison_variable),
                           position = comparison_position,
                           vjust=-0.25, check_overlap=TRUE)
@@ -3170,7 +3190,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                               aes(x = !!symbol_variable,
                                   y = 0.5 * total,
-                                  label = percent(group_percent),
+                                  label = rt_pretty_percent(group_percent),
                                   group = !!symbol_comparison_variable),
                               position = comparison_position,
                               vjust=1.25, check_overlap=TRUE)
@@ -3182,7 +3202,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                       aes(x = !!symbol_variable,
                           y = group_percent,
-                          label = percent(group_percent),
+                          label = rt_pretty_percent(group_percent),
                           group = !!symbol_comparison_variable),
                       position = position_fill(reverse=reverse_stack, vjust = .5),
                       check_overlap=TRUE)
@@ -3235,32 +3255,26 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     if(show_dual_axes) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE),
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(10),
-                                                   labels = percent_format(),
+                                                   labels = rt_pretty_percent,
                                                    name=plot_y_second_axis_label))
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = format_format(big.mark=",",
-                                                                                preserve.width="none",
-                                                                                digits=4,
-                                                                                scientific=FALSE))
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number)
     }
 
     if(show_variable_totals) {
 
         unique_values_plot <- unique_values_plot +
-            geom_text(aes(label = private__standard_prettyNum(total), y = total),
+            geom_text(aes(label = rt_pretty_number(total), y = total),
                       vjust=1.25, check_overlap=TRUE)
 
         if(!simple_mode) {
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = percent(percent), y = total), vjust=-0.25, check_overlap=TRUE)
+                geom_text(aes(label = rt_pretty_percent(percent), y = total), vjust=-0.25, check_overlap=TRUE)
         }
     }
 
@@ -3281,24 +3295,4 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
     )
-}
-
-private__standard_prettyNum <- function(x) {
-    return (prettyNum(x,
-                      big.mark=",",
-                      preserve.width="none",
-                      digits=4,
-                      scientific=FALSE))
-}
-
-private__custom_date_format <- function(date_floor, date_break_format) {
-
-    if(is.null(date_floor) || date_floor != 'quarter') {
-
-        return (date_format(date_break_format))
-
-    } else {  # not NULL && quarter
-
-        return (rt_as_year_qtr_format)
-    }
 }
