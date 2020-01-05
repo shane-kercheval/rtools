@@ -29,7 +29,7 @@ rt_value_counts <- function(values) {
 #' @export
 rt_pretty_number <- function(values, accuracy=0.1) {
 
-    return ( label_comma()(values) )
+    return ( label_comma(accuracy=accuracy)(values))
 }
 
 #' formats a date
@@ -60,7 +60,7 @@ rt_pretty_date_label <- function(date_floor, date_break_format) {
 #' @export
 rt_pretty_percent <- function(values, accuracy=0.1) {
 
-    return ( label_percent(big.mark=",")(values) )
+    return ( label_percent(accuracy=accuracy, big.mark=",")(values) )
 }
 
 #' returns a dataframe containing summary statistics for numeric columns passsed to `dataset`
