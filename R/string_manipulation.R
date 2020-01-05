@@ -143,8 +143,6 @@ rt_pretty_numbers_short <- function(values) {
 
             values <- as.character(values)
         }
-
-
     } else if(max(abs(values), na.rm = TRUE) > 0.1) {
 
         values <- rt_prettyNum(round(values, 2))
