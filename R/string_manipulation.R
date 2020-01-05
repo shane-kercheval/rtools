@@ -107,31 +107,31 @@ rt_prettyNum <- function(values, use_na=TRUE) {
 #' @export
 rt_pretty_numbers_short <- function(values) {
 
-    if(max(values, na.rm = TRUE) > 1000000000) {
+    if(max(abs(values), na.rm = TRUE) > 1000000000) {
 
         values <- paste0(rt_prettyNum(round(values / 1000000000, 2)), 'B')
 
-    } else if(max(values, na.rm = TRUE) > 1000000) {
+    } else if(max(abs(values), na.rm = TRUE) > 1000000) {
 
         values <- paste0(rt_prettyNum(round(values / 1000000, 2)), 'M')
 
-    } else if(max(values, na.rm = TRUE) > 100000) {
+    } else if(max(abs(values), na.rm = TRUE) > 100000) {
 
         values <- paste0(rt_prettyNum(round(values / 1000, 1)), 'K')
 
-    } else if(max(values, na.rm = TRUE) > 10000) {
+    } else if(max(abs(values), na.rm = TRUE) > 10000) {
 
         values <- paste0(rt_prettyNum(round(values / 1000, 1)), 'K')
 
-    } else if(max(values, na.rm = TRUE) > 1000) {
+    } else if(max(abs(values), na.rm = TRUE) > 1000) {
 
         values <- paste0(rt_prettyNum(round(values / 1000, 2)), 'K')
 
-    } else if(max(values, na.rm = TRUE) > 100) {
+    } else if(max(abs(values), na.rm = TRUE) > 100) {
 
         values <- rt_prettyNum(round(values, 0))
 
-    } else if(max(values, na.rm = TRUE) > 1) {
+    } else if(max(abs(values), na.rm = TRUE) > 1) {
 
         any_has_decimal <- any(values%%1 != 0, na.rm = TRUE)
 
@@ -145,17 +145,21 @@ rt_pretty_numbers_short <- function(values) {
         }
 
 
-    } else if(max(values, na.rm = TRUE) > 0.1) {
+    } else if(max(abs(values), na.rm = TRUE) > 0.1) {
 
         values <- rt_prettyNum(round(values, 2))
 
-    } else if(max(values, na.rm = TRUE) > 0.01) {
+    } else if(max(abs(values), na.rm = TRUE) > 0.01) {
 
         values <- rt_prettyNum(round(values, 3))
 
-    } else if(max(values, na.rm = TRUE) > 0.001) {
+    } else if(max(abs(values), na.rm = TRUE) > 0.001) {
 
         values <- rt_prettyNum(round(values, 4))
+
+    } else if(all(values == 0, na.rm = TRUE)) {
+
+        values <- ifelse(is.na(values), NA, "0")
 
     } else {
 
@@ -173,7 +177,7 @@ rt_pretty_numbers_short <- function(values) {
 #' @export
 rt_pretty_numbers_long <- function(values) {
 
-    if(max(values, na.rm = TRUE) > 100) {
+    if(max(abs(values), na.rm = TRUE) > 100) {
 
         values <- rt_prettyNum(round(values, 0))
 
