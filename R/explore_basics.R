@@ -1249,8 +1249,11 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         symbol_numeric <- sym(numeric_variable)
 
         if(is.null(facet_variable)){
+
             symbol_facet <- NULL
+
         } else {
+
             symbol_facet <- sym(facet_variable)
         }
 
@@ -1268,10 +1271,12 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             symbol_color <- sym(color_variable)
         }
 
+        num_pretty_breaks <- private__num_pretty_breaks(facet_variable)
+
         unique_values_plot <- aggregated_data %>%
             ggplot(aes(x=!!symbol_categoric, y=mean_value, fill=!!symbol_color)) +
             geom_bar(stat = 'identity', alpha=0.75, position = position_dodge(0.9)) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1391,8 +1396,11 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         aggregated_data <- convert_facet_variable(aggregated_data, facet_variable)
 
         if(is.null(facet_variable)){
+
             symbol_facet <- NULL
+
         } else {
+
             symbol_facet <- sym(facet_variable)
         }
 
@@ -1414,12 +1422,14 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         plot_y=paste0("Median `", numeric_variable, "`")
         plot_caption="The number above the point is the median value;\nthe number below the point is the total number of non-missing values for the group;\nThe bottom and top of the error-bar gives the 5th and 95th percentile."
 
+        num_pretty_breaks <- private__num_pretty_breaks(facet_variable)
+
         unique_values_plot <- aggregated_data %>%
             ggplot(aes(x=!!symbol_categoric, y=median_value, color=!!symbol_color)) +
             geom_point(position=position_dodge(0.9),) +
             geom_errorbar(aes(ymin = percentile_5th, ymax = percentile_95th),
                           position=position_dodge(0.9),) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1498,11 +1508,15 @@ rt_explore_plot_boxplot <- function(dataset,
     symbol_variable <- sym(variable)  # because we are using string variables
 
     if(!is.null(color_variable)) {
+
         rt_stopif(is.null(comparison_variable))
     }
     if(!is.null(facet_variable)) {
+
         rt_stopif(is.null(comparison_variable))
     }
+
+    num_pretty_breaks <- private__num_pretty_breaks(facet_variable)
 
     if(rt_is_null_na_nan(comparison_variable)) {
 
@@ -1519,7 +1533,7 @@ rt_explore_plot_boxplot <- function(dataset,
                       mapping = aes(y=y_position, x=0, group=1,
                                     label = rt_pretty_numbers_long(med)),
                       vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
             scale_x_discrete(breaks = NULL) +
             labs(caption = paste("\n", rt_pretty_numbers_long(plot_labels[['cnt']]),
                                  'Non-NA Values',
@@ -1631,7 +1645,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_color_variable)) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
             geom_boxplot(position=position_dodge(0.9)) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
@@ -2192,6 +2206,8 @@ rt_explore_plot_time_series <- function(dataset,
     title_context <- NULL
     x_label_context <- NULL
 
+    num_pretty_breaks <- private__num_pretty_breaks(facet_variable)
+
     # if there are many NAs, it will mess up the count scale, and we can't plot them anyway
     dataset <- dataset %>% filter(!is.na(!!symbol_variable))
     if(is.null(date_floor)) {
@@ -2388,12 +2404,12 @@ rt_explore_plot_time_series <- function(dataset,
     if(format_as_percent) {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_percent)
 
     } else {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels=rt_pretty_numbers_short)
     }
 
     if(include_zero_y_axis) {
@@ -3072,24 +3088,26 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
         }
     }
 
+    num_pretty_breaks <- private__num_pretty_breaks(facet_variable)
+
     if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short,
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
-                                                   breaks=pretty_breaks(10),
+                                                   breaks=pretty_breaks(num_pretty_breaks),
                                                    labels = rt_pretty_percent,
                                                    name=plot_y_second_axis_label))
 
     } else if(view_type == "Stack Percent") {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_percent)
 
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
     }
 
     # we will only show variable totals if show_variable_totals and the variable values aren't filled
@@ -3227,18 +3245,20 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
         ggplot(aes(x=!!symbol_variable, y=total, fill=!!symbol_variable)) +
         geom_bar(stat = 'identity', alpha=0.75)
 
+    num_pretty_breaks <- private__num_pretty_breaks(facet_variable)
+
     if(show_dual_axes) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short,
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
-                                                   breaks=pretty_breaks(10),
+                                                   breaks=pretty_breaks(num_pretty_breaks),
                                                    labels = rt_pretty_percent,
                                                    name=plot_y_second_axis_label))
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
     }
 
     if(show_variable_totals) {
@@ -3270,4 +3290,16 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
             theme(legend.position = 'none',
                   axis.text.x = element_text(angle = 30, hjust = 1))
     )
+}
+
+private__num_pretty_breaks <- function(facet_variable) {
+
+    if(is.null(facet_variable) || facet_variable == '') {
+
+        return (10)
+
+    } else {
+
+        return (5)
+    }
 }
