@@ -977,7 +977,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 
         xy_heatmap <- xy_heatmap +
             geom_text(aes(label = count), color=text_color, size=3, vjust=-0.25) +
-            geom_text(aes(label = rt_pretty_percent(percent, accuracy=0.1)), color=text_color, size=3, vjust=1.25)
+            geom_text(aes(label = rt_pretty_percent(percent)), color=text_color, size=3, vjust=1.25)
 
     } else {
 
@@ -2564,7 +2564,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 
     df <- cbind(df, df_steps)
     df <- df %>%
-        mutate(conversion_rate = percent(value / step_values[1]),
+        mutate(conversion_rate = rt_pretty_percent(value / step_values[1]),
                value = rt_pretty_numbers_long(value)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
