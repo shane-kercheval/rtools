@@ -240,7 +240,7 @@ rt_regression_plot_residual_vs_variable <- function(model, predictor, dataset) {
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map2 map_dbl
-#' @importFrom scales percent pretty_breaks percent_format
+#' @importFrom scales pretty_breaks
 #' @importFrom dplyr mutate count bind_rows bind_cols select
 #' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point scale_y_continuous scale_color_manual coord_cartesian coord_flip
 #' @importFrom DescTools MultinomCI
@@ -383,8 +383,8 @@ rt_plot_multinom_cis <- function(values,
         plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=categories)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
-            geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            geom_text(aes(label=rt_pretty_percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent) +
             scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(legend.position = 'none',
@@ -402,10 +402,10 @@ rt_plot_multinom_cis <- function(values,
                           position=position_dodge(width=0.9),
                           size=line_size) +
             geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
-            geom_text(aes(label=percent(proportions)),
+            geom_text(aes(label=rt_pretty_percent(proportions)),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent) +
             scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
@@ -451,10 +451,10 @@ rt_plot_multinom_cis <- function(values,
         }
 
         plot_object <- plot_object +
-            geom_text(aes(label=percent(conf_low), y=conf_low),
+            geom_text(aes(label=rt_pretty_percent(conf_low), y=conf_low),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[1], check_overlap = TRUE) +
-            geom_text(aes(label=percent(conf_high), y=conf_high),
+            geom_text(aes(label=rt_pretty_percent(conf_high), y=conf_high),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[2], check_overlap = TRUE)
     }
@@ -488,7 +488,7 @@ rt_plot_multinom_cis <- function(values,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom purrr map2 map_dbl
-#' @importFrom scales percent pretty_breaks percent_format
+#' @importFrom scales pretty_breaks
 #' @importFrom ggplot2 ggplot aes labs geom_text theme_light theme element_text geom_errorbar geom_point scale_y_continuous scale_color_manual coord_cartesian coord_flip
 #' @export
 rt_plot_proportions <- function(numerators,
@@ -537,8 +537,8 @@ rt_plot_proportions <- function(numerators,
         plot_object <- ggplot(df, aes(x=categories, y=proportions, color=categories)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
-            geom_text(aes(label=percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            geom_text(aes(label=rt_pretty_percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent) +
             scale_color_manual(values=rt_get_colors_from_values(df$categories), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(legend.position = 'none',
@@ -557,10 +557,10 @@ rt_plot_proportions <- function(numerators,
                           position=position_dodge(width=0.9),
                           size=line_size) +
             geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
-            geom_text(aes(label=percent(proportions)),
+            geom_text(aes(label=rt_pretty_percent(proportions)),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = percent_format()) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_percent) +
             scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             theme_light(base_size = base_size) +
             theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
@@ -597,10 +597,10 @@ rt_plot_proportions <- function(numerators,
         }
 
         plot_object <- plot_object +
-            geom_text(aes(label=percent(conf_low), y=conf_low),
+            geom_text(aes(label=rt_pretty_percent(conf_low), y=conf_low),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[1], check_overlap = TRUE) +
-            geom_text(aes(label=percent(conf_high), y=conf_high),
+            geom_text(aes(label=rt_pretty_percent(conf_high), y=conf_high),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[2], check_overlap = TRUE)
     }

@@ -20,18 +20,6 @@ rt_value_counts <- function(values) {
     return (data.frame(table(values)) %>% rename(frequency = Freq) %>% arrange(desc(frequency)))
 }
 
-#' formats a number
-#'
-#' @param values numeric values
-#' @param accuracy refer to `label_comma` documentation
-#'
-#' @importFrom scales label_comma
-#' @export
-rt_pretty_number <- function(values, accuracy=0.1) {
-
-    return ( label_comma(accuracy=accuracy)(values))
-}
-
 #' formats a date
 #'
 #' @param date_floor date floor
@@ -49,18 +37,6 @@ rt_pretty_date_label <- function(date_floor, date_break_format) {
 
         return (rt_as_year_qtr_format)
     }
-}
-
-#' formats a percent
-#'
-#' @param values numeric values
-#' @param accuracy refer to `label_comma` documentation
-#'
-#' @importFrom scales label_percent
-#' @export
-rt_pretty_percent <- function(values, accuracy=0.1) {
-
-    return ( label_percent(accuracy=accuracy, big.mark=",")(values) )
 }
 
 #' returns a dataframe containing summary statistics for numeric columns passsed to `dataset`
@@ -1034,7 +1010,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
         geom_text(aes(label=x_var, y=max(count)), hjust = 1, angle=90) +
         scale_x_discrete(position = "top") +
         scale_y_continuous(breaks=pretty_breaks(5),
-                           labels = rt_pretty_numerics) +
+                           labels = rt_pretty_numbers_short) +
         labs(y=y_label,
              x=x_variable) +
         #scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2], limits=c(0, max(totals$count))) +
@@ -1082,7 +1058,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
               panel.background = element_blank()) +
         coord_flip() +
         scale_y_reverse(breaks=pretty_breaks(5),
-                        labels = rt_pretty_numerics,
+                        labels = rt_pretty_numbers_short,
                         position = "right")
 
     if(!is.null(sum_by_variable)) {
@@ -1295,7 +1271,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         unique_values_plot <- aggregated_data %>%
             ggplot(aes(x=!!symbol_categoric, y=mean_value, fill=!!symbol_color)) +
             geom_bar(stat = 'identity', alpha=0.75, position = position_dodge(0.9)) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1307,9 +1283,9 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         if(show_variable_totals) {
 
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = rt_pretty_number(mean_value), y = mean_value),
+                geom_text(aes(label = rt_pretty_numbers_long(mean_value), y = mean_value),
                           vjust=-0.25, check_overlap=TRUE, position=position_dodge(0.9)) +
-                geom_text(aes(label = rt_pretty_number(num_records), y = mean_value),
+                geom_text(aes(label = rt_pretty_numbers_long(num_records), y = mean_value),
                           vjust=1.25, check_overlap=TRUE, position=position_dodge(0.9))
         }
 
@@ -1443,7 +1419,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             geom_point(position=position_dodge(0.9),) +
             geom_errorbar(aes(ymin = percentile_5th, ymax = percentile_95th),
                           position=position_dodge(0.9),) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1454,9 +1430,9 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 
         if(show_variable_totals) {
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = rt_pretty_number(median_value), y = median_value),
+                geom_text(aes(label = rt_pretty_numbers_long(median_value), y = median_value),
                           vjust=-0.4, check_overlap=TRUE, position=position_dodge(0.9)) +
-                geom_text(aes(label = rt_pretty_number(num_records), y = median_value),
+                geom_text(aes(label = rt_pretty_numbers_long(num_records), y = median_value),
                           vjust=1.4, check_overlap=TRUE, position=position_dodge(0.9))
         }
         if(is.null(color_variable)) {
@@ -1541,13 +1517,13 @@ rt_explore_plot_boxplot <- function(dataset,
             geom_hline(yintercept = plot_labels[['avg']], show.legend = FALSE, color=rt_colors()[1], size=.7) +
             geom_text(data = plot_labels,
                       mapping = aes(y=y_position, x=0, group=1,
-                                    label = rt_pretty_number(med)),
+                                    label = rt_pretty_numbers_long(med)),
                       vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             scale_x_discrete(breaks = NULL) +
-            labs(caption = paste("\n", rt_pretty_number(plot_labels[['cnt']]),
+            labs(caption = paste("\n", rt_pretty_numbers_long(plot_labels[['cnt']]),
                                  'Non-NA Values',
-                                 "\nAverage (blue line): ", rt_pretty_number(plot_labels[['avg']])),
+                                 "\nAverage (blue line): ", rt_pretty_numbers_long(plot_labels[['avg']])),
                  y=variable,
                  x='') +
             theme_light(base_size = base_size)
@@ -1655,20 +1631,20 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_color_variable)) +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             geom_boxplot(position=position_dodge(0.9)) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
                                     color=!!symbol_color_variable,
-                                    label = rt_pretty_number(median)),
+                                    label = rt_pretty_numbers_long(median)),
                       position=position_dodge(0.9),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = rt_pretty_number(count)),
+                                    label = rt_pretty_numbers_long(count)),
                       position=position_dodge(0.9),
                       vjust=1.3,
                       check_overlap = TRUE) +
@@ -1898,8 +1874,8 @@ rt_explore_plot_scatter <- function(dataset,
     }
 
     scatter_plot <- scatter_plot +
-        scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+        scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
         theme_light(base_size = base_size) +
         labs(x=comparison_variable,
              y=variable)
@@ -1916,8 +1892,7 @@ rt_explore_plot_scatter <- function(dataset,
     if(!is.null(size_variable) && is.numeric(dataset[[size_variable]])) {
 
         scatter_plot <- scatter_plot +
-            scale_size_continuous(breaks=pretty_breaks(10),
-                                  labels = rt_pretty_number)
+            scale_size_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
     }
 
     x_zooms <- NULL
@@ -1963,7 +1938,7 @@ rt_explore_plot_scatter <- function(dataset,
         if(length(label_variables) == 1 && is.numeric(dataset[[label_variables]])) {
 
             scatter_plot <- scatter_plot +
-                geom_text(aes(label = rt_pretty_number(custom_label_column_dtyqpdhjdemn)),
+                geom_text(aes(label = rt_pretty_numbers_long(custom_label_column_dtyqpdhjdemn)),
                           vjust=-0.5, check_overlap=TRUE, size=label_size)
         } else {
 
@@ -2042,16 +2017,16 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = rt_pretty_number(median)),
+                                    label = rt_pretty_numbers_long(median)),
                       vjust=-0.5,
                       check_overlap = TRUE) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
                                     x=!!symbol_comparison_variable,
-                                    label = rt_pretty_number(count)),
+                                    label = rt_pretty_numbers_long(count)),
                       vjust=1.3,
                       check_overlap = TRUE) +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             labs(title=paste0("`", variable, "` grouped by `", comparison_variable, "`"),
                  caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
@@ -2066,7 +2041,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             summarise(agg_variable = aggregation_function(!!symbol_variable))
         aggregate_plot <- ggplot(t, aes(x=!!symbol_comparison_variable)) +
             geom_line(aes(y=agg_variable)) +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             expand_limits(y=0) +
             labs(title = paste0(aggregation_function_name, " of `", variable, "` by `", comparison_variable, "`"),
                  y = paste0(aggregation_function_name, " of `", variable, "`"),
@@ -2079,7 +2054,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
 
         if(show_labels) {
             aggregate_plot <- aggregate_plot +
-                geom_text(aes(y=agg_variable, label = rt_pretty_number(agg_variable)), check_overlap = TRUE, vjust=-0.5)
+                geom_text(aes(y=agg_variable, label = rt_pretty_numbers_long(agg_variable)), check_overlap = TRUE, vjust=-0.5)
         }
 
         if(show_resampled_confidence_interval) {
@@ -2110,7 +2085,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
     }
 
     aggregate_plot <- aggregate_plot +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
         theme_light(base_size = base_size)
 
     x_zooms <- NULL
@@ -2418,7 +2393,7 @@ rt_explore_plot_time_series <- function(dataset,
     } else {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_number)
+            scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_numbers_short)
     }
 
     if(include_zero_y_axis) {
@@ -2442,7 +2417,7 @@ rt_explore_plot_time_series <- function(dataset,
         } else {
 
             ggplot_object <- ggplot_object +
-                geom_text(aes(label = rt_pretty_number(total)),
+                geom_text(aes(label = rt_pretty_numbers_long(total)),
                               check_overlap = TRUE,
                               vjust=-0.5)
         }
@@ -2590,7 +2565,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
     df <- cbind(df, df_steps)
     df <- df %>%
         mutate(conversion_rate = percent(value / step_values[1]),
-               value = rt_pretty_number(value)) %>%
+               value = rt_pretty_numbers_long(value)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
         # # need to make sure the label is only associated with one point so it's not overlapping
@@ -2954,7 +2929,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
         filter(cohort %in% tail(sort(unique(adoption_df$cohort)), n = last_n_cohorts)) %>%
         ggplot(aes(x=day, y=converted_within_threshold, color=cohort)) +
         geom_line() +
-        scale_x_continuous(breaks=pretty_breaks(10), labels=rt_pretty_number) +
+        scale_x_continuous(breaks=pretty_breaks(10), labels=rt_pretty_numbers_short) +
         scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_percent) +
         theme_light(base_size=base_size) +
         labs(title=paste0("Adoption from `", first_date, "` to `", second_date, "`"),
@@ -3100,7 +3075,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
     if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number,
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(10),
                                                    labels = rt_pretty_percent,
@@ -3114,7 +3089,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number)
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
     }
 
     # we will only show variable totals if show_variable_totals and the variable values aren't filled
@@ -3127,7 +3102,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 geom_text(data = groups_by_variable,
                           aes(x=!!symbol_variable,
                               y = total,
-                              label = rt_pretty_number(total)),
+                              label = rt_pretty_numbers_long(total)),
                           vjust=-0.25, check_overlap=TRUE)
 
         } else {
@@ -3154,7 +3129,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             unique_values_plot <- unique_values_plot +
                 geom_text(data = groups_by_variable,
                           aes(x=!!symbol_variable,
-                              label = rt_pretty_number(total),
+                              label = rt_pretty_numbers_long(total),
                               y = total),
                           vjust=-0.25, check_overlap=TRUE)
 
@@ -3169,7 +3144,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = total,
-                              label = rt_pretty_number(total),
+                              label = rt_pretty_numbers_long(total),
                               group = !!symbol_comparison_variable),
                           position = position_stack(reverse=reverse_stack, vjust = .5),
                           check_overlap=TRUE)
@@ -3180,7 +3155,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 geom_text(data = groups_by_both,
                           aes(x = !!symbol_variable,
                               y = 0.5 * total,
-                              label = rt_pretty_number(total),
+                              label = rt_pretty_numbers_long(total),
                               group = !!symbol_comparison_variable),
                           position = comparison_position,
                           vjust=-0.25, check_overlap=TRUE)
@@ -3255,7 +3230,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     if(show_dual_axes) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number,
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(10),
                                                    labels = rt_pretty_percent,
@@ -3263,13 +3238,13 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_number)
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
     }
 
     if(show_variable_totals) {
 
         unique_values_plot <- unique_values_plot +
-            geom_text(aes(label = rt_pretty_number(total), y = total),
+            geom_text(aes(label = rt_pretty_numbers_long(total), y = total),
                       vjust=1.25, check_overlap=TRUE)
 
         if(!simple_mode) {

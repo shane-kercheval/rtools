@@ -90,41 +90,118 @@ test_that('rt_pretty_dataset', {
     expect_true(rt_are_dataframes_equal_from_file(dataframe1=pretty_data, rds_file='data/pretty_dataset.RDS'))
 })
 
-test_that('rt_pretty_numerics', {
+test_that('rt_prettyNum', {
+
+    values <- c(0, 0.000, 0.01, 10, 10.00, 10.001, 1000.000000, 1000.01, 1000.000001, NA)
+    expected_values <- c("0", "0", "0.01", "10", "10", "10.001", "1,000", "1,000.01", "1,000", NA)
+    expect_identical(rt_prettyNum(values), expected_values)
+
+    values <- c("0", "0.000", "0.01", "10", "10.00", "10.001", "1000.000000", "1000.01", "1000.000001", NA)
+    expected_values <- c("0", "0", "0.01", "10", "10", "10.001", "1,000", "1,000.01", "1,000.000001", NA)
+    expect_identical(rt_prettyNum(values), expected_values)
+})
+
+test_that('rt_pretty_percent', {
+
+    values <- c(0, 0.000, 0.01, 0.0125, 0.20, 1, 10, 100, NA)
+    expect_identical(rt_pretty_percent(values),
+                     c("0%", "0%", "1%", "1%", "20%", "100%", "1,000%", "10,000%", NA))
+
+    values <- c(0, 0.0125, 0.0123, 0.0524, NA)
+    expect_identical(rt_pretty_percent(values),
+                     c("0%", "1.2%", "1.2%", "5.2%", NA))
+
+    values <- c(0, 0.000, 0.00123, 0.00524, NA)
+    expect_identical(rt_pretty_percent(values),
+                     c("0%", "0%", "0.12%", "0.52%", NA))
+
+    values <- c(0, 0.0000, 0.000123, 0.000524, NA)
+    expect_identical(rt_pretty_percent(values),
+                     c("0%", "0%", "0.012%", "0.052%", NA))
+})
+
+test_that('rt_pretty_numbers_short__long', {
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=0, sd=0.001)),
-                 c("1.37e-03", "-5.65e-04", "3.63e-04", "6.33e-04", "4.04e-04", "-1.06e-04", "1.51e-03", "-9.47e-05", "2.02e-03", "-6.27e-05"))
+    values <- rnorm(n=10, mean=0, sd=0.00001)
+    expected_values <- c("1.37e-05","-5.65e-06","3.63e-06", "6.33e-06", "4.04e-06", "-1.06e-06", "1.51e-05", "-9.47e-07", "2.02e-05", "-6.27e-07")
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=0, sd=0.1)),
-                 c(0.14, -0.06, 0.04, 0.06, 0.04, -0.01, 0.15, -0.01, 0.20, -0.01))
+    values <- rnorm(n=10, mean=0, sd=0.001)
+    expected_values <- c("0.0014", "-0.0006", "0.0004", "0.0006", "0.0004", "-0.0001", "0.0015", "-0.0001", "0.002", "-0.0001")
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=0)),
-                 c(1.4, -0.6, 0.4, 0.6, 0.4, -0.1, 1.5, -0.1, 2.0, -0.1))
+    values <- rnorm(n=10, mean=0, sd=0.1)
+    expected_values <- c("0.14", "-0.06", "0.04", "0.06", "0.04", "-0.01", "0.15", "-0.01", "0.2", "-0.01")
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=10)),
-                 c(11.4, 9.4, 10.4, 10.6, 10.4, 9.9, 11.5, 9.9, 12.0, 9.9))
+    values <- rnorm(n=10, mean=0, sd=1)
+    expected_values <- c("1.4", "-0.6", "0.4", "0.6", "0.4", "-0.1", "1.5", "-0.1", "2", "-0.1")
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=100, sd=10)),
-                 c(114, 94, 104, 106, 104, 99, 115, 99, 120, 99))
+    values <- c(rnorm(n=10, mean=10, sd=1), NA)
+    expected_values <- c("11.4", "9.4", "10.4", "10.6", "10.4", "9.9", "11.5", "9.9", "12", "9.9", NA)
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=1000, sd=100)),
-                 c("1.14K", "0.94K", "1.04K", "1.06K", "1.04K", "0.99K", "1.15K", "0.99K", "1.2K", "0.99K"))
+    values <- c(round(rnorm(n=10, mean=10, sd=1)), NA)
+    expected_values <- c("11", "9", "10", "11", "10", "10", "12", "10", "12", "10", NA)
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=10000, sd=1000)),
-                 c("11.4K", "9.4K", "10.4K", "10.6K", "10.4K", "9.9K", "11.5K", "9.9K", "12K", "9.9K"))
+    values <- rnorm(n=10, mean=100, sd=10)
+    expected_values <- c("114", "94", "104", "106", "104", "99", "115", "99", "120", "99")
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=100000, sd=10000)),
-                 c("113.7K", "94.4K", "103.6K", "106.3K", "104K", "98.9K", "115.1K", "99.1K", "120.2K", "99.4K" ))
+    values <- c(rnorm(n=10, mean=100, sd=10), NA)
+    expected_values <- c("114", "94", "104", "106", "104", "99", "115", "99", "120", "99", NA)
+    expect_identical(rt_pretty_numbers_short(values), expected_values)
+    expect_identical(rt_pretty_numbers_long(values), expected_values)
 
     set.seed(42)
-    expect_equal(rt_pretty_numerics(rnorm(n=10, mean=1000000, sd=100000)),
-                 c("1.14M", "0.94M", "1.04M", "1.06M", "1.04M", "0.99M", "1.15M", "0.99M", "1.2M", "0.99M"))
+    values <- rnorm(n=10, mean=1000, sd=100)
+    expect_identical(rt_pretty_numbers_short(values),
+                     c("1.14K", "0.94K", "1.04K", "1.06K", "1.04K", "0.99K", "1.15K", "0.99K", "1.2K", "0.99K"))
+    expect_identical(rt_pretty_numbers_long(values),
+                     c("1,137", "944", "1,036", "1,063", "1,040", "989", "1,151", "991", "1,202", "994"))
+
+    set.seed(42)
+    values <- rnorm(n=10, mean=10000, sd=1000)
+    expect_identical(rt_pretty_numbers_short(values),
+                     c("11.4K", "9.4K", "10.4K", "10.6K", "10.4K", "9.9K", "11.5K", "9.9K", "12K", "9.9K"))
+    expect_identical(rt_pretty_numbers_long(values),
+                     c("11,371", "9,435", "10,363", "10,633", "10,404", "9,894", "11,512", "9,905", "12,018", "9,937"))
+
+    set.seed(42)
+    values <- rnorm(n=10, mean=100000, sd=10000)
+    expect_identical(rt_pretty_numbers_short(values),
+                     c("113.7K", "94.4K", "103.6K", "106.3K", "104K", "98.9K", "115.1K", "99.1K", "120.2K", "99.4K" ))
+    expect_identical(rt_pretty_numbers_long(values),
+                     c("113,710", "94,353", "103,631", "106,329", "104,043", "98,939", "115,115", "99,053", "120,184", "99,373"))
+
+    set.seed(42)
+    values <- rnorm(n=10, mean=1000000, sd=100000)
+    expect_identical(rt_pretty_numbers_short(values),
+                     c("1.14M", "0.94M", "1.04M", "1.06M", "1.04M", "0.99M", "1.15M", "0.99M", "1.2M", "0.99M"))
+    expect_identical(rt_pretty_numbers_long(values),
+                     c("1,137,096", "943,530", "1,036,313", "1,063,286", "1,040,427", "989,388", "1,151,152", "990,534", "1,201,842", "993,729"))
+
+    set.seed(42)
+    values <- rnorm(n=10, mean=1000000000, sd=100000000)
+    expect_identical(rt_pretty_numbers_short(values),
+                     c("1.14B", "0.94B", "1.04B", "1.06B", "1.04B", "0.99B", "1.15B", "0.99B", "1.2B", "0.99B"))
+    expect_identical(rt_pretty_numbers_long(values),
+                     c("1,137,095,845", "943,530,183", "1,036,312,841", "1,063,286,260", "1,040,426,832", "989,387,548", "1,151,152,200", "990,534,096", "1,201,842,371", "993,728,590"))
 })
