@@ -27,7 +27,7 @@ rt_value_counts <- function(values) {
 #'
 #' @importFrom scales label_comma
 #' @export
-rt_pretty_number <- function(values, accuracy=NULL) {
+rt_pretty_number <- function(values, accuracy=0.1) {
 
     return ( label_comma()(values) )
 }
@@ -58,7 +58,7 @@ rt_pretty_date_label <- function(date_floor, date_break_format) {
 #'
 #' @importFrom scales label_percent
 #' @export
-rt_pretty_percent <- function(values, accuracy=NULL) {
+rt_pretty_percent <- function(values, accuracy=0.1) {
 
     return ( label_percent(big.mark=",")(values) )
 }
