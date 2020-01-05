@@ -109,23 +109,28 @@ rt_pretty_numbers_short <- function(values) {
 
     if(max(abs(values), na.rm = TRUE) > 1000000000) {
 
-        values <- paste0(rt_prettyNum(round(values / 1000000000, 2)), 'B')
+        values <- rt_prettyNum(round(values / 1000000000, 2))
+        values <- ifelse(values == "0", "0", paste0(values, 'B'))
 
     } else if(max(abs(values), na.rm = TRUE) > 1000000) {
 
-        values <- paste0(rt_prettyNum(round(values / 1000000, 2)), 'M')
+        values <- rt_prettyNum(round(values / 1000000, 2))
+        values <- ifelse(values == "0", "0", paste0(values, 'M'))
 
     } else if(max(abs(values), na.rm = TRUE) > 100000) {
 
-        values <- paste0(rt_prettyNum(round(values / 1000, 1)), 'K')
+        values <- rt_prettyNum(round(values / 1000, 1))
+        values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
     } else if(max(abs(values), na.rm = TRUE) > 10000) {
 
-        values <- paste0(rt_prettyNum(round(values / 1000, 1)), 'K')
+        values <- rt_prettyNum(round(values / 1000, 1))
+        values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
     } else if(max(abs(values), na.rm = TRUE) > 1000) {
 
-        values <- paste0(rt_prettyNum(round(values / 1000, 2)), 'K')
+        values <- rt_prettyNum(round(values / 1000, 2))
+        values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
     } else if(max(abs(values), na.rm = TRUE) > 100) {
 
