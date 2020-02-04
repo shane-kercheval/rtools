@@ -467,7 +467,7 @@ rt_transform_multi_value_df <- function(dataset, variable, multi_value_delimiter
         select(-key)
 
     dataset[, variable] <- dataset$value
-    dataset <- dataset %>% select(column_names)
+    dataset <- dataset %>% select(all_of(column_names))
 
     return (dataset)
 }

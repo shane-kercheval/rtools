@@ -98,7 +98,7 @@ test_that('rt_regression', {
     dependent_variable = 'mpg'
     independent_variables = c('cyl', 'hp', 'wt')
 
-    reg_data_orignal <- reg_data %>% select(dependent_variable, independent_variables)
+    reg_data_orignal <- reg_data %>% select(all_of(c(dependent_variable, independent_variables)))
     expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
                                                     independent_variables = independent_variables)
 
@@ -128,7 +128,7 @@ test_that('rt_regression', {
     dependent_variable = 'price'
     independent_variables = c('carat', 'cut', 'color', 'clarity')
 
-    reg_data_orignal <- reg_data %>% select(dependent_variable, independent_variables)
+    reg_data_orignal <- reg_data %>% select(all_of(c(dependent_variable, independent_variables)))
     expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
                                                     independent_variables = independent_variables)
 
@@ -155,7 +155,7 @@ test_that('rt_regression', {
     independent_variables = c('carat', 'cut', 'color', 'clarity')
 
 
-    reg_data_orignal <- reg_data %>% select(dependent_variable, independent_variables)
+    reg_data_orignal <- reg_data %>% select(all_of(c(dependent_variable, independent_variables)))
     expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
                                                     independent_variables = independent_variables)
 

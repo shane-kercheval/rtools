@@ -362,7 +362,7 @@ private__explore_value_totals <- function(dataset,
         rt_stopif(!is.null(sum_by_variable) && !is.null(count_distinct))
     }
 
-    dataset <- dataset %>% select(c(variable, second_variable, count_distinct, sum_by_variable))
+    dataset <- dataset %>% select(all_of(c(variable, second_variable, count_distinct, sum_by_variable)))
     # capture original values (might be changed by multi-value-delimiter)
     values <- dataset[[variable]]
     symbol_variable <- sym(variable)  # because we are using string variables
