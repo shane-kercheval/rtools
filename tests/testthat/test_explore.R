@@ -2244,13 +2244,14 @@ test_that("rt_explore_plot_value_totals_sums", {
 
     # make sure it handles NAs
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    credit_data[1, 'checking_balance'] <- NA
-    variable <- 'checking_balance'
-    sum_by_variable <- 'amount'
-    comparison_variable <- 'credit_history'
-    facet_variable <- 'default'
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    credit_data[1, 'Checking Balance Column'] <- NA
+    variable <- 'Checking Balance Column'
+    sum_by_variable <- 'Amount Column'
+    comparison_variable <- 'Credit History Column'
+    facet_variable <- 'Default Column'
 
-    credit_data$amount <- ifelse(credit_data$credit_history == 'good', NA, credit_data$amount)
+    credit_data$`Amount Column` <- ifelse(credit_data$`Credit History Column` == 'good', NA, credit_data$`Amount Column`)
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_comparison_nas.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2264,40 +2265,41 @@ test_that("rt_explore_plot_value_totals_sums", {
 test_that("rt_explore_plot_value_totals_multivalue_column", {
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
 
     expected_totals <- rt_explore_value_totals(dataset=credit_data,
-                                               variable='purpose',
+                                               variable='Purpose Column',
                                                multi_value_delimiter=NULL)
     expect_equal(sum(expected_totals$percent), 1)
 
     # first test with a delimiter when none of the columns are delimited
     found_totals <- rt_explore_value_totals(dataset=credit_data,
-                                            variable='purpose',
+                                            variable='Purpose Column',
                                             multi_value_delimiter=', ')
     expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
 
     expected_sum_by_variable <- credit_data %>%
-        count(purpose, wt = months_loan_duration, sort = TRUE)
+        count(`Purpose Column`, wt = `Months Loan Duration Column`, sort = TRUE)
     expected_sum_by_variable <- expected_sum_by_variable %>%
         rename(sum = n) %>%
         mutate(percent = sum / sum(expected_sum_by_variable$n)) %>%
-        arrange(purpose) %>%
+        arrange(`Purpose Column`) %>%
         as.data.frame()
     expect_equal(sum(expected_sum_by_variable$percent), 1)
 
     expect_true(rt_are_dataframes_equal(expected_sum_by_variable,
                                         rt_explore_value_totals(dataset=credit_data,
-                                                                variable='purpose',
-                                                                sum_by_variable='months_loan_duration',
+                                                                variable='Purpose Column',
+                                                                sum_by_variable='Months Loan Duration Column',
                                                                 multi_value_delimiter=', ')))
 
     credit_data <- credit_data %>%
-        mutate(purpose = case_when(
-            purpose == 'car' ~ 'car, car_test',
-            purpose == 'business' ~ 'business, business_test',
-            TRUE ~ as.character(purpose))) %>%
-        arrange(purpose) %>%
-        mutate(purpose = as.factor(purpose))
+        mutate(`Purpose Column` = case_when(
+            `Purpose Column` == 'car' ~ 'car, car_test',
+            `Purpose Column` == 'business' ~ 'business, business_test',
+            TRUE ~ as.character(`Purpose Column`))) %>%
+        arrange(`Purpose Column`) %>%
+        mutate(`Purpose Column` = as.factor(`Purpose Column`))
 
     variable <- 'purpose'
     comparison_variable <- NULL
