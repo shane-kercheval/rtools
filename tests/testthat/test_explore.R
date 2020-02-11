@@ -3112,8 +3112,10 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
 
 test_that("rt_explore_plot_scatterplot", {
     dataset <- read.csv("data/housing.csv", header=TRUE)
-    variable <- 'median_house_value'
-    comparison_variable <- 'median_income'
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+
+    variable <- 'Median House Value Column'
+    comparison_variable <- 'Median Income Column'
 
     test_save_plot(file_name='data/rt_explore_plot_scatter.png',
                     plot=rt_explore_plot_scatter(dataset=dataset,
@@ -3126,7 +3128,7 @@ test_that("rt_explore_plot_scatterplot", {
                                                  y_zoom_max=NULL,
                                                  base_size=11))
 
-        test_save_plot(file_name='data/rt_explore_plot_scatter_swap.png',
+    test_save_plot(file_name='data/rt_explore_plot_scatter_swap.png',
                     plot=rt_explore_plot_scatter(dataset=dataset,
                                                  variable=comparison_variable,
                                                  comparison_variable=variable,
