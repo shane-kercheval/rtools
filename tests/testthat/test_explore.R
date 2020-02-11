@@ -2414,48 +2414,49 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
 test_that("rt_explore_plot_categoric_heatmap", {
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    credit_data$id <- 1:nrow(credit_data)
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
 
-    credit_data$purpose2 <- credit_data$purpose
+    credit_data$`Id Column` <- 1:nrow(credit_data)
+    credit_data$`Purpose2 Column` <- credit_data$`Purpose2 Column`
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='purpose',
-                                                          y_variable='purpose2'),
+                                                          x_variable='Purpose Column',
+                                                          y_variable='Purpose2 Column'),
                    size_inches = c(4, 4))
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables__no_percentages.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='purpose',
-                                                          y_variable='purpose2',
+                                                          x_variable='Purpose Column',
+                                                          y_variable='Purpose2 Column',
                                                           include_percentages = FALSE),
                    size_inches = c(4, 4))
 
     # table(fct_lump(flights$dest, n = 10), flights$origin) %>% t()
     # flights %>% ggplot(aes(x=origin)) + geom_bar()
+    temp_df <- flights %>% mutate(dest=fct_lump(dest, n = 10))
+    colnames(temp_df) <- paste(rt_pretty_text(colnames(temp_df)), 'Column')
+
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights.png',
-                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
-                                                              mutate(dest=fct_lump(dest, n = 10)),
-                                                          x_variable='origin',
-                                                          y_variable='dest'))
+                   plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
+                                                          x_variable='Origin Column',
+                                                          y_variable='Dest Column'))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights2.png',
-                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
-                                                              mutate(dest=fct_lump(dest, n = 10)),
-                                                          x_variable='dest',
-                                                          y_variable='origin'))
+                   plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
+                                                          x_variable='Dest Column',
+                                                          y_variable='Origin Column'))
 
     #flights %>% mutate(dest=fct_lump(dest, n = 10)) %>% count(dest, origin, wt=dep_delay) %>% View()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights__sum_by.png',
-                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
-                                                              mutate(dest=fct_lump(dest, n = 10)),
-                                                          x_variable='dest',
-                                                          y_variable='origin',
-                                                          sum_by_variable = 'dep_delay'))
+                   plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
+                                                          x_variable='Dest Column',
+                                                          y_variable='Origin Column',
+                                                          sum_by_variable = 'Dep Delay Column'))
 
     # flights %>%
     #     mutate(dest=fct_lump(dest, n = 10)) %>%
@@ -2463,11 +2464,10 @@ test_that("rt_explore_plot_categoric_heatmap", {
     #     summarise(n=n_distinct(flight)) %>%
     #     View()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights__count_distinct.png',
-                   plot=rt_explore_plot_categoric_heatmap(dataset=flights %>%
-                                                              mutate(dest=fct_lump(dest, n = 10)),
-                                                          x_variable='dest',
-                                                          y_variable='origin',
-                                                          count_distinct_variable = 'flight'))
+                   plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
+                                                          x_variable='Dest Column',
+                                                          y_variable='Origin Column',
+                                                          count_distinct_variable = 'Flight Column'))
 
     if(file.exists("Rplots.pdf")) {
         file.remove("Rplots.pdf")
