@@ -853,7 +853,7 @@ test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
     ##########################################################################################################
     # Try the same thing but if values in category have NA rather than 0
     ##########################################################################################################
-    credit_data <- credit_data %>% mutate(amount = ifelse(`Checking Balance Column` == '< 0 DM', NA, `Amount Column`))
+    credit_data <- credit_data %>% mutate(`Amount Column` = ifelse(`Checking Balance Column` == '< 0 DM', NA, `Amount Column`))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
                                              variable='Checking Balance Column',
@@ -891,7 +891,7 @@ test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
                    plot=suppressWarnings(rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable='Checking Balance Column',
                                                      comparison_variable='Default Column',
-                                                     sum_by_variable='amount',
+                                                     sum_by_variable='Amount Column',
                                                      view_type = 'Stack Percent')))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
@@ -2417,7 +2417,7 @@ test_that("rt_explore_plot_categoric_heatmap", {
     colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
 
     credit_data$`Id Column` <- 1:nrow(credit_data)
-    credit_data$`Purpose2 Column` <- credit_data$`Purpose2 Column`
+    credit_data$`Purpose2 Column` <- credit_data$`Purpose Column`
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
