@@ -3252,15 +3252,16 @@ test_that("rt_explore_plot_scatterplot", {
 
 test_that('rt_explore_plot_scatterplot_size_color', {
     dataset <- read.csv("data/housing.csv", header=TRUE)
-    variable <- 'median_house_value'
-    comparison_variable <- 'median_income'
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
 
+    variable <- 'Median House Value Column'
+    comparison_variable <- 'Median Income Column'
 
     test_save_plot(file_name='data/rt_explore_plot_scatter_color.png',
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           color_variable = 'ocean_proximity',
+                                           color_variable = 'Ocean Proximity Column',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3272,7 +3273,7 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           size_variable = 'housing_median_age',
+                                           size_variable = 'Housing Median Age Column',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3284,7 +3285,7 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           size_variable = 'ocean_proximity',
+                                           size_variable = 'Ocean Proximity Column',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3296,8 +3297,8 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           color_variable = 'total_rooms',
-                                           size_variable = 'housing_median_age',
+                                           color_variable = 'Total Rooms Column',
+                                           size_variable = 'Housing Median Age Column',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3309,8 +3310,8 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           color_variable = 'ocean_proximity',
-                                           size_variable = 'housing_median_age',
+                                           color_variable = 'Ocean Proximity Column',
+                                           size_variable = 'Housing Median Age Column',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
