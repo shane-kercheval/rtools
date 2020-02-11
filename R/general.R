@@ -484,7 +484,7 @@ rt_params_to_vector <- function(...){
 #' wrapper for change in DPLYR where we cannot send vector of strings as variable
 #' @param .data the data.frame to select from
 #' @param ... string values and/or string vectors
-#' 
+#'
 #' @importFrom dplyr select
 #' @importFrom tidyselect all_of
 #'
@@ -494,3 +494,18 @@ rt_select_all_of <- function(.data, ...) {
     columns <- rt_params_to_vector(...)
     return (select(.data, all_of(columns)))
 }
+
+#' wrapper for group_by for string variables
+#' @param .data the data.frame to select from
+#' @param ... string values and/or string vectors
+#'
+#' @importFrom dplyr group_by_at
+#' @importFrom tidyselect all_of
+#'
+#' @export
+rt_group_by_all_of <- function(.data, ...) {
+
+    columns <- rt_params_to_vector(...)
+    return (group_by_at(.data, all_of(columns)))
+}
+

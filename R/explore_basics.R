@@ -1180,6 +1180,7 @@ rt_explore_plot_numeric_heatmap <- function(dataset,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by summarise n
 #' @importFrom scales pretty_breaks
+#' @importFrom tidyselect all_of
 #' @importFrom ggplot2 ggplot aes geom_bar geom_point geom_errorbar scale_y_continuous geom_text labs theme_light theme element_text position_dodge scale_fill_manual scale_color_manual facet_wrap coord_cartesian
 #' @importFrom stats as.formula
 #' @export
@@ -1337,7 +1338,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         # sample size below top of bar
         group_by_variables <- c(categoric_variable, color_variable, facet_variable)
         aggregated_data <- suppressWarnings(dataset %>%
-            group_by(.dots=group_by_variables) %>%
+            group_by_at(all_of(group_by_variables)) %>%
             summarise(num_records=sum(!is.na(!!symbol_numeric)),
                       mean_value=mean(!!symbol_numeric, na.rm = TRUE)))
 
@@ -1363,7 +1364,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 
         group_by_variables <- c(categoric_variable, color_variable, facet_variable)
         aggregated_data <- suppressWarnings(dataset %>%
-                             group_by(.dots=group_by_variables) %>%
+                             rt_group_by_all_of(group_by_variables) %>%
                              summarise(num_records=n(),
                                        mean_value=sum(!!symbol_numeric, na.rm = TRUE) / num_records))
 
@@ -1387,7 +1388,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         # show the sample size somewhere??
         group_by_variables <- c(categoric_variable, color_variable, facet_variable)
         aggregated_data <- suppressWarnings(dataset %>%
-                             group_by(.dots=group_by_variables) %>%
+                             rt_group_by_all_of(group_by_variables) %>%
                              summarise(num_records=sum(!is.na(!!symbol_numeric)),
                                        percentile_5th=quantile(x=!!symbol_numeric, probs=0.05, na.rm=TRUE),
                                        median_value=median(!!symbol_numeric, na.rm = TRUE),

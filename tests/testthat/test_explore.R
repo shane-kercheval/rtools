@@ -3487,14 +3487,17 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
 test_that("rt_explore_plot_categoric_numeric_aggregation", {
 
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    # make sure it handles NAs
-    dataset[1, 'checking_balance'] <- NA
-    dataset[1, 'amount'] <- NA
-    dataset[2, 'checking_balance'] <- NA
-    dataset[3, 'amount'] <- NA
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
 
-    categoric_variable <- 'checking_balance'
-    numeric_variable <- 'amount'
+    categoric_variable <- 'Checking Balance Column'
+    numeric_variable <- 'Amount Column'
+
+    # make sure it handles NAs
+    dataset[1, categoric_variable] <- NA
+    dataset[1, numeric_variable] <- NA
+    dataset[2, categoric_variable] <- NA
+    dataset[3, numeric_variable] <- NA
+
     color_variable <- NULL
     facet_variable <- NULL
 
@@ -3678,7 +3681,7 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
     ##########################################################################################################
     # Categoric/Numeric - Color
     ##########################################################################################################
-    color_variable <- 'default'
+    color_variable <- 'Default Column'
     facet_variable <- NULL
 
     #dataset %>% count(checking_balance, default, wt=amount) %>% mutate(p=n/sum(n))
@@ -3807,7 +3810,7 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
     ##########################################################################################################
     # Categoric/Numeric - Facet
     ##########################################################################################################
-    facet_variable <- 'default'
+    facet_variable <- 'Default Column'
     color_variable <- NULL
 
     #dataset %>% count(checking_balance, default, wt=amount) %>% mutate(p=n/sum(n))
@@ -3924,8 +3927,8 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
     ##########################################################################################################
     # Categoric/Numeric - Color/Facet
     ##########################################################################################################
-    facet_variable <- 'default'
-    color_variable <- 'phone'
+    facet_variable <- 'Default Column'
+    color_variable <- 'Phone Column'
 
     #dataset %>% count(checking_balance, phone, default, wt=amount) %>% mutate(p=n/sum(n))
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__total__facet_color.png',

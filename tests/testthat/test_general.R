@@ -519,3 +519,20 @@ test_that("rt_transform_multi_value_df", {
     # the count of the original & _test values should be the same
     expect_true(all(test_df %>% count(purpose) %>% pull(n) == original_df %>% count(purpose) %>% pull(n)))
 })
+
+test_that("rt_group_by_all_of", {
+
+    dataset <- read.csv("data/credit.csv", header=TRUE)
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+
+    expected <- dataset %>% group_by(`Default Column`, `Phone Column`) %>% summarise(n=n())
+    actual <- dataset %>% rt_group_by_all_of('Default Column', 'Phone Column') %>% summarise(n=n())
+    expect_true(rt_are_dataframes_equal(expected, actual))
+
+    actual <- dataset %>% rt_group_by_all_of(c('Default Column', 'Phone Column')) %>% summarise(n=n())
+    expect_true(rt_are_dataframes_equal(expected, actual))
+
+    expected <- dataset %>% group_by(`Default Column`) %>% summarise(n=n())
+    actual <- dataset %>% rt_group_by_all_of('Default Column') %>% summarise(n=n())
+    expect_true(rt_are_dataframes_equal(expected, actual))
+})
