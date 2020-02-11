@@ -459,7 +459,7 @@ rt_transform_multi_value_df <- function(dataset, variable, multi_value_delimiter
 
     } else {
 
-        dataset <- dataset %>% gather(key, value, -columns_to_remove)
+        dataset <- dataset %>% gather(key, value, -all_of(columns_to_remove))
     }
 
     dataset <- dataset %>%
@@ -467,7 +467,30 @@ rt_transform_multi_value_df <- function(dataset, variable, multi_value_delimiter
         select(-key)
 
     dataset[, variable] <- dataset$value
-    dataset <- dataset %>% select(all_of(column_names))
+    dataset <- dataset %>% rt_select_all_of(column_names)
 
     return (dataset)
+}
+
+#' converts multi-argument values into flattened  vector
+#' @param ... values and/or vectors
+#'
+#' @export
+rt_params_to_vector <- function(...){
+    x <- list(...)
+    return (unlist(x))
+}
+
+#' wrapper for change in DPLYR where we cannot send vector of strings as variable
+#' @param .data the data.frame to select from
+#' @param ... string values and/or string vectors
+#' 
+#' @importFrom dplyr select
+#' @importFrom tidyselect all_of
+#'
+#' @export
+rt_select_all_of <- function(.data, ...) {
+
+    columns <- rt_params_to_vector(...)
+    return (select(.data, all_of(columns)))
 }

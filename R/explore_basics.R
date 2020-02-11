@@ -362,7 +362,7 @@ private__explore_value_totals <- function(dataset,
         rt_stopif(!is.null(sum_by_variable) && !is.null(count_distinct))
     }
 
-    dataset <- dataset %>% select(all_of(c(variable, second_variable, count_distinct, sum_by_variable)))
+    dataset <- dataset %>% rt_select_all_of(variable, second_variable, count_distinct, sum_by_variable)
     # capture original values (might be changed by multi-value-delimiter)
     values <- dataset[[variable]]
     symbol_variable <- sym(variable)  # because we are using string variables
@@ -683,7 +683,7 @@ rt_explore_plot_value_totals <- function(dataset,
 
                 plot_subtitle <- NULL
                 #plot_title <- paste0('Percent of `', variable,'` after summing across `' , sum_by_variable, '`')
-                plot_y_axis_label <- paste0('`' , sum_by_variable, '`')
+                plot_y_axis_label <- sum_by_variable
                 plot_y_second_axis_label <- paste0('Percent of Total `', sum_by_variable, '`')
             }
 
@@ -798,7 +798,7 @@ rt_explore_plot_value_totals <- function(dataset,
                 if(view_type == "Stack Percent") {
 
                     plot_y_axis_label <- paste0('Percent of Total `' , sum_by_variable, '`')
-                    plot_y_second_axis_label <- paste0('`', sum_by_variable, '`')
+                    plot_y_second_axis_label <- sum_by_variable
 
                 } else {
 
@@ -1303,7 +1303,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         if(!is.null(facet_variable)) {
 
             unique_values_plot <- unique_values_plot +
-                facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+                facet_wrap(as.formula(paste0("~ `", facet_variable, "`")), ncol = 1, scales = 'free_y') +
                 coord_cartesian(clip = "off")
         }
 
@@ -1454,7 +1454,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         if(!is.null(facet_variable)) {
 
             unique_values_plot <- unique_values_plot +
-                facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+                facet_wrap(as.formula(paste0("~ `", facet_variable, "`")), ncol = 1, scales = 'free_y') +
                 coord_cartesian(clip = "off")
         }
 
@@ -1671,7 +1671,7 @@ rt_explore_plot_boxplot <- function(dataset,
         if(!is.null(facet_variable)) {
 
             boxplot_plot <- boxplot_plot +
-                facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+                facet_wrap(as.formula(paste0("~ `", facet_variable, "`")), ncol = 1, scales = 'free_y') +
                 coord_cartesian(clip = "off")
         }
 
@@ -3204,7 +3204,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
     if(!is.null(facet_variable)) {
 
         unique_values_plot <- unique_values_plot +
-            facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+            facet_wrap(as.formula(paste0("~ `", facet_variable, "`")), ncol = 1, scales = 'free_y') +
             coord_cartesian(clip = "off")
     }
 
@@ -3276,7 +3276,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     if(!is.null(facet_variable)) {
 
         unique_values_plot <- unique_values_plot +
-            facet_wrap(as.formula(paste("~", facet_variable)), ncol = 1, scales = 'free_y') +
+            facet_wrap(as.formula(paste0("~ `", facet_variable, "`")), ncol = 1, scales = 'free_y') +
             coord_cartesian(clip = "off")
     }
 

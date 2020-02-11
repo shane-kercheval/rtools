@@ -420,7 +420,7 @@ rt_plot_multinom_cis <- function(values,
     if(!is.null(facets)) {
 
         plot_object <- plot_object +
-            facet_wrap(as.formula(paste("~", facet_variable_name)), ncol = 1, scales = 'free_y')
+            facet_wrap(as.formula(paste0("~ `", facet_variable_name, "`")), ncol = 1, scales = 'free_y')
     }
 
     if(axes_flip) {
