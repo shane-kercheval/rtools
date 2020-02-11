@@ -3336,10 +3336,12 @@ test_that("rt_explore_plot_scatterplot_jitter", {
 
 test_that("rt_explore_plot_aggregate_2_numerics", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+
     # make sure it handles NAs
-    dataset[1, 'months_loan_duration'] <- NA
-    variable <- 'amount'
-    comparison_variable <- 'months_loan_duration'
+    dataset[1, 'Months Loan Duration Column'] <- NA
+    variable <- 'Amount Column'
+    comparison_variable <- 'Months Loan Duration Column'
 
     aggregation_function <- rt_geometric_mean
     aggregation_function_name <- "Geometric Mean"
@@ -3408,8 +3410,8 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              y_zoom_max=5000,
                                                              base_size=11))
 
-    variable <- 'months_loan_duration'
-    comparison_variable <- 'existing_loans_count'
+    variable <- 'Months Loan Duration Column'
+    comparison_variable <- 'Existing Loans Count Column'
 
     aggregation_function <- function(values) {
         return (mean(values, na.rm = TRUE))
