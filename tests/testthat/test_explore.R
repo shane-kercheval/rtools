@@ -2301,7 +2301,7 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
         arrange(`Purpose Column`) %>%
         mutate(`Purpose Column` = as.factor(`Purpose Column`))
 
-    variable <- 'purpose'
+    variable <- 'Purpose Column'
     comparison_variable <- NULL
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purose_multivalue.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2318,54 +2318,57 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     # CREATE THE DATASET
     ##########################################################################################################
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    credit_data$id <- 1:nrow(credit_data)
-    credit_data$purpose[1] <- NA
-    credit_data$id[2] <- NA
-    credit_data$amount[3] <- NA
-    credit_data$purpose[600] <- NA
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+
+    credit_data$`Id Column` <- 1:nrow(credit_data)
+    credit_data$`Purpose Column`[1] <- NA
+    credit_data$`Id Column`[2] <- NA
+    credit_data$`Amount Column`[3] <- NA
+    credit_data$`Purpose Column`[600] <- NA
 
     original_totals <- rt_explore_value_totals(dataset=credit_data,
-                                               variable='purpose',
+                                               variable='Purpose Column',
                                                multi_value_delimiter=NULL)
     # original_sum_by <-  credit_data %>% count(purpose, wt=amount)
     # original_sum_by2 <-  credit_data %>% count(purpose, default, wt=amount)
 
     credit_data <- credit_data %>%
-        mutate(purpose = case_when(
-            purpose == 'car' ~ 'car, car_test',
-            purpose == 'business' ~ 'business, business_test2, business_test3, business_test4',
-            TRUE ~ as.character(purpose)))
+        mutate(`Purpose Column` = case_when(
+            `Purpose Column` == 'car' ~ 'car, car_test',
+            `Purpose Column` == 'business' ~ 'business, business_test2, business_test3, business_test4',
+            TRUE ~ as.character(`Purpose Column`)))
 
     # set 2 rows to only 3 values for business, rather than 4
-    credit_data$purpose[30] <- 'business, business_test2, business_test3'
-    credit_data$purpose[31] <- 'business, business_test2, business_test3'
-    credit_data$purpose <- as.factor(credit_data$purpose)
+    credit_data$`Purpose Column`[30] <- 'business, business_test2, business_test3'
+    credit_data$`Purpose Column`[31] <- 'business, business_test2, business_test3'
+    credit_data$`Purpose Column` <- as.factor(credit_data$`Purpose Column`)
 
     ##########################################################################################################
     # CREATE THE EXPECTED TOTALS
     ##########################################################################################################
-    car_count <- (original_totals %>% filter(purpose == 'car'))$count
-    business_count <- (original_totals %>% filter(purpose == 'business'))$count
+    car_count <- (original_totals %>% filter(`Purpose Column` == 'car'))$count
+    business_count <- (original_totals %>% filter(`Purpose Column` == 'business'))$count
 
-    expected_totals <- data.frame(purpose=c('car_test', 'business_test2', 'business_test3', 'business_test4'),
+    expected_totals <- data.frame(`Purpose Column`=c('car_test', 'business_test2', 'business_test3', 'business_test4'),
                                   # subtract 2 from business_test4 because we changed index 30/31
                                   count=c(car_count, business_count, business_count, business_count - 2),
-                                  stringsAsFactors = FALSE) %>%
-        bind_rows(original_totals %>% mutate(purpose = as.character(purpose))) %>%
-        arrange(purpose)
+                                  stringsAsFactors = FALSE,
+                                  check.names = FALSE) %>%
+        bind_rows(original_totals %>% mutate(`Purpose Column` = as.character(`Purpose Column`))) %>%
+        arrange(`Purpose Column`)
     expected_totals <- expected_totals %>% mutate(percent = count / sum(count))
 
     ##########################################################################################################
     # VALIDATE EXPECTED IS THE SAME AS ACTUAL
     ##########################################################################################################
     actual_totals <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='purpose',
+                                             variable='Purpose Column',
                                              multi_value_delimiter=', ')
     expect_true(rt_are_dataframes_equal(expected_totals, actual_totals))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='purpose',
+                                                     variable='Purpose Column',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '))
 
@@ -2375,8 +2378,8 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     #credit_data %>% count(purpose, default)
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_comp.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='purpose',
-                                                     comparison_variable='default',
+                                                     variable='Purpose Column',
+                                                     comparison_variable='Default Column',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '))
 
@@ -2386,9 +2389,9 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     #credit_data %>% count(purpose, default, wt=amount)
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='purpose',
-                                                     comparison_variable='default',
-                                                     sum_by_variable = 'amount',
+                                                     variable='Purpose Column',
+                                                     comparison_variable='Default Column',
+                                                     sum_by_variable = 'Amount Column',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '),
                    size_inches = c(8, 20))
@@ -2399,10 +2402,10 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_dis.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='purpose',
-                                                     comparison_variable='default',
+                                                     variable='Purpose Column',
+                                                     comparison_variable='Default Column',
                                                      #sum_by_variable = 'amount',
-                                                     count_distinct_variable = 'id',
+                                                     count_distinct_variable = 'Id Column',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '))
 
