@@ -2969,7 +2969,9 @@ test_that("rt_explore_plot_boxplot - NA numeric values", {
 
 test_that("rt_explore_plot_histogram", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    variable <- 'months_loan_duration'
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+
+    variable <- 'Months Loan Duration Column'
 
     test_save_plot(file_name='data/rt_explore_plot_histogram_standard.png',
                    plot=rt_explore_plot_histogram(dataset=dataset,
