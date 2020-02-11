@@ -2106,11 +2106,13 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
 
 test_that("rt_explore_plot_value_totals_sums", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+
     # make sure it handles NAs
-    credit_data[1, 'checking_balance'] <- NA
-    variable <- 'checking_balance'
-    sum_by_variable <- 'amount'
-    comparison_variable <- 'default'
+    credit_data[1, 'Checking Balance Column'] <- NA
+    variable <- 'Checking Balance Column'
+    sum_by_variable <- 'Amount Column'
+    comparison_variable <- 'Default Column'
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals_sums_defaults.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2153,20 +2155,21 @@ test_that("rt_explore_plot_value_totals_sums", {
     ##########################################################################################################
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
     # make sure it handles NAs
-    credit_data[1, 'checking_balance'] <- NA
-    variable <- 'checking_balance'
-    sum_by_variable <- 'amount'
-    comparison_variable <- 'credit_history'
-    facet_variable <- 'default'
+    credit_data[1, 'Checking Balance Column'] <- NA
+    variable <- 'Checking Balance Column'
+    sum_by_variable <- 'Amount Column'
+    comparison_variable <- 'Credit History Column'
+    facet_variable <- 'Default Column'
 
-    credit_data$amount <- NA
+    credit_data$`Amount Column` <- NA
 
     results <- rt_explore_value_totals(dataset=credit_data,
                                        variable=variable,
                                        sum_by_variable=sum_by_variable)
 
-    expect_identical(results$checking_balance %>% rt_remove_val(NA), sort(unique(credit_data$checking_balance)))
+    expect_identical(results$`Checking Balance Column` %>% rt_remove_val(NA), sort(unique(credit_data$`Checking Balance Column`)))
     expect_true(all(results$sum == 0))
     expect_true(all(results$percent == 0))
 
@@ -2180,9 +2183,9 @@ test_that("rt_explore_plot_value_totals_sums", {
                                        second_variable=comparison_variable,
                                        sum_by_variable=sum_by_variable)
 
-    expect_identical(sort(unique(results$checking_balance)) %>% rt_remove_val(NA),
-                          sort(unique(credit_data$checking_balance)))
-    expect_identical(sort(unique(results$credit_history)), sort(unique(credit_data$credit_history)))
+    expect_identical(sort(unique(results$`Checking Balance Column`)) %>% rt_remove_val(NA),
+                          sort(unique(credit_data$`Checking Balance Column`)))
+    expect_identical(sort(unique(results$`Credit History Column`)), sort(unique(credit_data$`Credit History Column`)))
     expect_true(all(results$sum == 0))
     expect_true(all(results$percent == 0))
     expect_true(all(results$group_percent == 0))
@@ -2201,16 +2204,16 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      sum_by_variable=sum_by_variable))
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
 
     # make sure it handles NAs
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
-    credit_data[1, 'checking_balance'] <- NA
-    variable <- 'checking_balance'
-    sum_by_variable <- 'amount'
-    comparison_variable <- 'credit_history'
-    facet_variable <- 'default'
+    credit_data[1, 'Checking Balance Column'] <- NA
+    variable <- 'Checking Balance Column'
+    sum_by_variable <- 'Amount Column'
+    comparison_variable <- 'Credit History Column'
+    facet_variable <- 'Default Column'
 
-    credit_data$amount <- ifelse(credit_data$default == 'yes', NA, credit_data$amount)
+    credit_data$`Amount Column` <- ifelse(credit_data$`Default Column` == 'yes', NA, credit_data$`Amount Column`)
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_facet_nas.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2222,13 +2225,14 @@ test_that("rt_explore_plot_value_totals_sums", {
 
     # make sure it handles NAs
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    credit_data[1, 'checking_balance'] <- NA
-    variable <- 'checking_balance'
-    sum_by_variable <- 'amount'
-    comparison_variable <- 'credit_history'
-    facet_variable <- 'default'
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    credit_data[1, 'Checking Balance Column'] <- NA
+    variable <- 'Checking Balance Column'
+    sum_by_variable <- 'Amount Column'
+    comparison_variable <- 'Credit History Column'
+    facet_variable <- 'Default Column'
 
-    credit_data$amount <- ifelse(credit_data$checking_balance == 'unknown', NA, credit_data$amount)
+    credit_data$`Amount Column` <- ifelse(credit_data$`Checking Balance Column` == 'unknown', NA, credit_data$`Amount Column`)
 
     #credit_data %>% count(checking_balance, credit_history, default, wt=amount) %>% arrange(default, checking_balance, credit_history) %>% View()
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_variable_nas.png',
