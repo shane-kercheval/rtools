@@ -2754,9 +2754,11 @@ test_that("rt_explore_plot_boxplot", {
 
 test_that("rt_explore_plot_boxplot_facet", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    variable <- 'months_loan_duration'
-    comparison_variable <- 'default'
-    facet_variable <- 'phone'
+    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+
+    variable <- 'Months Loan Duration Column'
+    comparison_variable <- 'Default Column'
+    facet_variable <- 'Phone Column'
 
     expect_error(rt_explore_plot_boxplot(dataset=dataset,
                                          variable=variable,
@@ -2788,7 +2790,7 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='checking_balance',
+                                                comparison_variable='Checking Balance Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
@@ -2797,20 +2799,20 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__default_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='checking_balance',
-                                                color_variable='default',
+                                                comparison_variable='Checking Balance Column',
+                                                color_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
     temp_dataset <- dataset
-    temp_dataset[1, 'default'] <- NA
+    temp_dataset[1, 'Default Column'] <- NA
     temp_dataset[2, facet_variable] <- NA
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot__NAs_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='default',
+                                                comparison_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
@@ -2819,7 +2821,7 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot__NAs_facet__simple.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='default',
+                                                comparison_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 simple_mode=TRUE,
                                                 y_zoom_min=NULL,
@@ -2829,38 +2831,38 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='checking_balance',
-                                                color_variable='default',
+                                                comparison_variable='Checking Balance Column',
+                                                color_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[1, 'checking_balance'] <- NA
+    temp_dataset[1, 'Checking Balance Column'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs2_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='checking_balance',
-                                                color_variable='default',
+                                                comparison_variable='Checking Balance Column',
+                                                color_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[2, 'checking_balance'] <- NA
+    temp_dataset[2, 'Checking Balance Column'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs3_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='checking_balance',
-                                                color_variable='default',
+                                                comparison_variable='Checking Balance Column',
+                                                color_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[3, 'default'] <- NA
+    temp_dataset[3, 'Default Column'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs4_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='checking_balance',
-                                                color_variable='default',
+                                                comparison_variable='Checking Balance Column',
+                                                color_variable='Default Column',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
