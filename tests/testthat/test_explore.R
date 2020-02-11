@@ -2077,16 +2077,17 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
 
 test_that("rt_explore_plot_value_counts_against_categorical_fill", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
+    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
 
     # make sure it handles NAs
-    credit_data[1, 'checking_balance'] <- NA
-    variable <- 'checking_balance'
+    credit_data[1, 'Checking Balance Column'] <- NA
+    variable <- 'Checking Balance Column'
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      comparison_variable='purpose',
+                                                      comparison_variable='Purpose Column',
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE,
@@ -2095,8 +2096,8 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='purpose',
-                                                     sum_by_variable='amount',
+                                                     comparison_variable='Purpose Column',
+                                                     sum_by_variable='Amount Column',
                                                      order_by_count=TRUE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
