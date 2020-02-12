@@ -100,7 +100,7 @@ test_that("rt_explore_correlations_credit", {
 
 test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    # only include columns that have <= x% missing values
+    # only include cols that have <= x% missing values
     max_missing_perc <- 0.05
 
     set.seed(42)
@@ -141,26 +141,26 @@ test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
 
 test_that("rt_explore_value_totals", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    # make sure all column names have spaces
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    # make sure all col names have spaces
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     ##########################################################################################################
     # test with factor
     # change the levels to verify that the original levels are retained if order_by_count==FALSE
     ##########################################################################################################
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
-    credit_data$`Checking Balance Column` <- factor(credit_data$`Checking Balance Column`, levels=custom_levels)
-    credit_data$`Id Column` <- 1:nrow(credit_data)
+    credit_data$`Checking Balance Col` <- factor(credit_data$`Checking Balance Col`, levels=custom_levels)
+    credit_data$`Id Col` <- 1:nrow(credit_data)
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    credit_data[2, 'Default Column'] <- NA
-    credit_data[3, 'Id Column'] <- NA
-    credit_data[4, 'Amount Column'] <- NA
+    credit_data[1, 'Checking Balance Col'] <- NA
+    credit_data[2, 'Default Col'] <- NA
+    credit_data[3, 'Id Col'] <- NA
+    credit_data[4, 'Amount Col'] <- NA
 
-    variable <- 'Checking Balance Column'
-    second_variable <- 'Default Column'
-    sum_by_variable <- 'Amount Column'
-    count_distinct <- 'Id Column'
+    variable <- 'Checking Balance Col'
+    second_variable <- 'Default Col'
+    sum_by_variable <- 'Amount Col'
+    count_distinct <- 'Id Col'
 
     # cannot use sum_by_variable and count_distict at the same time
     expect_error(rt_explore_value_totals(dataset=credit_data,
@@ -171,12 +171,12 @@ test_that("rt_explore_value_totals", {
     # single var
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`) %>%
+                                        count(`Checking Balance Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     actual_df <- rt_explore_value_totals(dataset=credit_data, variable=variable)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), 1000)
     expect_equal(sum(actual_df$percent), 1)
@@ -185,16 +185,16 @@ test_that("rt_explore_value_totals", {
     # single var - non factor
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`) %>%
+                                        count(`Checking Balance Col`) %>%
                                         rename(count = n)) %>% as.data.frame() %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        arrange(`Checking Balance Col`)
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     actual_df <- rt_explore_value_totals(dataset=credit_data %>%
-                                             mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                             mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                          variable=variable)
-    expect_false(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(c(sort(actual_df$`Checking Balance Column`), NA), actual_df$`Checking Balance Column`)
+    expect_false(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(c(sort(actual_df$`Checking Balance Col`), NA), actual_df$`Checking Balance Col`)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), 1000)
     expect_equal(sum(actual_df$percent), 1)
@@ -204,17 +204,17 @@ test_that("rt_explore_value_totals", {
     # ALL NAs - Should be counted as 1 for each group
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        mutate(`Id Column` = NA) %>%
-                                        group_by(`Checking Balance Column`) %>%
-                                        summarise(count = n_distinct(`Id Column`)) %>%
+                                        mutate(`Id Col` = NA) %>%
+                                        group_by(`Checking Balance Col`) %>%
+                                        summarise(count = n_distinct(`Id Col`)) %>%
                                         as.data.frame())
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     actual_df <- rt_explore_value_totals(dataset=credit_data %>%
-                                             mutate(`Id Column` = NA),
+                                             mutate(`Id Col` = NA),
                                          variable=variable,
                                          count_distinct=count_distinct)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), 5)
     expect_equal(sum(actual_df$percent), 1)
@@ -224,14 +224,14 @@ test_that("rt_explore_value_totals", {
     #
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`) %>%
+                                        count(`Checking Balance Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     actual_df <- rt_explore_value_totals(dataset=credit_data,
                                          variable=variable,
                                          count_distinct=count_distinct)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), 1000)
     expect_equal(sum(actual_df$percent), 1)
@@ -242,12 +242,12 @@ test_that("rt_explore_value_totals", {
     # dataset should be the same as above
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`) %>%
+                                        count(`Checking Balance Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     num_unknowns <- expected_df[4, 'count']
     expected_df[4, 'count'] <- 1
     expected_df$percent <- expected_df$count / sum(expected_df$count)
-    temp <- credit_data %>% mutate(`Id Column` = ifelse(`Checking Balance Column` == 'unknown', NA, `Id Column`))
+    temp <- credit_data %>% mutate(`Id Col` = ifelse(`Checking Balance Col` == 'unknown', NA, `Id Col`))
     actual_df <- rt_explore_value_totals(dataset=temp, variable=variable, count_distinct = count_distinct)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     # there is only 1 distinct unknown, so subtract all unknowns and add back in 1 for the 1 distinct
@@ -258,16 +258,16 @@ test_that("rt_explore_value_totals", {
     # single var - sum by var
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, wt=`Amount Column`) %>%
+                                        count(`Checking Balance Col`, wt=`Amount Col`) %>%
                                         rename(sum = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$sum / sum(expected_df$sum)
     actual_df <- rt_explore_value_totals(dataset=credit_data,
                                          variable=variable,
                                          sum_by_variable=sum_by_variable)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
-    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Column`, na.rm = TRUE))
+    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Col`, na.rm = TRUE))
     expect_equal(sum(actual_df$percent), 1)
 
     ####
@@ -276,30 +276,30 @@ test_that("rt_explore_value_totals", {
     # while all other variable counts remain the same
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`) %>%
+                                        count(`Checking Balance Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     num_less_zero <- expected_df[1, 'count']
     expected_df[1, 'count'] <-num_less_zero * 2
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- expected_df %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`, levels = sort(custom_levels))) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`, levels = sort(custom_levels))) %>%
+        arrange(`Checking Balance Col`)
 
     # need to convert to a character, otherwise ifelse will convert to numeric factor value
     # then convert back to factor
     temp <- credit_data %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == '< 0 DM',
-                                                             paste(`Checking Balance Column`, '|', `Checking Balance Column`),
-                                                             `Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`))
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == '< 0 DM',
+                                                             paste(`Checking Balance Col`, '|', `Checking Balance Col`),
+                                                             `Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          multi_value_delimiter=' \\| ')
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
     # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
     # take the unique values and sort them for the factor levels)
-    expect_identical(levels(actual_df$`Checking Balance Column`), sort(custom_levels))
+    expect_identical(levels(actual_df$`Checking Balance Col`), sort(custom_levels))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     # we essentially duplicated the count for `< 0 DM`
     expect_equal(sum(actual_df$count), nrow(credit_data) + num_less_zero)
@@ -311,35 +311,35 @@ test_that("rt_explore_value_totals", {
     # while all other variable counts remain the same
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, wt=`Amount Column`) %>%
+                                        count(`Checking Balance Col`, wt=`Amount Col`) %>%
                                         rename(sum = n)) %>% as.data.frame()
     sum_amount_less_zero <- expected_df[1, 'sum']
     expected_df[1, 'sum'] <- sum_amount_less_zero * 2
     expected_df$percent <- expected_df$sum / sum(expected_df$sum)
     expected_df <- expected_df %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`, levels = sort(custom_levels))) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`, levels = sort(custom_levels))) %>%
+        arrange(`Checking Balance Col`)
 
     # need to convert to a character, otherwise ifelse will convert to numeric factor value
     # then convert back to factor
     temp <- credit_data %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == '< 0 DM',
-                                         paste(`Checking Balance Column`, '|', `Checking Balance Column`),
-                                         `Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`))
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == '< 0 DM',
+                                         paste(`Checking Balance Col`, '|', `Checking Balance Col`),
+                                         `Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          sum_by_variable=sum_by_variable,
                                          multi_value_delimiter=' \\| ')
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
     # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
     # take the unique values and sort them for the factor levels)
-    expect_identical(levels(actual_df$`Checking Balance Column`), sort(custom_levels))
+    expect_identical(levels(actual_df$`Checking Balance Col`), sort(custom_levels))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
     # we essentially duplicated the sum for `< 0 DM`
-    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Column`, na.rm = TRUE) + sum_amount_less_zero)
+    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Col`, na.rm = TRUE) + sum_amount_less_zero)
     expect_equal(sum(actual_df$percent), 1)
 
     ####
@@ -350,29 +350,29 @@ test_that("rt_explore_value_totals", {
     # did not duplicate
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`) %>%
+                                        count(`Checking Balance Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- expected_df %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`, levels = sort(custom_levels))) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`, levels = sort(custom_levels))) %>%
+        arrange(`Checking Balance Col`)
 
     # need to convert to a character, otherwise ifelse will convert to numeric factor value
     # then convert back to factor
     temp <- credit_data %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == '< 0 DM',
-                                         paste(`Checking Balance Column`, '|', `Checking Balance Column`),
-                                         `Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`))
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == '< 0 DM',
+                                         paste(`Checking Balance Col`, '|', `Checking Balance Col`),
+                                         `Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          count_distinct=count_distinct,
                                          multi_value_delimiter=' \\| ')
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
     # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
     # take the unique values and sort them for the factor levels)
-    expect_identical(levels(actual_df$`Checking Balance Column`), sort(custom_levels))
+    expect_identical(levels(actual_df$`Checking Balance Col`), sort(custom_levels))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     # we are counting distinct ids so we should have the same counts as original
     expect_equal(sum(actual_df$count), nrow(credit_data))
@@ -380,7 +380,7 @@ test_that("rt_explore_value_totals", {
 
     get_group_percent_totals <- function(x) {
         suppressWarnings(x %>%
-                             group_by(`Checking Balance Column`) %>%
+                             group_by(`Checking Balance Col`) %>%
                              summarise(group_percent_check = sum(group_percent))) %>%
             rt_get_vector('group_percent_check')
     }
@@ -389,18 +389,18 @@ test_that("rt_explore_value_totals", {
     # double var
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`) %>%
                                         rename(count = n))
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- suppressWarnings(expected_df %>%
-        group_by(`Checking Balance Column`) %>%
+        group_by(`Checking Balance Col`) %>%
         mutate(group_percent = count / sum(count)) %>%
         ungroup()) %>% as.data.frame()
     actual_df <- rt_explore_value_totals(dataset=credit_data,
                                          variable=variable,
                                          second_variable=second_variable)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), nrow(credit_data))
     expect_equal(sum(actual_df$percent), 1)
@@ -410,20 +410,20 @@ test_that("rt_explore_value_totals", {
     # double var - non factor
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`) %>%
                                         rename(count = n))
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- suppressWarnings(expected_df %>%
-                                        group_by(`Checking Balance Column`) %>%
+                                        group_by(`Checking Balance Col`) %>%
                                         mutate(group_percent = count / sum(count)) %>%
                                         ungroup()) %>% as.data.frame() %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        arrange(`Checking Balance Col`)
     actual_df <- rt_explore_value_totals(dataset=credit_data %>%
-                                             mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                             mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                          variable=variable,
                                          second_variable=second_variable)
-    expect_false(is.factor(actual_df$`Checking Balance Column`))
+    expect_false(is.factor(actual_df$`Checking Balance Col`))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), nrow(credit_data))
     expect_equal(sum(actual_df$percent), 1)
@@ -435,19 +435,19 @@ test_that("rt_explore_value_totals", {
     # and there is only 1 NA for the id field, so it still gets counted as a single distinct
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- suppressWarnings(expected_df %>%
-                                       group_by(`Checking Balance Column`) %>%
+                                       group_by(`Checking Balance Col`) %>%
                                        mutate(group_percent = count / sum(count)) %>%
                                        ungroup()) %>% as.data.frame()
     actual_df <- rt_explore_value_totals(dataset=credit_data,
                                          variable=variable,
                                          second_variable=second_variable,
                                          count_distinct=count_distinct)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), nrow(credit_data))
     expect_equal(sum(actual_df$percent), 1)
@@ -459,17 +459,17 @@ test_that("rt_explore_value_totals", {
     # dataset should be the same as above
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     num_unknowns <- expected_df[8, 'count'] + expected_df[9, 'count']
     expected_df[8, 'count'] <- 1
     expected_df[9, 'count'] <- 1
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- suppressWarnings(expected_df %>%
-                                        group_by(`Checking Balance Column`) %>%
+                                        group_by(`Checking Balance Col`) %>%
                                         mutate(group_percent = count / sum(count)) %>%
                                         ungroup()) %>% as.data.frame()
-    temp <- credit_data %>% mutate(`Id Column` = ifelse(`Checking Balance Column` == 'unknown', NA, `Id Column`))
+    temp <- credit_data %>% mutate(`Id Col` = ifelse(`Checking Balance Col` == 'unknown', NA, `Id Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          second_variable=second_variable,
@@ -486,11 +486,11 @@ test_that("rt_explore_value_totals", {
     # double var - sum by var
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`, wt=`Amount Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`, wt=`Amount Col`) %>%
                                         rename(sum = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$sum / sum(expected_df$sum)
     expected_df <- suppressWarnings(expected_df %>%
-                                        group_by(`Checking Balance Column`) %>%
+                                        group_by(`Checking Balance Col`) %>%
                                         mutate(group_percent = sum / sum(sum)) %>%
                                         ungroup()) %>% as.data.frame()
 
@@ -498,11 +498,11 @@ test_that("rt_explore_value_totals", {
                                          variable=variable,
                                          second_variable=second_variable,
                                          sum_by_variable=sum_by_variable)
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
-    expect_identical(levels(actual_df$`Checking Balance Column`), custom_levels)
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
+    expect_identical(levels(actual_df$`Checking Balance Col`), custom_levels)
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
 
-    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Column`, na.rm = TRUE))
+    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Col`, na.rm = TRUE))
     expect_equal(sum(actual_df$percent), 1)
     expect_true(rt_are_numerics_equal(get_group_percent_totals(actual_df), 1, num_decimals = 8))
 
@@ -512,36 +512,36 @@ test_that("rt_explore_value_totals", {
     # while all other variable counts remain the same
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     num_less_zero <- expected_df[1, 'count'] + expected_df[2, 'count']
     expected_df[1, 'count'] <- expected_df[1, 'count'] * 2
     expected_df[2, 'count'] <- expected_df[2, 'count'] * 2
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- expected_df %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`, levels = sort(custom_levels))) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`, levels = sort(custom_levels))) %>%
+        arrange(`Checking Balance Col`)
     expected_df <- suppressWarnings(expected_df %>%
-                                        group_by(`Checking Balance Column`) %>%
+                                        group_by(`Checking Balance Col`) %>%
                                         mutate(group_percent = count / sum(count)) %>%
                                         ungroup()) %>% as.data.frame()
 
     # need to convert to a character, otherwise ifelse will convert to numeric factor value
     # then convert back to factor
     temp <- credit_data %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == '< 0 DM',
-                                         paste(`Checking Balance Column`, '|', `Checking Balance Column`),
-                                         `Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`))
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == '< 0 DM',
+                                         paste(`Checking Balance Col`, '|', `Checking Balance Col`),
+                                         `Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          second_variable=second_variable,
                                          multi_value_delimiter=' \\| ')
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
     # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
     # take the unique values and sort them for the factor levels)
-    expect_identical(levels(actual_df$`Checking Balance Column`), sort(custom_levels))
+    expect_identical(levels(actual_df$`Checking Balance Col`), sort(custom_levels))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), nrow(credit_data) + num_less_zero)
     expect_equal(sum(actual_df$percent), 1)
@@ -553,39 +553,39 @@ test_that("rt_explore_value_totals", {
     # while all other variable counts remain the same
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`, wt=`Amount Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`, wt=`Amount Col`) %>%
                                         rename(sum = n)) %>% as.data.frame()
     sum_less_zero <- expected_df[1, 'sum'] + expected_df[2, 'sum']
     expected_df[1, 'sum'] <- expected_df[1, 'sum'] * 2
     expected_df[2, 'sum'] <- expected_df[2, 'sum'] * 2
     expected_df$percent <- expected_df$sum / sum(expected_df$sum)
     expected_df <- expected_df %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`, levels = sort(custom_levels))) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`, levels = sort(custom_levels))) %>%
+        arrange(`Checking Balance Col`)
     expected_df <- suppressWarnings(expected_df %>%
-                                        group_by(`Checking Balance Column`) %>%
+                                        group_by(`Checking Balance Col`) %>%
                                         mutate(group_percent = sum / sum(sum)) %>%
                                         ungroup()) %>% as.data.frame()
 
     # need to convert to a character, otherwise ifelse will convert to numeric factor value
     # then convert back to factor
     temp <- credit_data %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == '< 0 DM',
-                                         paste(`Checking Balance Column`, '|', `Checking Balance Column`),
-                                         `Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`))
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == '< 0 DM',
+                                         paste(`Checking Balance Col`, '|', `Checking Balance Col`),
+                                         `Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          second_variable=second_variable,
                                          sum_by_variable=sum_by_variable,
                                          multi_value_delimiter=' \\| ')
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
     # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
     # take the unique values and sort them for the factor levels)
-    expect_identical(levels(actual_df$`Checking Balance Column`), sort(custom_levels))
+    expect_identical(levels(actual_df$`Checking Balance Col`), sort(custom_levels))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
-    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Column`, na.rm = TRUE) + sum_less_zero)
+    expect_equal(sum(actual_df$sum), sum(credit_data$`Amount Col`, na.rm = TRUE) + sum_less_zero)
     expect_equal(sum(actual_df$percent), 1)
     expect_true(rt_are_numerics_equal(get_group_percent_totals(actual_df), 1, num_decimals = 8))
 
@@ -597,34 +597,34 @@ test_that("rt_explore_value_totals", {
     # did not duplicate
     ####
     expected_df <- suppressWarnings(credit_data %>%
-                                        count(`Checking Balance Column`, `Default Column`) %>%
+                                        count(`Checking Balance Col`, `Default Col`) %>%
                                         rename(count = n)) %>% as.data.frame()
     expected_df$percent <- expected_df$count / sum(expected_df$count)
     expected_df <- expected_df %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`, levels = sort(custom_levels))) %>%
-        arrange(`Checking Balance Column`)
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`, levels = sort(custom_levels))) %>%
+        arrange(`Checking Balance Col`)
     expected_df <- suppressWarnings(expected_df %>%
-                                        group_by(`Checking Balance Column`) %>%
+                                        group_by(`Checking Balance Col`) %>%
                                         mutate(group_percent = count / sum(count)) %>%
                                         ungroup()) %>% as.data.frame()
 
     # need to convert to a character, otherwise ifelse will convert to numeric factor value
     # then convert back to factor
     temp <- credit_data %>%
-        mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == '< 0 DM',
-                                         paste(`Checking Balance Column`, '|', `Checking Balance Column`),
-                                         `Checking Balance Column`)) %>%
-        mutate(`Checking Balance Column` = factor(`Checking Balance Column`))
+        mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == '< 0 DM',
+                                         paste(`Checking Balance Col`, '|', `Checking Balance Col`),
+                                         `Checking Balance Col`)) %>%
+        mutate(`Checking Balance Col` = factor(`Checking Balance Col`))
     actual_df <- rt_explore_value_totals(dataset=temp,
                                          variable=variable,
                                          second_variable=second_variable,
                                          count_distinct=count_distinct,
                                          multi_value_delimiter=' \\| ')
-    expect_true(is.factor(actual_df$`Checking Balance Column`))
+    expect_true(is.factor(actual_df$`Checking Balance Col`))
     # same levels, but now should be sorted (since there won't necessarily be the same levels, so it will
     # take the unique values and sort them for the factor levels)
-    expect_identical(levels(actual_df$`Checking Balance Column`), sort(custom_levels))
+    expect_identical(levels(actual_df$`Checking Balance Col`), sort(custom_levels))
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
     expect_equal(sum(actual_df$count), nrow(credit_data))
     expect_equal(sum(actual_df$percent), 1)
@@ -633,26 +633,26 @@ test_that("rt_explore_value_totals", {
 
 test_that("rt_explore_value_totals__facet", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    # make sure all column names have spaces
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    # make sure all col names have spaces
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     ##########################################################################################################
     # test with factor
     # change the levels to verify that the original levels are retained if order_by_count==FALSE
     ##########################################################################################################
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
-    credit_data$`Checking Balance Column` <- factor(credit_data$`Checking Balance Column`, levels=custom_levels)
-    credit_data$`Id Column` <- 1:nrow(credit_data)
+    credit_data$`Checking Balance Col` <- factor(credit_data$`Checking Balance Col`, levels=custom_levels)
+    credit_data$`Id Col` <- 1:nrow(credit_data)
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    credit_data[2, 'Default Column'] <- NA
-    credit_data[3, 'Id Column'] <- NA
-    credit_data[4, 'Amount Column'] <- NA
+    credit_data[1, 'Checking Balance Col'] <- NA
+    credit_data[2, 'Default Col'] <- NA
+    credit_data[3, 'Id Col'] <- NA
+    credit_data[4, 'Amount Col'] <- NA
 
-    variable <- 'Checking Balance Column'
-    second_variable <- 'Default Column'
-    sum_by_variable <- 'Amount Column'
-    count_distinct <- 'Id Column'
+    variable <- 'Checking Balance Col'
+    second_variable <- 'Default Col'
+    sum_by_variable <- 'Amount Col'
+    count_distinct <- 'Id Col'
 
     # already have unit tests to check the non-facet numbers, so we only have to verify that
     # if we filter by facet variables, we should get the same values
@@ -660,131 +660,131 @@ test_that("rt_explore_value_totals__facet", {
     # variable
     ##########################################################################################################
     value_counts <- credit_data %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                facet_variable = 'Default Column')
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Column`))
+    default_na <- value_counts %>% filter(is.na(`Default Col`))
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$count, 1)
     expect_equal(default_na$percent, 1)
-    expect_equal(as.character(default_na$`Checking Balance Column`), "1 - 200 DM")
+    expect_equal(as.character(default_na$`Checking Balance Col`), "1 - 200 DM")
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'yes') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column')
+        filter(`Default Col` == 'yes') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - yes') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - yes') %>%
+                                            select(-`Default Col`)))
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'no') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column')
+        filter(`Default Col` == 'no') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - no') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - no') %>%
+                                            select(-`Default Col`)))
     ##########################################################################################################
     # comparison variable
     ##########################################################################################################
     value_counts <- credit_data %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                facet_variable = 'Default Column')
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Column`))
+    default_na <- value_counts %>% filter(is.na(`Default Col`))
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$count, 1)
     expect_equal(default_na$percent, 1)
-    expect_equal(as.character(default_na$`Checking Balance Column`), "1 - 200 DM")
+    expect_equal(as.character(default_na$`Checking Balance Col`), "1 - 200 DM")
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'yes') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column', second_variable = 'Purpose Column')
+        filter(`Default Col` == 'yes') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col', second_variable = 'Purpose Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - yes') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - yes') %>%
+                                            select(-`Default Col`)))
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'no') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column', second_variable = 'Purpose Column')
+        filter(`Default Col` == 'no') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col', second_variable = 'Purpose Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - no') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - no') %>%
+                                            select(-`Default Col`)))
 
     ##########################################################################################################
     # sum_by variable
     ##########################################################################################################
     value_counts <- credit_data %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                sum_by_variable = 'Amount Column',
-                                facet_variable = 'Default Column')
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                sum_by_variable = 'Amount Col',
+                                facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Column`))
+    default_na <- value_counts %>% filter(is.na(`Default Col`))
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$sum, 5951)
     expect_equal(default_na$percent, 1)
     expect_equal(default_na$group_percent, 1)
-    expect_equal(as.character(default_na$`Checking Balance Column`), "1 - 200 DM")
+    expect_equal(as.character(default_na$`Checking Balance Col`), "1 - 200 DM")
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'yes') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                sum_by_variable = 'Amount Column')
+        filter(`Default Col` == 'yes') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                sum_by_variable = 'Amount Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - yes') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - yes') %>%
+                                            select(-`Default Col`)))
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'no') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                sum_by_variable = 'Amount Column')
+        filter(`Default Col` == 'no') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                sum_by_variable = 'Amount Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - no') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - no') %>%
+                                            select(-`Default Col`)))
 
     ##########################################################################################################
     # count_distinct variable
     ##########################################################################################################
     value_counts <- credit_data %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                count_distinct = 'Id Column',
-                                facet_variable = 'Default Column')
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                count_distinct = 'Id Col',
+                                facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Column`))
+    default_na <- value_counts %>% filter(is.na(`Default Col`))
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$count, 1)
     expect_equal(default_na$percent, 1)
     expect_equal(default_na$group_percent, 1)
-    expect_equal(as.character(default_na$`Checking Balance Column`), "1 - 200 DM")
+    expect_equal(as.character(default_na$`Checking Balance Col`), "1 - 200 DM")
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'yes') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                count_distinct = 'Id Column')
+        filter(`Default Col` == 'yes') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                count_distinct = 'Id Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - yes') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - yes') %>%
+                                            select(-`Default Col`)))
 
     expected <- credit_data %>%
-        filter(`Default Column` == 'no') %>%
-        rt_explore_value_totals(variable = 'Checking Balance Column',
-                                second_variable = 'Purpose Column',
-                                count_distinct = 'Id Column')
+        filter(`Default Col` == 'no') %>%
+        rt_explore_value_totals(variable = 'Checking Balance Col',
+                                second_variable = 'Purpose Col',
+                                count_distinct = 'Id Col')
     expect_true(rt_are_dataframes_equal(expected,
                                         value_counts %>%
-                                            filter(`Default Column` == 'Default Column - no') %>%
-                                            select(-`Default Column`)))
+                                            filter(`Default Col` == 'Default Col - no') %>%
+                                            select(-`Default Col`)))
 
 })
 
@@ -793,142 +793,142 @@ test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
     # for all sum-by values ina particular primary categorical value, then we try to divide by zero and get
     # NAN
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    # make sure all column names have spaces
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    # make sure all col names have spaces
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
-    credit_data <- credit_data %>% mutate(`Amount Column` = ifelse(`Checking Balance Column` == '< 0 DM', 0, `Amount Column`))
+    credit_data <- credit_data %>% mutate(`Amount Col` = ifelse(`Checking Balance Col` == '< 0 DM', 0, `Amount Col`))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Checking Balance Column',
+                                             variable='Checking Balance Col',
                                              second_variable=NULL,
                                              count_distinct=NULL,
-                                             sum_by_variable='Amount Column',
+                                             sum_by_variable='Amount Col',
                                              multi_value_delimiter=NULL)
 
     expect_true(rt_are_dataframes_equal(actual_counts,
                                         credit_data %>%
-                                            group_by(`Checking Balance Column`) %>%
-                                            summarise(sum = sum(`Amount Column`),
-                                                      percent = sum(`Amount Column`) / sum(credit_data$`Amount Column`))))
+                                            group_by(`Checking Balance Col`) %>%
+                                            summarise(sum = sum(`Amount Col`),
+                                                      percent = sum(`Amount Col`) / sum(credit_data$`Amount Col`))))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Checking Balance Column',
-                                             second_variable='Default Column',
+                                             variable='Checking Balance Col',
+                                             second_variable='Default Col',
                                              count_distinct=NULL,
-                                             sum_by_variable='Amount Column',
+                                             sum_by_variable='Amount Col',
                                              multi_value_delimiter=NULL)
     expect_true(rt_are_dataframes_equal(actual_counts,
                                         credit_data %>%
-                                            group_by(`Checking Balance Column`, `Default Column`) %>%
-                                            summarise(sum = sum(`Amount Column`),
-                                                      percent = sum(`Amount Column`) / sum(credit_data$`Amount Column`)) %>%
+                                            group_by(`Checking Balance Col`, `Default Col`) %>%
+                                            summarise(sum = sum(`Amount Col`),
+                                                      percent = sum(`Amount Col`) / sum(credit_data$`Amount Col`)) %>%
                                             mutate(group_percent = sum / sum(sum)) %>%
                                             ungroup()))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Checking Balance Column',
-                                                     comparison_variable='Default Column',
-                                                     sum_by_variable='Amount Column'))
+                                                     variable='Checking Balance Col',
+                                                     comparison_variable='Default Col',
+                                                     sum_by_variable='Amount Col'))
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by_stack.png',
                    plot=suppressWarnings(rt_explore_plot_value_totals(dataset=credit_data,
-                                                                      variable='Checking Balance Column',
-                                                                      comparison_variable='Default Column',
-                                                                      sum_by_variable='Amount Column',
+                                                                      variable='Checking Balance Col',
+                                                                      comparison_variable='Default Col',
+                                                                      sum_by_variable='Amount Col',
                                                                       view_type = 'Stack Percent')))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Checking Balance Column',
-                                             second_variable='Default Column',
-                                             count_distinct='Amount Column',
+                                             variable='Checking Balance Col',
+                                             second_variable='Default Col',
+                                             count_distinct='Amount Col',
                                              #sum_by_variable='amount',
                                              multi_value_delimiter=NULL)
-    expect_true(rt_are_dataframes_equal(actual_counts %>% select(`Checking Balance Column`, `Default Column`, count),
+    expect_true(rt_are_dataframes_equal(actual_counts %>% select(`Checking Balance Col`, `Default Col`, count),
                                         credit_data %>%
-                                            group_by(`Checking Balance Column`, `Default Column`) %>%
-                                            summarise(count = n_distinct(`Amount Column`))))
+                                            group_by(`Checking Balance Col`, `Default Col`) %>%
+                                            summarise(count = n_distinct(`Amount Col`))))
 
 
 
     ##########################################################################################################
     # Try the same thing but if values in category have NA rather than 0
     ##########################################################################################################
-    credit_data <- credit_data %>% mutate(`Amount Column` = ifelse(`Checking Balance Column` == '< 0 DM', NA, `Amount Column`))
+    credit_data <- credit_data %>% mutate(`Amount Col` = ifelse(`Checking Balance Col` == '< 0 DM', NA, `Amount Col`))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Checking Balance Column',
+                                             variable='Checking Balance Col',
                                              second_variable=NULL,
                                              count_distinct=NULL,
-                                             sum_by_variable='Amount Column',
+                                             sum_by_variable='Amount Col',
                                              multi_value_delimiter=NULL)
 
     expect_true(rt_are_dataframes_equal(actual_counts,
                                         credit_data %>%
-                                            group_by(`Checking Balance Column`) %>%
-                                            summarise(sum = sum(`Amount Column`, na.rm = TRUE),
-                                                      percent = sum(`Amount Column`, na.rm = TRUE) / sum(credit_data$`Amount Column`, na.rm = TRUE))))
+                                            group_by(`Checking Balance Col`) %>%
+                                            summarise(sum = sum(`Amount Col`, na.rm = TRUE),
+                                                      percent = sum(`Amount Col`, na.rm = TRUE) / sum(credit_data$`Amount Col`, na.rm = TRUE))))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Checking Balance Column',
-                                             second_variable='Default Column',
+                                             variable='Checking Balance Col',
+                                             second_variable='Default Col',
                                              count_distinct=NULL,
-                                             sum_by_variable='Amount Column',
+                                             sum_by_variable='Amount Col',
                                              multi_value_delimiter=NULL)
     expect_true(rt_are_dataframes_equal(actual_counts,
                                         credit_data %>%
-                                            group_by(`Checking Balance Column`, `Default Column`) %>%
-                                            summarise(sum = sum(`Amount Column`, na.rm = TRUE),
-                                                      percent = sum(`Amount Column`, na.rm = TRUE) / sum(credit_data$`Amount Column`, na.rm = TRUE)) %>%
+                                            group_by(`Checking Balance Col`, `Default Col`) %>%
+                                            summarise(sum = sum(`Amount Col`, na.rm = TRUE),
+                                                      percent = sum(`Amount Col`, na.rm = TRUE) / sum(credit_data$`Amount Col`, na.rm = TRUE)) %>%
                                             mutate(group_percent = sum / sum(sum, na.rm = TRUE)) %>%
                                             ungroup()))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by_nas.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Checking Balance Column',
-                                                     comparison_variable='Default Column',
-                                                     sum_by_variable='Amount Column'))
+                                                     variable='Checking Balance Col',
+                                                     comparison_variable='Default Col',
+                                                     sum_by_variable='Amount Col'))
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_missing_sum_by_stack_nas.png',
                    plot=suppressWarnings(rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Checking Balance Column',
-                                                     comparison_variable='Default Column',
-                                                     sum_by_variable='Amount Column',
+                                                     variable='Checking Balance Col',
+                                                     comparison_variable='Default Col',
+                                                     sum_by_variable='Amount Col',
                                                      view_type = 'Stack Percent')))
 
     actual_counts <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Checking Balance Column',
-                                             second_variable='Default Column',
-                                             count_distinct='Amount Column',
-                                             #sum_by_variable='Amount Column',
+                                             variable='Checking Balance Col',
+                                             second_variable='Default Col',
+                                             count_distinct='Amount Col',
+                                             #sum_by_variable='Amount Col',
                                              multi_value_delimiter=NULL)
-    expect_true(rt_are_dataframes_equal(actual_counts %>% select(`Checking Balance Column`, `Default Column`, count),
+    expect_true(rt_are_dataframes_equal(actual_counts %>% select(`Checking Balance Col`, `Default Col`, count),
                                         credit_data %>%
-                                            group_by(`Checking Balance Column`, `Default Column`) %>%
-                                            summarise(count = n_distinct(`Amount Column`))))
+                                            group_by(`Checking Balance Col`, `Default Col`) %>%
+                                            summarise(count = n_distinct(`Amount Col`))))
 
 })
 
 test_that("rt_explore_plot_value_totals__distinct_variable", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    # make sure all column names have spaces
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    # make sure all col names have spaces
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     ##########################################################################################################
     # test with factor
     # change the levels to verify that the original levels are retained if order_by_count==FALSE
     ##########################################################################################################
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
-    credit_data$`Checking Balance Column` <- factor(credit_data$`Checking Balance Column`, levels=custom_levels)
-    credit_data$`Id Column` <- 1:nrow(credit_data)
+    credit_data$`Checking Balance Col` <- factor(credit_data$`Checking Balance Col`, levels=custom_levels)
+    credit_data$`Id Col` <- 1:nrow(credit_data)
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    credit_data[2, 'Default Column'] <- NA
-    credit_data[3, 'Id Column'] <- NA
-    credit_data[4, 'Amount Column'] <- NA
+    credit_data[1, 'Checking Balance Col'] <- NA
+    credit_data[2, 'Default Col'] <- NA
+    credit_data[3, 'Id Col'] <- NA
+    credit_data[4, 'Amount Col'] <- NA
 
-    variable <- 'Checking Balance Column'
-    comparison_variable <- 'Default Column'
-    sum_by_variable <- 'Amount Column'
-    count_distinct <- 'Id Column'
+    variable <- 'Checking Balance Col'
+    comparison_variable <- 'Default Col'
+    sum_by_variable <- 'Amount Col'
+    count_distinct <- 'Id Col'
 
     ##########################################################################################################
     # single variable
@@ -954,7 +954,7 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                                      count_distinct_variable=count_distinct,
                                                      order_by_count=FALSE))
 
-    temp <- credit_data %>% unite(cohort, `Age Column`, `Purpose Column`)
+    temp <- credit_data %>% unite(cohort, `Age Col`, `Purpose Col`)
     # temp %>% group_by(checking_balance) %>% summarise(distinct_cohorts = n_distinct(cohort),
     #                                                   perc_distinct = distinct_cohorts / length(unique(temp$cohort)))
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__purpose.png',
@@ -971,7 +971,7 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__char.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data %>%
-                                                         mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                                         mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                                      variable=variable,
                                                      count_distinct_variable=count_distinct,
                                                      order_by_count=FALSE))
@@ -1034,7 +1034,7 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                                                      count_distinct_variable=count_distinct,
                                                      order_by_count=TRUE))
 
-    temp <- credit_data %>% unite(cohort, `Age Column`, `Purpose Column`)
+    temp <- credit_data %>% unite(cohort, `Age Col`, `Purpose Col`)
     # temp %>%
     #     group_by(checking_balance, default) %>%
     #     summarise(distinct_cohorts = n_distinct(cohort)) %>%
@@ -1071,7 +1071,7 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
                    plot=rt_explore_plot_value_totals(dataset=temp,
                                                      variable=variable,
                                                      comparison_variable=comparison_variable,
-                                                     facet_variable='Phone Column',
+                                                     facet_variable='Phone Col',
                                                      count_distinct_variable='cohort',
                                                      view_type="Bar",
                                                      order_by_count=FALSE))
@@ -1093,7 +1093,7 @@ test_that("rt_explore_plot_value_totals__distinct_variable", {
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__distinct__comp__char.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data %>%
-                                                         mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                                         mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                                      variable=variable,
                                                      comparison_variable=comparison_variable,
                                                      count_distinct_variable=count_distinct,
@@ -1168,23 +1168,23 @@ test_that("rt_get_colors_from_values", {
 
 test_that("rt_explore_plot_value_counts", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
-    variable <- 'Checking Balance Column'
+    colnames(credit_data) <- test_helper__column_names(credit_data)
+    variable <- 'Checking Balance Col'
 
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
+    credit_data[1, 'Checking Balance Col'] <- NA
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data %>%
-                                                         mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                                         mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                                       variable=variable,
                                                       order_by_count=FALSE,
                                                       base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__simple.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data %>%
-                                                         mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                                         mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                                      variable=variable,
                                                      order_by_count=FALSE,
                                                      simple_mode=TRUE,
@@ -1192,9 +1192,9 @@ test_that("rt_explore_plot_value_counts", {
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__comparison__simple.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data %>%
-                                                         mutate(`Checking Balance Column` = as.character(`Checking Balance Column`)),
+                                                         mutate(`Checking Balance Col` = as.character(`Checking Balance Col`)),
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      simple_mode=TRUE,
                                                      order_by_count=FALSE,
                                                      base_size=11))
@@ -1202,7 +1202,7 @@ test_that("rt_explore_plot_value_counts", {
     # plot without order
     temp_dataset <- credit_data
     temp_dataset <- temp_dataset %>%
-        mutate(`Checking Balance Column` = factor(as.character(`Checking Balance Column`),
+        mutate(`Checking Balance Col` = factor(as.character(`Checking Balance Col`),
                                          levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
                                          ordered = TRUE))
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__factor.png',
@@ -1212,7 +1212,7 @@ test_that("rt_explore_plot_value_counts", {
                                                      base_size=11))
 
     # plot without order
-    temp_dataset$`Checking Balance Column` <- fct_infreq(temp_dataset$`Checking Balance Column`, ordered = TRUE)
+    temp_dataset$`Checking Balance Col` <- fct_infreq(temp_dataset$`Checking Balance Col`, ordered = TRUE)
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_order__ordered.png',
                    plot=rt_explore_plot_value_totals(dataset=temp_dataset,
                                                      variable=variable,
@@ -1226,9 +1226,9 @@ test_that("rt_explore_plot_value_counts", {
                                                      base_size=11))
 
     t <- credit_data %>%
-        mutate(`Checking Balance Column` = ifelse(`Checking Balance Column` == 'unknown',
+        mutate(`Checking Balance Col` = ifelse(`Checking Balance Col` == 'unknown',
                                                   NA,
-                                                  as.character(`Checking Balance Column`)))
+                                                  as.character(`Checking Balance Col`)))
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_nas.png',
                    plot=rt_explore_plot_value_totals(dataset=t,
@@ -1260,7 +1260,7 @@ test_that("rt_explore_plot_value_counts", {
     ##########################################################################################################
     # test without factor
     ##########################################################################################################
-    credit_data$`Checking Balance Column` <- as.character(credit_data$`Checking Balance Column`)
+    credit_data$`Checking Balance Col` <- as.character(credit_data$`Checking Balance Col`)
 
     # plot without order
     test_save_plot(file_name='data/rt_explore_plot_value_counts_no_factor_no_order.png',
@@ -1279,12 +1279,12 @@ test_that("rt_explore_plot_value_counts", {
 
 test_that("rt_explore_plot_value_counts__facet", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    # make sure all column names have spaces
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    # make sure all col names have spaces
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
-    variable <- 'Checking Balance Column'
-    comparison_variable <- 'Credit History Column'
-    facet_variable <- 'Default Column'
+    variable <- 'Checking Balance Col'
+    comparison_variable <- 'Credit History Col'
+    facet_variable <- 'Default Col'
 
     # make sure it handles NAs
     credit_data[1, variable] <- NA
@@ -1357,7 +1357,7 @@ test_that("rt_explore_plot_value_counts__facet", {
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      #comparison_variable=comparison_variable,
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      facet_variable=facet_variable,
                                                      view_type = 'Bar',
                                                      order_by_count=FALSE,
@@ -1367,7 +1367,7 @@ test_that("rt_explore_plot_value_counts__facet", {
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
                                                      #comparison_variable=comparison_variable,
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      facet_variable=facet_variable,
                                                      simple_mode=TRUE,
                                                      view_type = 'Bar',
@@ -1385,7 +1385,7 @@ test_that("rt_explore_plot_value_counts__facet", {
                                                      variable=variable,
                                                      #comparison_variable=comparison_variable,
                                                      #sum_by_variable = 'amount',
-                                                     count_distinct_variable = 'Employment Duration Column',
+                                                     count_distinct_variable = 'Employment Duration Col',
                                                      facet_variable=facet_variable,
                                                      view_type = 'Bar',
                                                      order_by_count=FALSE,
@@ -1396,7 +1396,7 @@ test_that("rt_explore_plot_value_counts__facet", {
                                                      variable=variable,
                                                      #comparison_variable=comparison_variable,
                                                      #sum_by_variable = 'amount',
-                                                     count_distinct_variable = 'Employment Duration Column',
+                                                     count_distinct_variable = 'Employment Duration Col',
                                                      facet_variable=facet_variable,
                                                      view_type = 'Bar',
                                                      simple_mode=TRUE,
@@ -1481,10 +1481,10 @@ test_that("rt_explore_plot_value_counts__facet", {
     # test factor order
     temp_dataset <- credit_data
     temp_dataset <- temp_dataset %>%
-        mutate(`Checking Balance Column` = factor(as.character(`Checking Balance Column`),
+        mutate(`Checking Balance Col` = factor(as.character(`Checking Balance Col`),
                                          levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
                                          ordered = TRUE),
-               `Default Column` = factor(as.character(`Default Column`),
+               `Default Col` = factor(as.character(`Default Col`),
                                          levels=c("yes", "no"),
                                          ordered = TRUE))
 
@@ -1499,90 +1499,90 @@ test_that("rt_explore_plot_value_counts__facet", {
 
 test_that("rt_explore_plot_value_counts: logical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
-    credit_data[1, 'Default Column'] <- NA
+    credit_data[1, 'Default Col'] <- NA
     credit_data_logical <- credit_data %>%
-        mutate(`Default Column` = ifelse(`Default Column` == 'yes', TRUE, FALSE))
+        mutate(`Default Col` = ifelse(`Default Col` == 'yes', TRUE, FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__logical.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data_logical,
-                                                     variable='Default Column',
+                                                     variable='Default Col',
                                                      base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__logical_comparison.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data_logical,
-                                                     variable='Checking Balance Column',
-                                                     comparison_variable='Default Column',
+                                                     variable='Checking Balance Col',
+                                                     comparison_variable='Default Col',
                                                      base_size=11))
 })
 
 test_that("rt_explore_plot_boxplot: logical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
-    credit_data[1, 'Default Column'] <- NA
+    credit_data[1, 'Default Col'] <- NA
     credit_data_logical <- credit_data %>%
-        mutate(`Default Column` = ifelse(`Default Column` == 'yes', TRUE, FALSE))
+        mutate(`Default Col` = ifelse(`Default Col` == 'yes', TRUE, FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot__logical.png',
                    plot=rt_explore_plot_boxplot(dataset=credit_data_logical,
-                                                variable='Amount Column',
-                                                comparison_variable='Default Column'))
+                                                variable='Amount Col',
+                                                comparison_variable='Default Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot__logical_color.png',
                    plot=rt_explore_plot_boxplot(dataset=credit_data_logical,
-                                                variable='Amount Column',
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable = 'Default Column'))
+                                                variable='Amount Col',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable = 'Default Col'))
 })
 
 test_that("rt_explore_plot_scatter: logical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     credit_data_logical <- credit_data %>%
-        mutate(`Default Column` = ifelse(`Default Column` == 'yes', TRUE, FALSE))
+        mutate(`Default Col` = ifelse(`Default Col` == 'yes', TRUE, FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__logical_size.png',
                    plot=rt_explore_plot_scatter(dataset=credit_data_logical,
-                                                variable='Amount Column',
-                                                comparison_variable='Months Loan Duration Column',
-                                                size_variable = 'Default Column'))
+                                                variable='Amount Col',
+                                                comparison_variable='Months Loan Duration Col',
+                                                size_variable = 'Default Col'))
 
-    credit_data_logical[1, 'Default Column'] <- NA
+    credit_data_logical[1, 'Default Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_scatter__logical.png',
                    plot=rt_explore_plot_scatter(dataset=credit_data_logical,
-                                                variable='Amount Column',
-                                                comparison_variable='Months Loan Duration Column'))
+                                                variable='Amount Col',
+                                                comparison_variable='Months Loan Duration Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__logical_color.png',
                    plot=rt_explore_plot_scatter(dataset=credit_data_logical,
-                                                variable='Amount Column',
-                                                comparison_variable='Months Loan Duration Column',
-                                                color_variable = 'Default Column'))
+                                                variable='Amount Col',
+                                                comparison_variable='Months Loan Duration Col',
+                                                color_variable = 'Default Col'))
 })
 
 test_that("rt_explore_plot_value_counts_against_categorical", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     ##########################################################################################################
     # test with factor
     # change the levels to verify that the original levels are retained if order_by_count==FALSE
     ##########################################################################################################
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
-    credit_data$`Checking Balance Column` <- factor(credit_data$`Checking Balance Column`, levels=custom_levels)
+    credit_data$`Checking Balance Col` <- factor(credit_data$`Checking Balance Col`, levels=custom_levels)
 
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_defaults.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      comparison_variable='Default Column',
+                                                      comparison_variable='Default Col',
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
@@ -1591,14 +1591,14 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_pretty.png',
                    plot=rt_explore_plot_value_totals(dataset=rt_pretty_dataset(credit_data),
                                                       variable=rt_pretty_text(variable),
-                                                      comparison_variable=rt_pretty_text('Default Column'),
+                                                      comparison_variable=rt_pretty_text('Default Col'),
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_swapped.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Default Column',
+                                                     variable='Default Col',
                                                      comparison_variable=variable,
                                                      order_by_count=TRUE,
                                                      show_variable_totals=TRUE,
@@ -1609,7 +1609,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_not_order_by_count.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      comparison_variable='Default Column',
+                                                      comparison_variable='Default Col',
                                                       order_by_count=FALSE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE))
@@ -1618,7 +1618,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comp_var_not_show_group_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      comparison_variable='Default Column',
+                                                      comparison_variable='Default Col',
                                                       order_by_count=FALSE,
                                                       show_variable_totals=FALSE,
                                                       show_comparison_totals=TRUE))
@@ -1627,7 +1627,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comp_var_not_show_comparison_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      comparison_variable='Default Column',
+                                                      comparison_variable='Default Col',
                                                       order_by_count=FALSE,
                                                       show_variable_totals=FALSE,
                                                       show_comparison_totals=FALSE))
@@ -1635,29 +1635,29 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     ##########################################################################################################
     # ORDERED FACTORS
     ##########################################################################################################
-    credit_data$`Checking Balance Column` <- factor(credit_data$`Checking Balance Column`,
+    credit_data$`Checking Balance Col` <- factor(credit_data$`Checking Balance Col`,
                                                     levels=c("< 0 DM", "1 - 200 DM", "> 200 DM", "unknown"),
                                                     ordered=TRUE)
-    credit_data$`Default Column` <- factor(credit_data$`Default Column`,
+    credit_data$`Default Col` <- factor(credit_data$`Default Col`,
                                            levels=c("no", "yes"),
                                            ordered=TRUE)
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      order_by_count=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack Percent",
                                                      order_by_count=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_rev.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack Percent",
                                                      order_by_count=FALSE,
                                                      reverse_stack=FALSE))
@@ -1665,14 +1665,14 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_total.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
                                                      order_by_count=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_total_rev.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
                                                      order_by_count=FALSE,
                                                      reverse_stack=FALSE))
@@ -1680,81 +1680,81 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      order_by_count=TRUE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount_rev.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      order_by_count=TRUE,
                                                      reverse_stack=FALSE))
 
     test_save_plot(file_name='data/value_counts__ordered_factor_stacked_amount_no_var_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      order_by_count=TRUE,
                                                      show_variable_totals=FALSE))
 
     test_save_plot(file_name='data/value_counts__ordered_factor_stacked_amount_no_comp_totals.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      order_by_count=TRUE,
                                                      show_comparison_totals=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked_amount2.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack",
-                                                     sum_by_variable = 'Amount Column',
+                                                     sum_by_variable = 'Amount Col',
                                                      order_by_count=TRUE,
                                                      show_dual_axes=TRUE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Confidence Interval",
                                                      order_by_count=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf2.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Confidence Interval - within Variable",
                                                      order_by_count=FALSE))
 
     # change the order of the secondary/comparison variable
-    credit_data$`Default Column` <- factor(credit_data$`Default Column`,
+    credit_data$`Default Col` <- factor(credit_data$`Default Col`,
                                            levels=c("yes", "no"),
                                            ordered=TRUE)
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor__swapped_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      order_by_count=FALSE))
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_stacked__swapped_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Stack Percent",
                                                      order_by_count=FALSE))
 
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf__swapped_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Confidence Interval",
                                                      order_by_count=FALSE))
 
@@ -1762,7 +1762,7 @@ test_that("rt_explore_plot_value_counts_against_categorical", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts__ordered_factor_conf2__swapped_order.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Default Column',
+                                                     comparison_variable='Default Col',
                                                      view_type="Confidence Interval - within Variable",
                                                      order_by_count=FALSE))
 })
@@ -1828,19 +1828,19 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
 
 test_that("rt_explore_plot_value_totals__conf_intervals", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
     ##########################################################################################################
     # test with factor
     # change the levels to verify that the original levels are retained if order_by_count==FALSE
     ##########################################################################################################
     custom_levels <- c('< 0 DM', '1 - 200 DM', '> 200 DM', 'unknown')
-    credit_data$`Checking Balance Column` <- factor(credit_data$`Checking Balance Column`, levels=custom_levels)
+    credit_data$`Checking Balance Col` <- factor(credit_data$`Checking Balance Col`, levels=custom_levels)
 
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
-    comparison_variable <- 'Housing Column'
-    sum_by_variable <- 'Amount Column'
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
+    comparison_variable <- 'Housing Col'
+    sum_by_variable <- 'Amount Col'
 
     ##########################################################################################################
     # VARIABLE ONLY
@@ -1880,15 +1880,15 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
                                                      show_dual_axes=FALSE))
 
     multi_value_credit_data <- credit_data %>%
-        mutate(`Purpose Column` = case_when(
-            `Purpose Column` == 'car' ~ 'car, car_test',
-            `Purpose Column` == 'business' ~ 'business, business_test',
-            TRUE ~ as.character(`Purpose Column`))) %>%
-        mutate(`Purpose Column` = as.factor(`Purpose Column`))
+        mutate(`Purpose Col` = case_when(
+            `Purpose Col` == 'car' ~ 'car, car_test',
+            `Purpose Col` == 'business' ~ 'business, business_test',
+            TRUE ~ as.character(`Purpose Col`))) %>%
+        mutate(`Purpose Col` = as.factor(`Purpose Col`))
 
     test_save_plot(file_name='data/plot_value_totals__conf__multi_value.png',
                    plot=rt_explore_plot_value_totals(dataset=multi_value_credit_data,
-                                                     variable='Purpose Column',
+                                                     variable='Purpose Col',
                                                      comparison_variable = NULL,
                                                      view_type="Confidence Interval",
                                                      multi_value_delimiter=', '))
@@ -2077,17 +2077,17 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
 
 test_that("rt_explore_plot_value_counts_against_categorical_fill", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
 
     # plot with labels
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                       variable=variable,
-                                                      comparison_variable='Purpose Column',
+                                                      comparison_variable='Purpose Col',
                                                       order_by_count=TRUE,
                                                       show_variable_totals=TRUE,
                                                       show_comparison_totals=TRUE,
@@ -2096,8 +2096,8 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
     test_save_plot(file_name='data/rt_explore_plot_value_counts_comparison_variable_purpose_stack_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
                                                      variable=variable,
-                                                     comparison_variable='Purpose Column',
-                                                     sum_by_variable='Amount Column',
+                                                     comparison_variable='Purpose Col',
+                                                     sum_by_variable='Amount Col',
                                                      order_by_count=TRUE,
                                                      show_variable_totals=TRUE,
                                                      show_comparison_totals=TRUE,
@@ -2106,13 +2106,13 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
 
 test_that("rt_explore_plot_value_totals_sums", {
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
-    sum_by_variable <- 'Amount Column'
-    comparison_variable <- 'Default Column'
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
+    sum_by_variable <- 'Amount Col'
+    comparison_variable <- 'Default Col'
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals_sums_defaults.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2155,21 +2155,21 @@ test_that("rt_explore_plot_value_totals_sums", {
     ##########################################################################################################
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
-    sum_by_variable <- 'Amount Column'
-    comparison_variable <- 'Credit History Column'
-    facet_variable <- 'Default Column'
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
+    sum_by_variable <- 'Amount Col'
+    comparison_variable <- 'Credit History Col'
+    facet_variable <- 'Default Col'
 
-    credit_data$`Amount Column` <- NA
+    credit_data$`Amount Col` <- NA
 
     results <- rt_explore_value_totals(dataset=credit_data,
                                        variable=variable,
                                        sum_by_variable=sum_by_variable)
 
-    expect_identical(results$`Checking Balance Column` %>% rt_remove_val(NA), sort(unique(credit_data$`Checking Balance Column`)))
+    expect_identical(results$`Checking Balance Col` %>% rt_remove_val(NA), sort(unique(credit_data$`Checking Balance Col`)))
     expect_true(all(results$sum == 0))
     expect_true(all(results$percent == 0))
 
@@ -2183,9 +2183,9 @@ test_that("rt_explore_plot_value_totals_sums", {
                                        second_variable=comparison_variable,
                                        sum_by_variable=sum_by_variable)
 
-    expect_identical(sort(unique(results$`Checking Balance Column`)) %>% rt_remove_val(NA),
-                          sort(unique(credit_data$`Checking Balance Column`)))
-    expect_identical(sort(unique(results$`Credit History Column`)), sort(unique(credit_data$`Credit History Column`)))
+    expect_identical(sort(unique(results$`Checking Balance Col`)) %>% rt_remove_val(NA),
+                          sort(unique(credit_data$`Checking Balance Col`)))
+    expect_identical(sort(unique(results$`Credit History Col`)), sort(unique(credit_data$`Credit History Col`)))
     expect_true(all(results$sum == 0))
     expect_true(all(results$percent == 0))
     expect_true(all(results$group_percent == 0))
@@ -2204,16 +2204,16 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      sum_by_variable=sum_by_variable))
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # make sure it handles NAs
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
-    sum_by_variable <- 'Amount Column'
-    comparison_variable <- 'Credit History Column'
-    facet_variable <- 'Default Column'
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
+    sum_by_variable <- 'Amount Col'
+    comparison_variable <- 'Credit History Col'
+    facet_variable <- 'Default Col'
 
-    credit_data$`Amount Column` <- ifelse(credit_data$`Default Column` == 'yes', NA, credit_data$`Amount Column`)
+    credit_data$`Amount Col` <- ifelse(credit_data$`Default Col` == 'yes', NA, credit_data$`Amount Col`)
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_facet_nas.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2225,14 +2225,14 @@ test_that("rt_explore_plot_value_totals_sums", {
 
     # make sure it handles NAs
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
-    sum_by_variable <- 'Amount Column'
-    comparison_variable <- 'Credit History Column'
-    facet_variable <- 'Default Column'
+    colnames(credit_data) <- test_helper__column_names(credit_data)
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
+    sum_by_variable <- 'Amount Col'
+    comparison_variable <- 'Credit History Col'
+    facet_variable <- 'Default Col'
 
-    credit_data$`Amount Column` <- ifelse(credit_data$`Checking Balance Column` == 'unknown', NA, credit_data$`Amount Column`)
+    credit_data$`Amount Col` <- ifelse(credit_data$`Checking Balance Col` == 'unknown', NA, credit_data$`Amount Col`)
 
     #credit_data %>% count(checking_balance, credit_history, default, wt=amount) %>% arrange(default, checking_balance, credit_history) %>% View()
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_variable_nas.png',
@@ -2244,14 +2244,14 @@ test_that("rt_explore_plot_value_totals_sums", {
 
     # make sure it handles NAs
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
-    credit_data[1, 'Checking Balance Column'] <- NA
-    variable <- 'Checking Balance Column'
-    sum_by_variable <- 'Amount Column'
-    comparison_variable <- 'Credit History Column'
-    facet_variable <- 'Default Column'
+    colnames(credit_data) <- test_helper__column_names(credit_data)
+    credit_data[1, 'Checking Balance Col'] <- NA
+    variable <- 'Checking Balance Col'
+    sum_by_variable <- 'Amount Col'
+    comparison_variable <- 'Credit History Col'
+    facet_variable <- 'Default Col'
 
-    credit_data$`Amount Column` <- ifelse(credit_data$`Credit History Column` == 'good', NA, credit_data$`Amount Column`)
+    credit_data$`Amount Col` <- ifelse(credit_data$`Credit History Col` == 'good', NA, credit_data$`Amount Col`)
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals__all_comparison_nas.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2265,43 +2265,43 @@ test_that("rt_explore_plot_value_totals_sums", {
 test_that("rt_explore_plot_value_totals_multivalue_column", {
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     expected_totals <- rt_explore_value_totals(dataset=credit_data,
-                                               variable='Purpose Column',
+                                               variable='Purpose Col',
                                                multi_value_delimiter=NULL)
     expect_equal(sum(expected_totals$percent), 1)
 
-    # first test with a delimiter when none of the columns are delimited
+    # first test with a delimiter when none of the cols are delimited
     found_totals <- rt_explore_value_totals(dataset=credit_data,
-                                            variable='Purpose Column',
+                                            variable='Purpose Col',
                                             multi_value_delimiter=', ')
     expect_true(rt_are_dataframes_equal(expected_totals, found_totals))
 
     expected_sum_by_variable <- credit_data %>%
-        count(`Purpose Column`, wt = `Months Loan Duration Column`, sort = TRUE)
+        count(`Purpose Col`, wt = `Months Loan Duration Col`, sort = TRUE)
     expected_sum_by_variable <- expected_sum_by_variable %>%
         rename(sum = n) %>%
         mutate(percent = sum / sum(expected_sum_by_variable$n)) %>%
-        arrange(`Purpose Column`) %>%
+        arrange(`Purpose Col`) %>%
         as.data.frame()
     expect_equal(sum(expected_sum_by_variable$percent), 1)
 
     expect_true(rt_are_dataframes_equal(expected_sum_by_variable,
                                         rt_explore_value_totals(dataset=credit_data,
-                                                                variable='Purpose Column',
-                                                                sum_by_variable='Months Loan Duration Column',
+                                                                variable='Purpose Col',
+                                                                sum_by_variable='Months Loan Duration Col',
                                                                 multi_value_delimiter=', ')))
 
     credit_data <- credit_data %>%
-        mutate(`Purpose Column` = case_when(
-            `Purpose Column` == 'car' ~ 'car, car_test',
-            `Purpose Column` == 'business' ~ 'business, business_test',
-            TRUE ~ as.character(`Purpose Column`))) %>%
-        arrange(`Purpose Column`) %>%
-        mutate(`Purpose Column` = as.factor(`Purpose Column`))
+        mutate(`Purpose Col` = case_when(
+            `Purpose Col` == 'car' ~ 'car, car_test',
+            `Purpose Col` == 'business' ~ 'business, business_test',
+            TRUE ~ as.character(`Purpose Col`))) %>%
+        arrange(`Purpose Col`) %>%
+        mutate(`Purpose Col` = as.factor(`Purpose Col`))
 
-    variable <- 'Purpose Column'
+    variable <- 'Purpose Col'
     comparison_variable <- NULL
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purose_multivalue.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
@@ -2311,64 +2311,64 @@ test_that("rt_explore_plot_value_totals_multivalue_column", {
 })
 
 test_that("rt_explore_plot_value_totals_multivalue_bug", {
-    # there is a bug where, because I had hardcoded the number of columns the underlying dataset would
+    # there is a bug where, because I had hardcoded the number of cols the underlying dataset would
     # separate to, any multi-value that had >2 values (e.g. a;b;c) would get lost (e.g. `c` wouldnt' get
     # counted)
     ##########################################################################################################
     # CREATE THE DATASET
     ##########################################################################################################
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
-    credit_data$`Id Column` <- 1:nrow(credit_data)
-    credit_data$`Purpose Column`[1] <- NA
-    credit_data$`Id Column`[2] <- NA
-    credit_data$`Amount Column`[3] <- NA
-    credit_data$`Purpose Column`[600] <- NA
+    credit_data$`Id Col` <- 1:nrow(credit_data)
+    credit_data$`Purpose Col`[1] <- NA
+    credit_data$`Id Col`[2] <- NA
+    credit_data$`Amount Col`[3] <- NA
+    credit_data$`Purpose Col`[600] <- NA
 
     original_totals <- rt_explore_value_totals(dataset=credit_data,
-                                               variable='Purpose Column',
+                                               variable='Purpose Col',
                                                multi_value_delimiter=NULL)
     # original_sum_by <-  credit_data %>% count(purpose, wt=amount)
     # original_sum_by2 <-  credit_data %>% count(purpose, default, wt=amount)
 
     credit_data <- credit_data %>%
-        mutate(`Purpose Column` = case_when(
-            `Purpose Column` == 'car' ~ 'car, car_test',
-            `Purpose Column` == 'business' ~ 'business, business_test2, business_test3, business_test4',
-            TRUE ~ as.character(`Purpose Column`)))
+        mutate(`Purpose Col` = case_when(
+            `Purpose Col` == 'car' ~ 'car, car_test',
+            `Purpose Col` == 'business' ~ 'business, business_test2, business_test3, business_test4',
+            TRUE ~ as.character(`Purpose Col`)))
 
     # set 2 rows to only 3 values for business, rather than 4
-    credit_data$`Purpose Column`[30] <- 'business, business_test2, business_test3'
-    credit_data$`Purpose Column`[31] <- 'business, business_test2, business_test3'
-    credit_data$`Purpose Column` <- as.factor(credit_data$`Purpose Column`)
+    credit_data$`Purpose Col`[30] <- 'business, business_test2, business_test3'
+    credit_data$`Purpose Col`[31] <- 'business, business_test2, business_test3'
+    credit_data$`Purpose Col` <- as.factor(credit_data$`Purpose Col`)
 
     ##########################################################################################################
     # CREATE THE EXPECTED TOTALS
     ##########################################################################################################
-    car_count <- (original_totals %>% filter(`Purpose Column` == 'car'))$count
-    business_count <- (original_totals %>% filter(`Purpose Column` == 'business'))$count
+    car_count <- (original_totals %>% filter(`Purpose Col` == 'car'))$count
+    business_count <- (original_totals %>% filter(`Purpose Col` == 'business'))$count
 
-    expected_totals <- data.frame(`Purpose Column`=c('car_test', 'business_test2', 'business_test3', 'business_test4'),
+    expected_totals <- data.frame(`Purpose Col`=c('car_test', 'business_test2', 'business_test3', 'business_test4'),
                                   # subtract 2 from business_test4 because we changed index 30/31
                                   count=c(car_count, business_count, business_count, business_count - 2),
                                   stringsAsFactors = FALSE,
                                   check.names = FALSE) %>%
-        bind_rows(original_totals %>% mutate(`Purpose Column` = as.character(`Purpose Column`))) %>%
-        arrange(`Purpose Column`)
+        bind_rows(original_totals %>% mutate(`Purpose Col` = as.character(`Purpose Col`))) %>%
+        arrange(`Purpose Col`)
     expected_totals <- expected_totals %>% mutate(percent = count / sum(count))
 
     ##########################################################################################################
     # VALIDATE EXPECTED IS THE SAME AS ACTUAL
     ##########################################################################################################
     actual_totals <- rt_explore_value_totals(dataset=credit_data,
-                                             variable='Purpose Column',
+                                             variable='Purpose Col',
                                              multi_value_delimiter=', ')
     expect_true(rt_are_dataframes_equal(expected_totals, actual_totals))
 
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Purpose Column',
+                                                     variable='Purpose Col',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '))
 
@@ -2378,8 +2378,8 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     #credit_data %>% count(purpose, default)
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_comp.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Purpose Column',
-                                                     comparison_variable='Default Column',
+                                                     variable='Purpose Col',
+                                                     comparison_variable='Default Col',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '))
 
@@ -2389,9 +2389,9 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     #credit_data %>% count(purpose, default, wt=amount)
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_sum.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Purpose Column',
-                                                     comparison_variable='Default Column',
-                                                     sum_by_variable = 'Amount Column',
+                                                     variable='Purpose Col',
+                                                     comparison_variable='Default Col',
+                                                     sum_by_variable = 'Amount Col',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '),
                    size_inches = c(8, 20))
@@ -2402,10 +2402,10 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_value_totals_purpose_multivalue_4_values_dis.png',
                    plot=rt_explore_plot_value_totals(dataset=credit_data,
-                                                     variable='Purpose Column',
-                                                     comparison_variable='Default Column',
+                                                     variable='Purpose Col',
+                                                     comparison_variable='Default Col',
                                                      #sum_by_variable = 'amount',
-                                                     count_distinct_variable = 'Id Column',
+                                                     count_distinct_variable = 'Id Col',
                                                      order_by_count=FALSE,
                                                      multi_value_delimiter=', '))
 
@@ -2414,49 +2414,49 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
 test_that("rt_explore_plot_categoric_heatmap", {
 
     credit_data <- read.csv("data/credit.csv", header=TRUE)
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
-    credit_data$`Id Column` <- 1:nrow(credit_data)
-    credit_data$`Purpose2 Column` <- credit_data$`Purpose Column`
+    credit_data$`Id Col` <- 1:nrow(credit_data)
+    credit_data$`Purpose2 Col` <- credit_data$`Purpose Col`
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='Purpose Column',
-                                                          y_variable='Purpose2 Column'),
+                                                          x_variable='Purpose Col',
+                                                          y_variable='Purpose2 Col'),
                    size_inches = c(4, 4))
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables__no_percentages.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='Purpose Column',
-                                                          y_variable='Purpose2 Column',
+                                                          x_variable='Purpose Col',
+                                                          y_variable='Purpose2 Col',
                                                           include_percentages = FALSE),
                    size_inches = c(4, 4))
 
     # table(fct_lump(flights$dest, n = 10), flights$origin) %>% t()
     # flights %>% ggplot(aes(x=origin)) + geom_bar()
     temp_df <- flights %>% mutate(dest=fct_lump(dest, n = 10))
-    colnames(temp_df) <- paste(rt_pretty_text(colnames(temp_df)), 'Column')
+    colnames(temp_df) <- test_helper__column_names(temp_df)
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
-                                                          x_variable='Origin Column',
-                                                          y_variable='Dest Column'))
+                                                          x_variable='Origin Col',
+                                                          y_variable='Dest Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights2.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
-                                                          x_variable='Dest Column',
-                                                          y_variable='Origin Column'))
+                                                          x_variable='Dest Col',
+                                                          y_variable='Origin Col'))
 
     #flights %>% mutate(dest=fct_lump(dest, n = 10)) %>% count(dest, origin, wt=dep_delay) %>% View()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights__sum_by.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
-                                                          x_variable='Dest Column',
-                                                          y_variable='Origin Column',
-                                                          sum_by_variable = 'Dep Delay Column'))
+                                                          x_variable='Dest Col',
+                                                          y_variable='Origin Col',
+                                                          sum_by_variable = 'Dep Delay Col'))
 
     # flights %>%
     #     mutate(dest=fct_lump(dest, n = 10)) %>%
@@ -2465,9 +2465,9 @@ test_that("rt_explore_plot_categoric_heatmap", {
     #     View()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__flights__count_distinct.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=temp_df,
-                                                          x_variable='Dest Column',
-                                                          y_variable='Origin Column',
-                                                          count_distinct_variable = 'Flight Column'))
+                                                          x_variable='Dest Col',
+                                                          y_variable='Origin Col',
+                                                          count_distinct_variable = 'Flight Col'))
 
     if(file.exists("Rplots.pdf")) {
         file.remove("Rplots.pdf")
@@ -2486,37 +2486,37 @@ test_that("rt_explore_plot_categoric_heatmap_NAs", {
     credit_data[4, 'id'] <- NA
     credit_data$purpose2 <- credit_data$purpose
 
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__same_variables_NAs.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='Purpose Column',
-                                                          y_variable='Purpose2 Column'),
+                                                          x_variable='Purpose Col',
+                                                          y_variable='Purpose2 Col'),
                    size_inches = c(4, 4))
 
     #credit_data %>% group_by(purpose, credit_history) %>% summarise(sum=sum(amount)) %>% View()
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__sum_by__NA.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='Purpose Column',
-                                                          y_variable='Credit History Column',
-                                                          sum_by_variable = 'Amount Column'))
+                                                          x_variable='Purpose Col',
+                                                          y_variable='Credit History Col',
+                                                          sum_by_variable = 'Amount Col'))
 
     # credit_data[5, c('purpose', 'credit_history', 'amount')]
     # car | poor | 4870
-    credit_data[5, 'Amount Column'] <- NA
+    credit_data[5, 'Amount Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__sum_by__NA2.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='Purpose Column',
-                                                          y_variable='Credit History Column',
-                                                          sum_by_variable = 'Amount Column'))
+                                                          x_variable='Purpose Col',
+                                                          y_variable='Credit History Col',
+                                                          sum_by_variable = 'Amount Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_categoric_heatmap__count_distinct__NA.png',
                    plot=rt_explore_plot_categoric_heatmap(dataset=credit_data,
-                                                          x_variable='Purpose Column',
-                                                          y_variable='Credit History Column',
-                                                          count_distinct_variable = 'Id Column'))
+                                                          x_variable='Purpose Col',
+                                                          y_variable='Credit History Col',
+                                                          count_distinct_variable = 'Id Col'))
     if(file.exists("Rplots.pdf")) {
         file.remove("Rplots.pdf")
     }
@@ -2530,20 +2530,20 @@ test_that("rt_explore_plot_numeric_heatmap", {
     credit_data[2, 'amount'] <- NA
     credit_data[3, 'amount'] <- NA
 
-    colnames(credit_data) <- paste(rt_pretty_text(colnames(credit_data)), 'Column')
+    colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # table(credit_data$purpose, credit_data$purpose2)
     # credit_data %>% ggplot(aes(x=purpose)) + geom_bar()
     test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap.png',
                    plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
-                                                        x_variable = 'Age Column',
-                                                        y_variable = 'Amount Column'),
+                                                        x_variable = 'Age Col',
+                                                        y_variable = 'Amount Col'),
                    size_inches = c(4, 4))
 
     test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__n_cut_10.png',
                    plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
-                                                        x_variable = 'Age Column',
-                                                        y_variable = 'Amount Column',
+                                                        x_variable = 'Age Col',
+                                                        y_variable = 'Amount Col',
                                                         n_cuts = 10),
                    size_inches = c(4, 4))
 
@@ -2553,22 +2553,22 @@ test_that("rt_explore_plot_numeric_heatmap", {
 
     test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__custom_x_cut.png',
                    plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
-                                                        x_variable = 'Age Column',
-                                                        y_variable = 'Amount Column',
+                                                        x_variable = 'Age Col',
+                                                        y_variable = 'Amount Col',
                                                         x_cut_sequence = x_cut_sequence),
                    size_inches = c(4, 4))
 
     test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__custom_y_cut.png',
                    plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
-                                                        x_variable = 'Age Column',
-                                                        y_variable = 'Amount Column',
+                                                        x_variable = 'Age Col',
+                                                        y_variable = 'Amount Col',
                                                         y_cut_sequence = y_cut_sequence),
                    size_inches = c(4, 4))
 
     test_save_plot(file_name='data/rt_explore_plot_numeric_heatmap__custom_x_y_cut.png',
                    plot=rt_explore_plot_numeric_heatmap(dataset = credit_data,
-                                                        x_variable = 'Age Column',
-                                                        y_variable = 'Amount Column',
+                                                        x_variable = 'Age Col',
+                                                        y_variable = 'Amount Col',
                                                         x_cut_sequence = x_cut_sequence,
                                                         y_cut_sequence = y_cut_sequence),
                    size_inches = c(4, 4))
@@ -2580,10 +2580,10 @@ test_that("rt_explore_plot_numeric_heatmap", {
 
 test_that("rt_explore_plot_boxplot", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'Months Loan Duration Column'
-    comparison_variable <- 'Default Column'
+    variable <- 'Months Loan Duration Col'
+    comparison_variable <- 'Default Col'
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot_standard.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
@@ -2637,7 +2637,7 @@ test_that("rt_explore_plot_boxplot", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
+                                                comparison_variable='Checking Balance Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
@@ -2645,8 +2645,8 @@ test_that("rt_explore_plot_boxplot", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__defualt.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
@@ -2655,20 +2655,20 @@ test_that("rt_explore_plot_boxplot", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__defualt__simple.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 simple_mode=TRUE,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
     temp_dataset <- dataset
-    temp_dataset[1, 'Default Column'] <- NA
+    temp_dataset[1, 'Default Col'] <- NA
 
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot__default__NAs.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Default Column',
+                                                comparison_variable='Default Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
@@ -2677,7 +2677,7 @@ test_that("rt_explore_plot_boxplot", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot__default__NAs__simple.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Default Column',
+                                                comparison_variable='Default Col',
                                                 simple_mode = TRUE,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
@@ -2686,35 +2686,35 @@ test_that("rt_explore_plot_boxplot", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[1, 'Checking Balance Column'] <- NA
+    temp_dataset[1, 'Checking Balance Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs2.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[2, 'Checking Balance Column'] <- NA
+    temp_dataset[2, 'Checking Balance Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs3.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[3, 'Default Column'] <- NA
+    temp_dataset[3, 'Default Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs4.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
@@ -2754,11 +2754,11 @@ test_that("rt_explore_plot_boxplot", {
 
 test_that("rt_explore_plot_boxplot_facet", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'Months Loan Duration Column'
-    comparison_variable <- 'Default Column'
-    facet_variable <- 'Phone Column'
+    variable <- 'Months Loan Duration Col'
+    comparison_variable <- 'Default Col'
+    facet_variable <- 'Phone Col'
 
     expect_error(rt_explore_plot_boxplot(dataset=dataset,
                                          variable=variable,
@@ -2790,7 +2790,7 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
+                                                comparison_variable='Checking Balance Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
@@ -2799,20 +2799,20 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__default_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
     temp_dataset <- dataset
-    temp_dataset[1, 'Default Column'] <- NA
+    temp_dataset[1, 'Default Col'] <- NA
     temp_dataset[2, facet_variable] <- NA
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot__NAs_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Default Column',
+                                                comparison_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
@@ -2821,7 +2821,7 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot__NAs_facet__simple.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Default Column',
+                                                comparison_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 simple_mode=TRUE,
                                                 y_zoom_min=NULL,
@@ -2831,38 +2831,38 @@ test_that("rt_explore_plot_boxplot_facet", {
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[1, 'Checking Balance Column'] <- NA
+    temp_dataset[1, 'Checking Balance Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs2_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[2, 'Checking Balance Column'] <- NA
+    temp_dataset[2, 'Checking Balance Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs3_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
-    temp_dataset[3, 'Default Column'] <- NA
+    temp_dataset[3, 'Default Col'] <- NA
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__NAs4_facet.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
                                                 variable=variable,
-                                                comparison_variable='Checking Balance Column',
-                                                color_variable='Default Column',
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
                                                 facet_variable=facet_variable,
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
@@ -2969,9 +2969,9 @@ test_that("rt_explore_plot_boxplot - NA numeric values", {
 
 test_that("rt_explore_plot_histogram", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'Months Loan Duration Column'
+    variable <- 'Months Loan Duration Col'
 
     test_save_plot(file_name='data/rt_explore_plot_histogram_standard.png',
                    plot=rt_explore_plot_histogram(dataset=dataset,
@@ -3032,10 +3032,10 @@ test_that("rt_explore_plot_histogram", {
 
 test_that("rt_explore_plot_histogram_with_categoric_comparison", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'Months Loan Duration Column'
-    comparison_variable <- 'Checking Balance Column'
+    variable <- 'Months Loan Duration Col'
+    comparison_variable <- 'Checking Balance Col'
 
     test_save_plot(file_name='data/rt_explore_plot_histogram_with_comp_standard.png',
                    plot=rt_explore_plot_histogram(dataset=dataset,
@@ -3112,10 +3112,10 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
 
 test_that("rt_explore_plot_scatterplot", {
     dataset <- read.csv("data/housing.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'Median House Value Column'
-    comparison_variable <- 'Median Income Column'
+    variable <- 'Median House Value Col'
+    comparison_variable <- 'Median Income Col'
 
     test_save_plot(file_name='data/rt_explore_plot_scatter.png',
                     plot=rt_explore_plot_scatter(dataset=dataset,
@@ -3252,16 +3252,16 @@ test_that("rt_explore_plot_scatterplot", {
 
 test_that('rt_explore_plot_scatterplot_size_color', {
     dataset <- read.csv("data/housing.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'Median House Value Column'
-    comparison_variable <- 'Median Income Column'
+    variable <- 'Median House Value Col'
+    comparison_variable <- 'Median Income Col'
 
     test_save_plot(file_name='data/rt_explore_plot_scatter_color.png',
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           color_variable = 'Ocean Proximity Column',
+                                           color_variable = 'Ocean Proximity Col',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3273,7 +3273,7 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           size_variable = 'Housing Median Age Column',
+                                           size_variable = 'Housing Median Age Col',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3285,7 +3285,7 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           size_variable = 'Ocean Proximity Column',
+                                           size_variable = 'Ocean Proximity Col',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3297,8 +3297,8 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           color_variable = 'Total Rooms Column',
-                                           size_variable = 'Housing Median Age Column',
+                                           color_variable = 'Total Rooms Col',
+                                           size_variable = 'Housing Median Age Col',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3310,8 +3310,8 @@ test_that('rt_explore_plot_scatterplot_size_color', {
                    rt_explore_plot_scatter(dataset=dataset,
                                            variable=variable,
                                            comparison_variable=comparison_variable,
-                                           color_variable = 'Ocean Proximity Column',
-                                           size_variable = 'Housing Median Age Column',
+                                           color_variable = 'Ocean Proximity Col',
+                                           size_variable = 'Housing Median Age Col',
                                            alpha=0.3,
                                            x_zoom_min=NULL,
                                            x_zoom_max=NULL,
@@ -3336,12 +3336,12 @@ test_that("rt_explore_plot_scatterplot_jitter", {
 
 test_that("rt_explore_plot_aggregate_2_numerics", {
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
     # make sure it handles NAs
-    dataset[1, 'Months Loan Duration Column'] <- NA
-    variable <- 'Amount Column'
-    comparison_variable <- 'Months Loan Duration Column'
+    dataset[1, 'Months Loan Duration Col'] <- NA
+    variable <- 'Amount Col'
+    comparison_variable <- 'Months Loan Duration Col'
 
     aggregation_function <- rt_geometric_mean
     aggregation_function_name <- "Geometric Mean"
@@ -3410,8 +3410,8 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              y_zoom_max=5000,
                                                              base_size=11))
 
-    variable <- 'Months Loan Duration Column'
-    comparison_variable <- 'Existing Loans Count Column'
+    variable <- 'Months Loan Duration Col'
+    comparison_variable <- 'Existing Loans Count Col'
 
     aggregation_function <- function(values) {
         return (mean(values, na.rm = TRUE))
@@ -3487,10 +3487,10 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
 test_that("rt_explore_plot_categoric_numeric_aggregation", {
 
     dataset <- read.csv("data/credit.csv", header=TRUE)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    categoric_variable <- 'Checking Balance Column'
-    numeric_variable <- 'Amount Column'
+    categoric_variable <- 'Checking Balance Col'
+    numeric_variable <- 'Amount Col'
 
     # make sure it handles NAs
     dataset[1, categoric_variable] <- NA
@@ -3681,7 +3681,7 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
     ##########################################################################################################
     # Categoric/Numeric - Color
     ##########################################################################################################
-    color_variable <- 'Default Column'
+    color_variable <- 'Default Col'
     facet_variable <- NULL
 
     #dataset %>% count(checking_balance, default, wt=amount) %>% mutate(p=n/sum(n))
@@ -3810,7 +3810,7 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
     ##########################################################################################################
     # Categoric/Numeric - Facet
     ##########################################################################################################
-    facet_variable <- 'Default Column'
+    facet_variable <- 'Default Col'
     color_variable <- NULL
 
     #dataset %>% count(checking_balance, default, wt=amount) %>% mutate(p=n/sum(n))
@@ -3927,8 +3927,8 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
     ##########################################################################################################
     # Categoric/Numeric - Color/Facet
     ##########################################################################################################
-    facet_variable <- 'Default Column'
-    color_variable <- 'Phone Column'
+    facet_variable <- 'Default Col'
+    color_variable <- 'Phone Col'
 
     #dataset %>% count(checking_balance, phone, default, wt=amount) %>% mutate(p=n/sum(n))
     test_save_plot(file_name='data/rt_explore_plot_categoric_numeric_aggregation__total__facet_color.png',
@@ -4045,10 +4045,10 @@ test_that("rt_explore_plot_categoric_numeric_aggregation", {
 
 test_that("rt_explore_plot_scatterplot_labels", {
     dataset <- data.frame(gapminder) %>% filter(year == 2002)
-    colnames(dataset) <- paste(rt_pretty_text(colnames(dataset)), 'Column')
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'LifeExp Column'
-    comparison_variable <- 'GdpPercap Column'
+    variable <- 'LifeExp Col'
+    comparison_variable <- 'GdpPercap Col'
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__defaults.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
@@ -4059,20 +4059,20 @@ test_that("rt_explore_plot_scatterplot_labels", {
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables='Country Column'))
+                                                label_variables='Country Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__country_label__size.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables='Country Column',
-                                                size_variable='Pop Column'))
+                                                label_variables='Country Col',
+                                                size_variable='Pop Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__country_label__zoom.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables='Country Column',
+                                                label_variables='Country Col',
                                                 x_zoom_min = 25000,
                                                 x_zoom_max = 40000,
                                                 y_zoom_min = 75))
@@ -4081,8 +4081,8 @@ test_that("rt_explore_plot_scatterplot_labels", {
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables='Country Column',
-                                                size_variable = 'Pop Column',
+                                                label_variables='Country Col',
+                                                size_variable = 'Pop Col',
                                                 x_zoom_min = 25000,
                                                 x_zoom_max = 40000,
                                                 y_zoom_min = 75))
@@ -4091,25 +4091,25 @@ test_that("rt_explore_plot_scatterplot_labels", {
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables='LifeExp Column'))
+                                                label_variables='LifeExp Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__pop_label.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables='Pop Column'))
+                                                label_variables='Pop Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__multi_label.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables=c('Country Column', 'Year Column')))
+                                                label_variables=c('Country Col', 'Year Col')))
     test_save_plot(file_name='data/rt_explore_plot_scatter__gapminder__multi2_label.png',
                    plot=rt_explore_plot_scatter(dataset=dataset,
                                                 variable=variable,
                                                 comparison_variable=comparison_variable,
-                                                label_variables=c('Year Column', 'Country Column'),
-                                                size_variable = 'Pop Column',
+                                                label_variables=c('Year Col', 'Country Col'),
+                                                size_variable = 'Pop Col',
                                                 x_zoom_min = 25000,
                                                 x_zoom_max = 40000,
                                                 y_zoom_min = 75))

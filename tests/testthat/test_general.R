@@ -520,6 +520,35 @@ test_that("rt_transform_multi_value_df", {
     expect_true(all(test_df %>% count(purpose) %>% pull(n) == original_df %>% count(purpose) %>% pull(n)))
 })
 
+test_that("rt_select_all_of", {
+    expected <- c('a', 'b', 'c', 'd', 'e')
+    x_a <- 'a'
+    x_b <- c('b')
+    x_cd <- c('c', 'd')
+    x_e <- 'e'
+    expect_identical(expected, rt_params_to_vector(expected))
+    expect_identical(expected, rt_params_to_vector('a', c('b'), c('c', 'd'), 'e'))
+    expect_identical(expected, rt_params_to_vector(x_a, x_b, x_cd, x_e))
+    expect_identical(expected, rt_params_to_vector(x_a, c(x_b, x_cd), x_e))
+
+    iris_columns <- colnames(iris)
+    expect_true(rt_are_dataframes_equal(iris, iris %>% rt_select_all_of(iris_columns)))
+    expect_true(rt_are_dataframes_equal(iris, iris %>% rt_select_all_of(iris_columns[1], iris_columns[2:5])))
+    expect_true(rt_are_dataframes_equal(iris %>% select(Sepal.Length, Sepal.Width),
+                                        iris %>% rt_select_all_of(iris_columns[1:2])))
+    expect_true(rt_are_dataframes_equal(iris %>% select(Sepal.Length, Sepal.Width),
+                                        iris %>% rt_select_all_of("Sepal.Length", "Sepal.Width")))
+
+    colnames(iris) <- str_replace_all(string=colnames(iris), pattern = '\\.', replacement = ' ')
+    iris_columns <- colnames(iris)
+    expect_true(rt_are_dataframes_equal(iris, iris %>% rt_select_all_of(iris_columns)))
+    expect_true(rt_are_dataframes_equal(iris, iris %>% rt_select_all_of(iris_columns[1], iris_columns[2:5])))
+    expect_true(rt_are_dataframes_equal(iris %>% select(`Sepal Length`, `Sepal Width`),
+                                        iris %>% rt_select_all_of(iris_columns[1:2])))
+    expect_true(rt_are_dataframes_equal(iris %>% select(`Sepal Length`, `Sepal Width`),
+                                        iris %>% rt_select_all_of("Sepal Length", "Sepal Width")))
+})
+
 test_that("rt_group_by_all_of", {
 
     dataset <- read.csv("data/credit.csv", header=TRUE)
