@@ -9,11 +9,11 @@ Residuals:
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)    
 (Intercept) 38.75179    1.78686  21.687  < 2e-16 ***
-cyl         -0.94162    0.55092  -1.709 0.098480 .  
-hp          -0.01804    0.01188  -1.519 0.140015    
-wt          -3.16697    0.74058  -4.276 0.000199 ***
+`Cyl Col`   -0.94162    0.55092  -1.709 0.098480 .  
+`Hp Col`    -0.01804    0.01188  -1.519 0.140015    
+`Wt Col`    -3.16697    0.74058  -4.276 0.000199 ***
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 2.512 on 28 degrees of freedom
 Multiple R-squared:  0.8431,	Adjusted R-squared:  0.8263 

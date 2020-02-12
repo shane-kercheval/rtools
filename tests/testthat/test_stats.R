@@ -1,6 +1,8 @@
 context('Stats')
 library(testthat)
 library(dplyr)
+library(ggplot2)
+source('test_helpers.R')
 
 test_that("rt_geometric_mean", {
 
@@ -49,30 +51,30 @@ test_that('rt_regression_build_formula', {
 
     reg_formula <- rt_regression_build_formula(dependent_variable = 'dependent_var',
                                                independent_variables = c('A'))
-    expect_equal(reg_formula, 'dependent_var ~ A')
+    expect_equal(reg_formula, "`dependent_var` ~ `A`")
 
     reg_formula <- rt_regression_build_formula(dependent_variable = 'dependent_var',
                                                independent_variables = c('A', 'B'))
-    expect_equal(reg_formula, 'dependent_var ~ A + B')
+    expect_equal(reg_formula, "`dependent_var` ~ `A` + `B`")
 
     reg_formula <- rt_regression_build_formula(dependent_variable = 'dependent_var',
                                                independent_variables = c('A', 'B', 'C'))
-    expect_equal(reg_formula, 'dependent_var ~ A + B + C')
+    expect_equal(reg_formula, "`dependent_var` ~ `A` + `B` + `C`")
 
     reg_formula <- rt_regression_build_formula(dependent_variable = 'dependent_var',
                                                independent_variables = c('A', 'B', 'C'),
                                                interaction_variables = list(c('C', 'D')))
-    expect_equal(reg_formula, 'dependent_var ~ C*D + A + B + C')
+    expect_equal(reg_formula, "`dependent_var` ~ `C`*`D` + `A` + `B` + `C`")
 
     reg_formula <- rt_regression_build_formula(dependent_variable = 'dependent_var',
                                                independent_variables = c('A', 'B', 'C'),
                                                interaction_variables = list(c('C', 'D'), c('E', 'F')))
-    expect_equal(reg_formula, 'dependent_var ~ C*D + E*F + A + B + C')
+    expect_equal(reg_formula, "`dependent_var` ~ `C`*`D` + `E`*`F` + `A` + `B` + `C`")
 
     reg_formula <- rt_regression_build_formula(dependent_variable = 'dependent_var',
                                                #independent_variables = c('A', 'B', 'C'),
                                                interaction_variables = list(c('C', 'D'), c('E', 'F')))
-    expect_equal(reg_formula, 'dependent_var ~ C*D + E*F')
+    expect_equal(reg_formula, "`dependent_var` ~ `C`*`D` + `E`*`F`")
 })
 
 compare_models <- function(actual_model, expected_model){
@@ -95,6 +97,7 @@ save_lm_summary <- function(model, file_name) {
 test_that('rt_regression', {
     data('mtcars')
     reg_data <- mtcars
+
     dependent_variable = 'mpg'
     independent_variables = c('cyl', 'hp', 'wt')
 
@@ -123,7 +126,6 @@ test_that('rt_regression', {
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__mtcars__wt.png',
                    plot=rt_regression_plot_residual_vs_variable(result$model, 'wt', reg_data_orignal))
 
-
     reg_data <- diamonds
     dependent_variable = 'price'
     independent_variables = c('carat', 'cut', 'color', 'clarity')
@@ -176,6 +178,95 @@ test_that('rt_regression', {
     test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
                    plot=rt_regression_plot_residual_vs_variable(result$model, 'cut', reg_data_orignal))
 
+
+    # TODO: test when model has NAs, rt_regression_plot_residual_vs_variable for example won't work
+    # because the $model (i.e. values used) has NAs removed. so I think I need to do "complete.cases"
+})
+
+test_that('rt_regression - column names', {
+    data('mtcars')
+    reg_data <- mtcars
+    colnames(reg_data) <- test_helper__column_names(reg_data)
+
+    dependent_variable = 'Mpg Col'
+    independent_variables = c('Cyl Col', 'Hp Col', 'Wt Col')
+
+    reg_data_orignal <- reg_data %>% rt_select_all_of(c(dependent_variable, independent_variables))
+    expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
+                                                    independent_variables = independent_variables)
+
+    result <- rt_regression(dataset = reg_data,
+                            dependent_variable = dependent_variable,
+                            independent_variables = independent_variables)
+    expect_equal(length(result$rows_excluded), 0)
+    compare_models(actual_model=result$model,
+                   expected_model=lm(`Mpg Col` ~ `Cyl Col` + `Hp Col` + `Wt Col`, reg_data))
+    expect_equal(result$formula, expected_formula)
+    expect_equal(result$type, "Linear Regression")
+    expect_true(setequal(independent_variables,
+                         rt_regression_get_ind_var_options(result$model,
+                                                           dependent_variable,
+                                                           independent_variables)))
+    result$model %>% save_lm_summary("data/rt_regression__mtcars__summary_1.txt")
+
+    test_save_plot(file_name='data/rt_regression_plot_actual_vs_predicted__mtcars.png',
+                   plot=rt_regression_plot_actual_vs_predicted(result$model))
+    test_save_plot(file_name='data/rt_regression_plot_residual_vs_predicted__mtcars.png',
+                   plot=rt_regression_plot_residual_vs_predicted(result$model))
+    test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__mtcars__wt.png',
+                   plot=rt_regression_plot_residual_vs_variable(result$model, 'Wt Col', reg_data_orignal))
+
+    reg_data <- diamonds
+    colnames(reg_data) <- test_helper__column_names(reg_data)
+    dependent_variable = 'Price Col'
+    independent_variables = c('Carat Col', 'Cut Col', 'Color Col', 'Clarity Col')
+
+    reg_data_orignal <- reg_data %>% rt_select_all_of(c(dependent_variable, independent_variables))
+    expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
+                                                    independent_variables = independent_variables)
+
+    result <- rt_regression(dataset = reg_data,
+                            dependent_variable = dependent_variable,
+                            independent_variables = independent_variables)
+    expect_equal(length(result$rows_excluded), 0)
+    compare_models(actual_model=result$model,
+                   expected_model=lm(`Price Col` ~ `Carat Col` + `Cut Col` + `Color Col` + `Clarity Col`, reg_data))
+    expect_equal(result$formula, expected_formula)
+    expect_equal(result$type, "Linear Regression")
+    expect_true(setequal(independent_variables,
+                         rt_regression_get_ind_var_options(result$model,
+                                                           dependent_variable,
+                                                           independent_variables)))
+    result$model %>% save_lm_summary("data/rt_regression__diamonds__summary_1.txt")
+
+    test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
+                   plot=rt_regression_plot_residual_vs_variable(result$model, 'Cut Col', reg_data_orignal))
+
+    reg_data <- diamonds
+    colnames(reg_data) <- test_helper__column_names(reg_data)
+    dependent_variable = 'Price Col'
+    independent_variables = c('Carat Col', 'Cut Col', 'Color Col', 'Clarity Col')
+
+    reg_data_orignal <- reg_data %>% rt_select_all_of(c(dependent_variable, independent_variables))
+    expected_formula <- rt_regression_build_formula(dependent_variable = dependent_variable,
+                                                    independent_variables = independent_variables)
+
+    result <- rt_regression(dataset = reg_data,
+                            dependent_variable = dependent_variable,
+                            independent_variables = independent_variables)
+    expect_equal(length(result$rows_excluded), 0)
+    compare_models(actual_model=result$model,
+                   expected_model=lm(`Price Col` ~ `Carat Col` + `Cut Col` + `Color Col` + `Clarity Col`, reg_data))
+    expect_equal(result$formula, expected_formula)
+    expect_equal(result$type, "Linear Regression")
+    expect_true(setequal(independent_variables,
+                         rt_regression_get_ind_var_options(result$model,
+                                                           dependent_variable,
+                                                           independent_variables)))
+    result$model %>% save_lm_summary("data/rt_regression__diamonds__summary_1.txt")
+
+    test_save_plot(file_name='data/rt_regression_plot_residual_vs_variable__diamonds__cut.png',
+                   plot=rt_regression_plot_residual_vs_variable(result$model, 'Cut Col', reg_data_orignal))
 
     # TODO: test when model has NAs, rt_regression_plot_residual_vs_variable for example won't work
     # because the $model (i.e. values used) has NAs removed. so I think I need to do "complete.cases"

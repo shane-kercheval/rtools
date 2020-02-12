@@ -35,7 +35,7 @@ rt_regression_build_formula <- function(dependent_variable,
 
         # I use `*` rather than `:` because of the hierarchical principle ISL pg 89
         # `A*B` tells R's lm to include the main affects (A & B). it is shorthand for `A + B + A:B`
-        interaction_variables_formula <- paste(map_chr(interaction_variables, ~ paste(., collapse ='*')),
+        interaction_variables_formula <- paste(map_chr(interaction_variables, ~ rt_str_collapse(., "`", "*")),
                                                collapse = ' + ')
     }
 
@@ -45,16 +45,16 @@ rt_regression_build_formula <- function(dependent_variable,
 
     } else if(is.null(interaction_variables) || length(interaction_variables) == 0) {
 
-        independent_variables_formula <- paste(independent_variables, collapse =' + ')
+        independent_variables_formula <- rt_str_collapse(independent_variables, "`", " + ")
 
     } else {
 
         independent_variables_formula <- paste(interaction_variables_formula,
                                                '+',
-                                               paste(independent_variables, collapse =' + '))
+                                               paste0('`', paste0(independent_variables, collapse ='` + `'), '`'))
     }
 
-    formula <- paste(dependent_variable, '~', independent_variables_formula)
+    formula <- paste(paste0('`', dependent_variable, '`'), '~', independent_variables_formula)
 
     return (formula)
 }
@@ -111,9 +111,10 @@ rt_regression <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 geom_line aes geom_smooth labs
+#' @importFrom stringr str_remove_all
 #' @export
 rt_regression_plot_actual_vs_predicted <- function(model) {
-    actual_variable <- as.character(model$terms)[2]
+    actual_variable <- str_remove_all(string=as.character(model$terms)[2], pattern = '`')
 
     data.frame(actual=model$model[[actual_variable]],
                pred=model$fitted.values) %>%
@@ -374,7 +375,7 @@ rt_plot_multinom_cis <- function(values,
         if(simple_mode) {
 
             custom_colors <- rep(rt_colors()[1], length(unique(values)))
-        
+
         } else {
 
             custom_colors <- rt_get_colors_from_values(values)

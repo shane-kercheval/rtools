@@ -2,6 +2,18 @@ context('String Manipulation')
 library(testthat)
 library(ggplot2)
 
+
+test_that('rt_str_collapse', {
+
+    expect_equal(rt_str_collapse(c("A"), "`", " + "), "`A`")
+    expect_equal(rt_str_collapse(.x=c("A", "B"), .surround = "`", .separate = " + "), "`A` + `B`")
+    expect_equal(rt_str_collapse(.x=c("A", "B"), .surround = "`", .separate = "+"), "`A`+`B`")
+
+    expect_equal(rt_str_collapse("A B", "'", " + "), "'A B'")
+    expect_equal(rt_str_collapse(c("A B", "C D"), "'", ", "), "'A B', 'C D'")
+    expect_equal(rt_str_collapse(c("A B", "C D"), "'", ","), "'A B','C D'")
+})
+
 test_that('rt_pretty_text', {
 
     ##########################################################################################################

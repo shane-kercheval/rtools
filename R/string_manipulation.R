@@ -1,3 +1,20 @@
+#' See example
+#'
+#' @param values a string vector
+#'
+#' @examples
+#'
+#' rt_str_collapse("example")
+#' rt_str_collapse(c("example", "example2"))
+#'
+#' @importFrom stringr str_replace_all str_split
+#' @importFrom purrr map_chr
+#' @export
+rt_str_collapse <- function(.x, .surround, .separate) {
+
+    paste0(.surround, paste0(.x, collapse=paste0(.surround, .separate, .surround)), .surround)
+}
+
 #' Changes strings to "pretty" strings. Ignores other datatypes else.
 #'
 #' @param values a string vector
