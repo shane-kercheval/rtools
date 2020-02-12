@@ -7,14 +7,18 @@
 rt_str_collapse(.x, .surround, .separate)
 }
 \arguments{
-\item{values}{a string vector}
+\item{.x}{a vector of string values}
+
+\item{.surround}{string to surround each string in the vector}
+
+\item{.separate}{string to separate each string in the vector}
 }
 \description{
 See example
 }
 \examples{
 
-rt_str_collapse("example")
-rt_str_collapse(c("example", "example2"))
+rt_str_collapse("example", "'", " + ")
+rt_str_collapse(c("example", "example2"), "'", " + ")
 
 }

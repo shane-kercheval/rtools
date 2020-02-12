@@ -1,11 +1,13 @@
 #' See example
 #'
-#' @param values a string vector
+#' @param .x a vector of string values
+#' @param .surround string to surround each string in the vector
+#' @param .separate string to separate each string in the vector
 #'
 #' @examples
 #'
-#' rt_str_collapse("example")
-#' rt_str_collapse(c("example", "example2"))
+#' rt_str_collapse("example", "'", " + ")
+#' rt_str_collapse(c("example", "example2"), "'", " + ")
 #'
 #' @importFrom stringr str_replace_all str_split
 #' @importFrom purrr map_chr
