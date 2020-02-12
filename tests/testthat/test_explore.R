@@ -7,6 +7,8 @@ library(gapminder)
 library(nycflights13)
 library(forcats)
 # library(scales)
+source('test_helpers.R')
+
 
 test_that("rt_explore_categoric_summary_NAs", {
 
