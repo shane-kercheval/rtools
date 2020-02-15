@@ -13,7 +13,7 @@ Coefficients:
 `Hp Col`    -0.01804    0.01188  -1.519 0.140015    
 `Wt Col`    -3.16697    0.74058  -4.276 0.000199 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Residual standard error: 2.512 on 28 degrees of freedom
 Multiple R-squared:  0.8431,	Adjusted R-squared:  0.8263 

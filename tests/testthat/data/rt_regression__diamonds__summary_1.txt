@@ -28,7 +28,7 @@ Coefficients:
 `Clarity Col`^6     2.105     14.037    0.150    0.881    
 `Clarity Col`^7   110.340     12.383    8.910  < 2e-16 ***
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Residual standard error: 1157 on 53921 degrees of freedom
 Multiple R-squared:  0.9159,	Adjusted R-squared:  0.9159 

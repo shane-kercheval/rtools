@@ -7,6 +7,8 @@ library(gapminder)
 library(nycflights13)
 library(forcats)
 # library(scales)
+source('test_helpers.R')
+
 
 test_that('rt_explore_plot_time_series', {
     dataset <- data.frame(flights %>%
@@ -14,9 +16,10 @@ test_that('rt_explore_plot_time_series', {
                                      cohort = paste0(year, '-',
                                                      lubridate::week(date)))) %>%
        select(date, dep_delay, dep_time, origin, cohort)
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'date'
-    comparison_variable <- 'dep_delay'
+    variable <- 'Date Col'
+    comparison_variable <- 'Dep Delay Col'
 
     comp_func_sum <- function(x) {
         return (sum(x, na.rm=TRUE))
@@ -93,14 +96,14 @@ test_that('rt_explore_plot_time_series', {
     test_save_plot(file_name='data/rt_explore_plot_time_series_dep_time_zoom_min.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    comparison_variable='dep_time',
+                                                    comparison_variable='Dep Time Col',
                                                     comparison_function=comp_func_median,
                                                     comparison_function_name='Median',
                                                     y_zoom_min=1000,
                                                     y_zoom_max=NULL,
                                                     base_size=15))
 
-    color_variable <- 'origin'
+    color_variable <- 'Origin Col'
     test_save_plot(file_name='data/rt_explore_plot_time_series_comparison_median_color.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -119,7 +122,7 @@ test_that('rt_explore_plot_time_series', {
                                                     color_variable=color_variable))
 
     test_save_plot(file_name='data/rt_explore_plot_time_series_count_color_points_labels.png',
-                   plot=rt_explore_plot_time_series(dataset=dataset %>% filter(month(date) == 12),
+                   plot=rt_explore_plot_time_series(dataset=dataset %>% filter(month(`Date Col`) == 12),
                                                     variable=variable,
                                                     color_variable=color_variable,
                                                     show_points=TRUE,
@@ -134,9 +137,10 @@ test_that('rt_explore_plot_time_series__POSIXct', {
                                                      lubridate::week(date)))) %>%
         select(date, dep_delay, dep_time, origin, cohort) %>%
         mutate(date = as.POSIXct(date))
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'date'
-    comparison_variable <- 'dep_delay'
+    variable <- 'Date Col'
+    comparison_variable <- 'Dep Delay Col'
 
     # was POSIXct failing
     test_save_plot(file_name='data/rt_explore_plot_time_series_default__POSIXct.png',
@@ -190,9 +194,10 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
                                      cohort = paste0(year, '-',
                                                      lubridate::week(date)))) %>%
         select(date, dep_delay, dep_time, origin, cohort)
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'date'
-    comparison_variable <- 'dep_delay'
+    variable <- 'Date Col'
+    comparison_variable <- 'Dep Delay Col'
 
     comp_func_sum <- function(x) {
         return (sum(x, na.rm=TRUE))
@@ -430,7 +435,7 @@ test_that('rt_explore_plot_time_series_breaks_floors', {
     ##########################################################################################################
     # week/month/quarter/year other variables & options
     ##########################################################################################################
-    color_variable <- 'origin'
+    color_variable <- 'Origin Col'
     test_save_plot(file_name='data/rt_explore_plot_time_series_week_color.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
@@ -513,14 +518,17 @@ test_that('rt_explore_plot_time_series_breaks_floors_date_time', {
         filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-10'))
     dataset_11 <- data.frame(flights) %>%
         filter(floor_date(time_hour, unit = 'days') <= ymd('2013-02-11'))
+
+    colnames(dataset_10) <- test_helper__column_names(dataset_10)
+    colnames(dataset_11) <- test_helper__column_names(dataset_11)
     # max(dataset_10$time_hour)
     # max(dataset_11$time_hour)
     # dataset_11 %>%
     #     mutate(cohort = floor_date(time_hour, unit='weeks',week_start = 1)) %>%
     #     count(cohort)
 
-    variable <- 'time_hour'
-    comparison_variable <- 'dep_delay'
+    variable <- 'Time Hour Col'
+    comparison_variable <- 'Dep Delay Col'
 
     comp_func_sum <- function(x) {
         return (sum(x, na.rm=TRUE))
@@ -644,10 +652,11 @@ test_that('rt_explore_plot_time_facet_yoy', {
     set.seed(42)
     dataset <- dataset %>% sample_n(10000)
     dataset <- dataset %>% mutate(crossing = fct_lump(crossing, 1))
+    colnames(dataset) <- test_helper__column_names(dataset)
     #dataset %>% count(crossing)
 
-    variable <- 'date'
-    comparison_variable <- 'bike_count'
+    variable <- 'Date Col'
+    comparison_variable <- 'Bike Count Col'
 
     comp_func_sum <- function(x) {
         return (sum(x, na.rm=TRUE))
@@ -678,14 +687,13 @@ test_that('rt_explore_plot_time_facet_yoy', {
                                                     date_floor = 'week',
                                                     date_break_format = NULL,
                                                     date_breaks_width = '8 weeks'))
-
     ##################
     # count
     ##################
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
@@ -703,7 +711,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week__yoy.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
@@ -717,10 +725,10 @@ test_that('rt_explore_plot_time_facet_yoy', {
 
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_week.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
                                                     comparison_function_name = NULL,
@@ -739,7 +747,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week__sum.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
@@ -757,7 +765,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_week__sum__yoy.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
@@ -772,14 +780,14 @@ test_that('rt_explore_plot_time_facet_yoy', {
     # use to verify numbers
     # dataset %>%
     #     mutate(date = rt_floor_date_factor(date, 'week')) %>%
-    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     mutate(`Direction Col` = fct_lump(`Direction Col`, 1)) %>%
     #     count(date, crossing, direction, wt=bike_count) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_week__sum.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
                                                     comparison_function_name = 'SUM',
@@ -802,7 +810,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
@@ -820,7 +828,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month__yoy.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
@@ -834,14 +842,14 @@ test_that('rt_explore_plot_time_facet_yoy', {
     # use to verify numbers
     # dataset %>%
     #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
-    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     mutate(`Direction Col` = fct_lump(`Direction Col`, 1)) %>%
     #     count(date, crossing, direction) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_month.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
                                                     comparison_function_name = NULL,
@@ -861,7 +869,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month__sum.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
@@ -879,7 +887,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_month__sum__yoy.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
@@ -893,14 +901,14 @@ test_that('rt_explore_plot_time_facet_yoy', {
     # use to verify numbers
     # dataset %>%
     #     mutate(date = rt_floor_date_factor(date, 'month')) %>%
-    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     mutate(`Direction Col` = fct_lump(`Direction Col`, 1)) %>%
     #     count(date, crossing, direction, wt=bike_count) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_month__sum.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
                                                     comparison_function_name = 'SUM',
@@ -920,10 +928,10 @@ test_that('rt_explore_plot_time_facet_yoy', {
     }
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_month__include_zero.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     include_zero_y_axis = FALSE,
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_custom,
@@ -947,7 +955,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
@@ -965,7 +973,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter__yoy.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = NULL,
@@ -979,14 +987,14 @@ test_that('rt_explore_plot_time_facet_yoy', {
     # use to verify numbers
     # dataset %>%
     #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
-    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     mutate(`Direction Col` = fct_lump(`Direction Col`, 1)) %>%
     #     count(date, crossing, direction) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_quarter.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     comparison_variable = NULL,
                                                     comparison_function = NULL,
                                                     comparison_function_name = NULL,
@@ -1006,7 +1014,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter__sum.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
@@ -1024,7 +1032,7 @@ test_that('rt_explore_plot_time_facet_yoy', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_quarter__sum__yoy.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    facet_variable = 'direction',
+                                                    facet_variable = 'Direction Col',
                                                     year_over_year = TRUE,
                                                     color_variable = NULL,
                                                     comparison_variable = comparison_variable,
@@ -1038,14 +1046,14 @@ test_that('rt_explore_plot_time_facet_yoy', {
     # use to verify numbers
     # dataset %>%
     #     mutate(date = rt_floor_date_factor(date, 'quarter')) %>%
-    #     mutate(direction = fct_lump(direction, 1)) %>%
+    #     mutate(`Direction Col` = fct_lump(`Direction Col`, 1)) %>%
     #     count(date, crossing, direction, wt=bike_count) %>% arrange(crossing, direction, date) %>% as.data.frame() %>% View()
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_quarter__sum.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_sum,
                                                     comparison_function_name = 'SUM',
@@ -1065,10 +1073,10 @@ test_that('rt_explore_plot_time_facet_yoy', {
     }
     test_save_plot(file_name='data/rt_explore_plot_time_series__facet_color_quarter__include_zero.png',
                    plot=rt_explore_plot_time_series(dataset=dataset %>%
-                                                        mutate(direction = fct_lump(direction, 1)),
+                                                        mutate(`Direction Col` = fct_lump(`Direction Col`, 1)),
                                                     variable=variable,
-                                                    facet_variable = 'crossing',
-                                                    color_variable = 'direction',
+                                                    facet_variable = 'Crossing Col',
+                                                    color_variable = 'Direction Col',
                                                     include_zero_y_axis = FALSE,
                                                     comparison_variable = comparison_variable,
                                                     comparison_function = comp_func_custom,
@@ -1087,9 +1095,10 @@ test_that('rt_explore_plot_time_series', {
                                                      lubridate::week(date)))) %>%
         select(date, dep_delay, dep_time, origin, cohort) %>%
         mutate(origin = factor(origin, levels = c("JFK", "LGA", "EWR"), ordered=TRUE))
+    colnames(dataset) <- test_helper__column_names(dataset)
 
-    variable <- 'date'
-    comparison_variable <- 'dep_delay'
+    variable <- 'Date Col'
+    comparison_variable <- 'Dep Delay Col'
     comp_func_sum <- function(x) {
         return (sum(x, na.rm=TRUE))
     }
@@ -1097,12 +1106,12 @@ test_that('rt_explore_plot_time_series', {
     test_save_plot(file_name='data/rt_explore_plot_time_series__colors.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    color_variable='origin'))
+                                                    color_variable='Origin Col'))
 
     test_save_plot(file_name='data/rt_explore_plot_time_series__colors__comp.png',
                    plot=rt_explore_plot_time_series(dataset=dataset,
                                                     variable=variable,
-                                                    color_variable='origin',
+                                                    color_variable='Origin Col',
                                                     comparison_variable=comparison_variable,
                                                     comparison_function = comp_func_sum,
                                                     comparison_function_name = 'Sum'))
@@ -1116,8 +1125,10 @@ test_that('rt_explore_plot_time_series__many_nas', {
     update_indexes <- which(dataset$date < ymd('2013-09-01'))
     dataset$date[update_indexes] <- NA
 
-    variable <- 'date'
-    color_variable <- 'origin'
+    colnames(dataset) <- test_helper__column_names(dataset)
+
+    variable <- 'Date Col'
+    color_variable <- 'Origin Col'
 
     # if there are many NAs, it will mess up the count scale, and we can't plot them anyway
     test_save_plot(file_name='data/rt_explore_plot_time_series__many_nas.png',
@@ -1145,6 +1156,8 @@ test_that('rt_explore_plot_conversion_rates', {
     set.seed(43)
     conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
 
+    colnames(conversion_data) <- test_helper__column_names(conversion_data)
+
     get_rand_binom_num <- function(seed, max_num) {
         set.seed(seed)
         rbinom(1, max_num, 0.3)
@@ -1154,19 +1167,19 @@ test_that('rt_explore_plot_conversion_rates', {
         as.integer(round(runif(n=1, min=0, max=max_num)))
     }
 
-    conversion_data$num_days <- map_int(conversion_data$index, ~ get_rand_binom_num(., 39))
-    conversion_data$num_hours <- map_int(conversion_data$index, ~ get_rand_unif_num(., 23))
+    conversion_data$`Num Days Col` <- map_int(conversion_data$`Index Col`, ~ get_rand_binom_num(., 39))
+    conversion_data$`Num Hours Col` <- map_int(conversion_data$`Index Col`, ~ get_rand_unif_num(., 23))
     conversion_data <- conversion_data %>%
-        mutate(conversion_date = first_visit +
-                   days(num_days) +
-                   hours(num_hours)) %>%
-        select(-num_days, -num_hours)
+        mutate(`Conversion Date Col` = `First Visit Col` +
+                   days(`Num Days Col`) +
+                   hours(`Num Hours Col`)) %>%
+        select(-`Num Days Col`, -`Num Hours Col`)
 
-    conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
-    conversion_data <- conversion_data %>% mutate(group=ifelse(index %% 2 == 0, 'A', 'B'))
-    conversion_data <- conversion_data %>% select(-index, -converted)
+    conversion_data$`Conversion Date Col`[which(!conversion_data$`Converted Col`)] <- NA
+    conversion_data <- conversion_data %>% mutate(group=ifelse(`Index Col` %% 2 == 0, 'A', 'B'))
+    conversion_data <- conversion_data %>% select(-`Index Col`, -`Converted Col`)
 
-    mock_reference_date <- max(conversion_data$first_visit)
+    mock_reference_date <- max(conversion_data$`First Visit Col`)
 
     ##########################################################################################################
     # Non-Groups
@@ -1174,8 +1187,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(6, 7, 10, 14),
                                      snapshot_units='days',
@@ -1190,15 +1203,15 @@ test_that('rt_explore_plot_conversion_rates', {
                                      date_break_format=NULL,
                                      date_breaks_width=NULL))
 
-    # there was a bug where unique values were being removed (e.g. so duplicated first_visit's would be removed)
+    # there was a bug where unique values were being removed (e.g. so duplicated First Visit Col's would be removed)
     # so the above and below conversion rates, which should be (about) the same, were actually different
     # the graphs won't actually be the same because by doing round_date we lose some precision on the date,
     # and therefore the date-diff between the first-visit and the conversion-date, but they should be close
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month__floor_bug.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
-                                                             mutate(first_visit = round_date(first_visit, unit='days')),
-                                                         first_date='first_visit',
-                                                         second_date='conversion_date',
+                                                             mutate(`First Visit Col` = round_date(`First Visit Col`, unit='days')),
+                                                         first_date='First Visit Col',
+                                                         second_date='Conversion Date Col',
                                                          reference_date=mock_reference_date,
                                                          snapshots=c(6, 7, 10, 14),
                                                          snapshot_units='days',
@@ -1216,8 +1229,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_facet.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(6, 7, 10, 14),
                                      snapshot_units='days',
@@ -1234,8 +1247,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_yoy.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(6, 7, 10, 14),
                                      snapshot_units='days',
@@ -1253,8 +1266,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_yoy_ignore_color.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                                         first_date='first_visit',
-                                                         second_date='conversion_date',
+                                                         first_date='First Visit Col',
+                                                         second_date='Conversion Date Col',
                                                          reference_date=mock_reference_date,
                                                          snapshots=c(6, 7, 10, 14),
                                                          snapshot_units='days',
@@ -1271,8 +1284,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__2.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(7, 14, 21),
                                      snapshot_units='days',
@@ -1290,8 +1303,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(1, 2, 3),
                                      snapshot_units='weeks',
@@ -1308,9 +1321,9 @@ test_that('rt_explore_plot_conversion_rates', {
 
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks2.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
-                                                             filter(first_visit >= ymd_hms('2020-01-01 00:00:00')),
-                                                         first_date='first_visit',
-                                                         second_date='conversion_date',
+                                                             filter(`First Visit Col` >= ymd_hms('2020-01-01 00:00:00')),
+                                                         first_date='First Visit Col',
+                                                         second_date='Conversion Date Col',
                                                          reference_date=mock_reference_date,
                                                          snapshots=c(1, 2, 3),
                                                          snapshot_units='weeks',
@@ -1329,8 +1342,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_facet.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(1, 2, 3),
                                      snapshot_units='weeks',
@@ -1347,8 +1360,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_yoy.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(1, 2, 3),
                                      snapshot_units='weeks',
@@ -1365,8 +1378,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_2.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      reference_date=mock_reference_date,
                                      snapshots=c(1, 2, 3),
                                      snapshot_units='weeks',
@@ -1389,8 +1402,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month__groups.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      group_variable='group',
                                      reference_date=mock_reference_date,
                                      snapshots=c(6, 7, 10, 14),
@@ -1407,15 +1420,15 @@ test_that('rt_explore_plot_conversion_rates', {
                                      date_breaks_width=NULL))
 
 
-    # there was a bug where unique values were being removed (e.g. so duplicated first_visit's would be removed)
+    # there was a bug where unique values were being removed (e.g. so duplicated First Visit Col's would be removed)
     # so the above and below conversion rates, which should be (about) the same, were actually different
     # the graphs won't actually be the same because by doing round_date we lose some precision on the date,
     # and therefore the date-diff between the first-visit and the conversion-date, but they should be close
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month__groups__floor_bug.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
-                                                             mutate(first_visit = round_date(first_visit, unit='days')),
-                                                         first_date='first_visit',
-                                                         second_date='conversion_date',
+                                                             mutate(`First Visit Col` = round_date(`First Visit Col`, unit='days')),
+                                                         first_date='First Visit Col',
+                                                         second_date='Conversion Date Col',
                                                          group_variable='group',
                                                          reference_date=mock_reference_date,
                                                          snapshots=c(6, 7, 10, 14),
@@ -1434,8 +1447,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__days_month_facet__groups.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      group_variable='group',
                                      reference_date=mock_reference_date,
                                      snapshots=c(6, 7, 10, 14),
@@ -1452,8 +1465,8 @@ test_that('rt_explore_plot_conversion_rates', {
                                      date_breaks_width=NULL))
     ##########################################################################################################
     expect_error(rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                                  first_date='first_visit',
-                                                  second_date='conversion_date',
+                                                  first_date='First Visit Col',
+                                                  second_date='Conversion Date Col',
                                                   group_variable='group',
                                                   reference_date=mock_reference_date,
                                                   snapshots=c(6, 7, 10, 14),
@@ -1472,8 +1485,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks__groups.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      group_variable='group',
                                      reference_date=mock_reference_date,
                                      snapshots=c(1, 2, 3),
@@ -1491,9 +1504,9 @@ test_that('rt_explore_plot_conversion_rates', {
 
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks2__groups.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data %>%
-                                                             filter(first_visit >= ymd_hms('2020-01-01 00:00:00')),
-                                                         first_date='first_visit',
-                                                         second_date='conversion_date',
+                                                             filter(`First Visit Col` >= ymd_hms('2020-01-01 00:00:00')),
+                                                         first_date='First Visit Col',
+                                                         second_date='Conversion Date Col',
                                                          group_variable='group',
                                                          reference_date=mock_reference_date,
                                                          snapshots=c(1, 2, 3),
@@ -1513,8 +1526,8 @@ test_that('rt_explore_plot_conversion_rates', {
     ##########################################################################################################
     test_save_plot(file_name='data/rt_explore_plot_conversion_rates__weeks_weeks_facet__groups.png',
                    plot=rt_explore_plot_conversion_rates(dataset=conversion_data,
-                                     first_date='first_visit',
-                                     second_date='conversion_date',
+                                     first_date='First Visit Col',
+                                     second_date='Conversion Date Col',
                                      group_variable='group',
                                      reference_date=mock_reference_date,
                                      snapshots=c(1, 2, 3),
@@ -1546,6 +1559,8 @@ test_that('rt_explore_plot_cohorted_adoption', {
     set.seed(43)
     conversion_data$converted <- as.logical(rbinom(n=sample_size, size=1, prob=conversion_rate))
 
+    colnames(conversion_data) <- test_helper__column_names(conversion_data)
+
     get_rand_binom_num <- function(seed, max_num) {
         set.seed(seed)
         rbinom(1, max_num, 0.3)
@@ -1555,23 +1570,23 @@ test_that('rt_explore_plot_cohorted_adoption', {
         as.integer(round(runif(n=1, min=0, max=max_num)))
     }
 
-    conversion_data$num_days <- map_int(conversion_data$index, ~ get_rand_binom_num(., 39))
-    conversion_data$num_hours <- map_int(conversion_data$index, ~ get_rand_unif_num(., 23))
+    conversion_data$`Num Days Col` <- map_int(conversion_data$`Index Col`, ~ get_rand_binom_num(., 39))
+    conversion_data$`Num Hours Col` <- map_int(conversion_data$`Index Col`, ~ get_rand_unif_num(., 23))
     conversion_data <- conversion_data %>%
-        mutate(conversion_date = first_visit +
-                   days(num_days) +
-                   hours(num_hours)) %>%
-        select(-num_days, -num_hours)
+        mutate(`Conversion Date Col` = `First Visit Col` +
+                   days(`Num Days Col`) +
+                   hours(`Num Hours Col`)) %>%
+        select(-`Num Days Col`, -`Num Hours Col`)
 
-    conversion_data$conversion_date[which(!conversion_data$converted)] <- NA
-    conversion_data <- conversion_data %>% select(-index, -converted)
+    conversion_data$`Conversion Date Col`[which(!conversion_data$`Converted Col`)] <- NA
+    conversion_data <- conversion_data %>% select(-`Index Col`, -`Converted Col`)
 
-    mock_reference_date <- max(conversion_data$first_visit)
+    mock_reference_date <- max(conversion_data$`First Visit Col`)
 
     test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__30_days_month.png',
                    plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
-                                                          first_date='first_visit',
-                                                          second_date='conversion_date',
+                                                          first_date='First Visit Col',
+                                                          second_date='Conversion Date Col',
                                                           reference_date=mock_reference_date,
                                                           last_n_cohorts=10,
                                                           n_units_after_first_date=30,
@@ -1587,8 +1602,8 @@ test_that('rt_explore_plot_cohorted_adoption', {
 
     test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__30_days_month_options.png',
                    plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
-                                                          first_date='first_visit',
-                                                          second_date='conversion_date',
+                                                          first_date='First Visit Col',
+                                                          second_date='Conversion Date Col',
                                                           reference_date=mock_reference_date,
                                                           last_n_cohorts=10,
                                                           n_units_after_first_date=30,
@@ -1604,8 +1619,8 @@ test_that('rt_explore_plot_cohorted_adoption', {
 
     test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__3_weeks_week.png',
                    plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
-                                                          first_date='first_visit',
-                                                          second_date='conversion_date',
+                                                          first_date='First Visit Col',
+                                                          second_date='Conversion Date Col',
                                                           reference_date=mock_reference_date,
                                                           last_n_cohorts=15,
                                                           n_units_after_first_date=3,
@@ -1621,8 +1636,8 @@ test_that('rt_explore_plot_cohorted_adoption', {
 
     test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__3_weeks_month_options1.png',
                    plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
-                                                          first_date='first_visit',
-                                                          second_date='conversion_date',
+                                                          first_date='First Visit Col',
+                                                          second_date='Conversion Date Col',
                                                           reference_date=mock_reference_date,
                                                           last_n_cohorts=100,
                                                           n_units_after_first_date=4,
@@ -1639,8 +1654,8 @@ test_that('rt_explore_plot_cohorted_adoption', {
 
     test_save_plot(file_name='data/rt_explore_plot_cohorted_adoption__3_weeks_month_options2.png',
                    plot=rt_explore_plot_cohorted_adoption(dataset=conversion_data,
-                                                          first_date='first_visit',
-                                                          second_date='conversion_date',
+                                                          first_date='First Visit Col',
+                                                          second_date='Conversion Date Col',
                                                           reference_date=mock_reference_date,
                                                           last_n_cohorts=100,
                                                           n_units_after_first_date=4,

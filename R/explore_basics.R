@@ -2443,7 +2443,7 @@ rt_explore_plot_time_series <- function(dataset,
     if(!is.null(facet_variable)) {
 
         ggplot_object <- ggplot_object +
-            facet_wrap(facets = facet_variable , ncol = 1, scales = 'free_y', strip.position = "right") +
+            facet_wrap(facets = paste0("`",facet_variable, "`"), ncol = 1, scales = 'free_y', strip.position = "right") +
             theme(strip.text.y = element_text(size = base_size))
     }
 
