@@ -6,6 +6,18 @@ source('test_helpers.R')
 
 
 test_that("rt_xxxxx", {
+
+    library(ChannelAttribution)
+    data(PathData)
+    Data
+    markov_model(Data, "path", "total_conversions")
+    markov_model(Data, "path", "total_conversions", var_value="total_conversion_value")
+    markov_model(Data,"path","total_conversions", var_value="total_conversion_value",
+                 var_null="total_null")
+    markov_model(Data, "path", "total_conversions", var_value="total_conversion_value",
+                 var_null="total_null", out_more=TRUE)
+
+
     library(readr)
     campaign_data <- suppressMessages(read_csv("data/campaign_data__small.csv"))
 
@@ -99,7 +111,7 @@ test_that("rt_xxxxx", {
 
 
     #unique(campaign_paths$.path_sequence)
-
+    ?ChannelAttribution::markov_model
     markov_attribution <- ChannelAttribution::markov_model(campaign_paths,
                                        var_path = ".path_sequence",
                                        var_conv = ".total_conversions",
@@ -121,7 +133,8 @@ test_that("rt_xxxxx", {
 
     sum(markov_attribution$removal_effects$removal_effects)
 
-
+    #?heuristic_models
+    # todo: add U-shape
     heuristic_attribution <- ChannelAttribution::heuristic_models(campaign_paths,
                                               var_path = ".path_sequence",
                                               var_conv = ".total_conversions")
@@ -201,6 +214,8 @@ test_that("rt_xxxxx", {
         labs(y='Conversions',
              x='Channel Name',
              fill="Attribution Model")
+
+
 
 
     path_matrix <- campaign_data_trans %>%
