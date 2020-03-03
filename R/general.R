@@ -509,3 +509,12 @@ rt_group_by_all_of <- function(.data, ...) {
     return (group_by_at(.data, all_of(columns)))
 }
 
+#' like `head()` but converts to a data.frame so rows/columns aren't excluded when showing
+#' @param .df dataframe
+#' @param .n number of rows to include
+#'
+#' @export
+rt_peak <- function(.df, .n=25) {
+
+    return (.df %>% head(.n) %>% as.data.frame())
+}
