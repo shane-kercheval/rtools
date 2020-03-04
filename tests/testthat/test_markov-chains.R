@@ -256,10 +256,11 @@ test_that("rt_xxxxx", {
     data.frame(channel_name=names(percent_conversions),
                percent_conversions=percent_conversions,
                total_touches=total_touches) %>%
-        inner_join( markov_attribution$removal_effects, by='channel_name') %>%
+        inner_join(markov_attribution$removal_effects, by='channel_name') %>%
         ggplot(aes(x=total_touches, y =percent_conversions)) +
         geom_point(aes(size=removal_effects)) +
         geom_text(aes(label = channel_name), vjust=-1) +
+        geom_text(aes(label = paste0("(", round(removal_effects, 3), ")")), vjust=2) +
         theme_light()
 
 
