@@ -326,4 +326,136 @@ test_that("rt_xxxxx", {
         rt_peak()
 
 
+
+
+    #############
+    #
+    campaign_data_first_last <- campaign_data %>%
+        group_by(cookie) %>%
+        mutate(visit_index = row_number(time),
+               visit_index_rev = row_number(desc(time))) %>%
+        ungroup() %>%
+        filter(visit_index == 1 | visit_index_rev == 1)
+
+
+    first_last_channel <- campaign_data_first_last %>%
+        group_by(cookie) %>%
+        summarise(first_channel = channel[visit_index == 1],
+                  last_channel = channel[visit_index_rev == 1])
+
+    sankey_dataframe <- first_last_channel %>%
+        mutate(path = paste(first_channel, '-', last_channel)) %>%
+        count(path, name='num_paths') %>%
+        arrange(desc(num_paths)) %>%
+        filter(num_paths > 20) %>%
+        separate(path, into = c('first_channel', 'last_channel'), sep = ' - ')
+
+
+    first_nodes <- unique(sankey_dataframe$first_channel)
+    last_nodes <- unique(sankey_dataframe$last_channel)
+
+
+    source_indexes <- match(sankey_dataframe$first_channel, first_nodes) - 1
+    target_indexes <- match(sankey_dataframe$last_channel, last_nodes) + length(first_nodes) - 1
+
+    sankey_dataframe$source <- source_indexes
+    sankey_dataframe$target <- target_indexes
+    sankey_nodes_df <- data.frame(name=c(first_nodes, last_nodes))
+
+    sankeyNetwork(Links = sankey_dataframe,
+                  Nodes = sankey_nodes_df,
+                  Source = 'source',
+                  Target = 'target',
+                  Value = 'num_paths',
+                  NodeID = 'name',
+                  #units = 'TWh',
+                  fontSize = 12, nodeWidth = 30)
+
+
+    ?sankeyNetwork
+    sankeyNetwork(Links = energy$links,
+                  Nodes = energy$nodes,
+                  Source = 'source',
+                  Target = 'target', Value = 'value', NodeID = 'name',
+                  units = 'TWh', fontSize = 12, nodeWidth = 30)
+
+
+    ##### sankey
+    # Libraries
+    library(tidyverse)
+    library(viridis)
+    #install.packages('patchwork')
+    library(patchwork)
+    #install.packages('hrbrthemes')
+    library(hrbrthemes)
+    #install.packages('circlize')
+    library(circlize)
+
+    # Load dataset from github
+    data <- read.table("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/13_AdjacencyDirectedWeighted.csv", header=TRUE)
+    # Package
+    #install.packages('networkD3')
+    library(networkD3)
+
+    # I need a long format
+    colnames(data) <- str_replace_all(colnames(data), "\\.", " ")
+    data_long <- data %>%
+        rownames_to_column %>%
+        gather(key = 'key', value = 'value', -rowname) %>%
+        filter(value > 0)
+    colnames(data_long) <- c("source", "target", "value")
+
+    nodes <- nodes %>% mutate(name = str_replace_all(name, "\\.", " "))
+
+    data_long$target <- paste(data_long$target, " ", sep="")
+
+    # From these flows we need to create a node data frame: it lists every entities involved in the flow
+    nodes <- data.frame(name=c(as.character(data_long$source), as.character(data_long$target)) %>% unique())
+
+    # With networkD3, connection must be provided using id, not using real name like in the links dataframe.. So we need to reformat it.
+    data_long$IDsource=match(data_long$source, nodes$name)-1
+    data_long$IDtarget=match(data_long$target, nodes$name)-1
+
+    color_string <- rt_str_collapse(rt_colors(),.surround = '"', .separate = ", ")
+    ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
+    # prepare colour scale
+    #ColourScal ='d3.scaleOrdinal().range(["#FDE725FF","#B4DE2CFF","#6DCD59FF","#35B779FF","#1F9E89FF","#26828EFF","#31688EFF","#3E4A89FF","#482878FF","#440154FF"])'
+
+    # Make the Network
+    ?sankeyNetwork
+    sankeyNetwork(Links = data_long, Nodes = nodes,
+                  Source = "IDsource", Target = "IDtarget",
+                  Value = "value", NodeID = "name",
+                  sinksRight=FALSE, colourScale=ColourScal, nodeWidth=40, fontSize=13, nodePadding=20)
+
+
+
+
+
+
+
+
+
+
+
+    ## Not run:
+    # Recreate Bostock Sankey diagram: http://bost.ocks.org/mike/sankey/
+    # Load energy projection data
+    URL <- paste0('https://cdn.rawgit.com/christophergandrud/networkD3/',
+                  'master/JSONdata/energy.json')
+    energy <- jsonlite::fromJSON(URL)
+
+    # Plot
+    sankeyNetwork(Links = energy$links, Nodes = energy$nodes, Source = 'source',
+                  Target = 'target', Value = 'value', NodeID = 'name',
+                  units = 'TWh', fontSize = 12, nodeWidth = 30)
+
+    # Colour links
+    energy$links$energy_type <- sub(' .*', '',
+                                    energy$nodes[energy$links$source + 1, 'name'])
+
+    sankeyNetwork(Links = energy$links, Nodes = energy$nodes, Source = 'source',
+                  Target = 'target', Value = 'value', NodeID = 'name',
+                  LinkGroup = 'energy_type', NodeGroup = NULL)
+
 })
