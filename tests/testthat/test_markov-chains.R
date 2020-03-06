@@ -325,11 +325,9 @@ test_that("rt_xxxxx", {
         arrange(cookie, time) %>%
         rt_peak()
 
-
-
-
-    #############
-    #
+    ########################################
+    # First & Last Touchf
+    ########################################
     campaign_data_first_last <- campaign_data %>%
         group_by(cookie) %>%
         mutate(visit_index = row_number(time),
@@ -378,6 +376,122 @@ test_that("rt_xxxxx", {
                   Source = 'source',
                   Target = 'target', Value = 'value', NodeID = 'name',
                   units = 'TWh', fontSize = 12, nodeWidth = 30)
+
+
+
+
+
+
+    ########################################
+    # All
+    ########################################
+
+    campaign_data_2 <- campaign_data %>%
+        group_by(cookie) %>%
+        mutate(converted = any(conversion > 0)) %>%
+        mutate(first_converted = min(time[conversion == 1], na.rm = TRUE)) %>%
+        ungroup() %>%
+        filter(is.na(first_converted) | time <= first_converted) %>%
+        select(-first_converted)
+
+    bounced_cookies <- campaign_data_2 %>%
+        filter(!converted) %>%
+        group_by(cookie) %>%
+        summarise(time = max(time),
+                  channel = 'Bounced')
+    bounced_cookies$time <- bounced_cookies$time + seconds(1)
+
+    converted_cookies <- campaign_data_2 %>%
+        filter(converted) %>%
+        group_by(cookie) %>%
+        summarise(time = max(time),
+                  channel = 'Converted')
+    converted_cookies$time <- converted_cookies$time + seconds(1)
+
+
+    campaign_data_2 <- campaign_data_2 %>%
+        select(cookie, time, channel) %>%
+        bind_rows(bounced_cookies) %>%
+        bind_rows(converted_cookies) %>%
+        arrange(cookie, time) %>%
+        select(cookie, channel) %>%
+        distinct()
+
+    campaign_data_2 %>%
+        group_by(cookie) %>%
+        mutate(path = paste0(channel, collapse = ' > ')) %>%
+        ungroup() %>%
+        count(path, name='num_paths') %>%
+        arrange(desc(num_paths)) %>%
+        View()
+
+
+        count(path, name='num_paths') %>%
+        arrange(desc(num_paths)) %>%
+        separate(path, into=NA, sep = ' > ') %>%
+        View()
+
+    campaign_data_2 %>% rt_peak()
+    campaign_data_2 %>% View()
+    # loop through each possible value
+    possible_channels <- unique(campaign_data_2$channel)
+    # for each channel, count how many people go to another channel (or convert; or drop off ())
+    for(channel in possible_channels) {
+
+    }
+
+
+
+
+    campaign_data_all %>%
+        group_by(path) %>%
+        count(path, name='num_paths') %>%
+        arrange(desc(num_paths)) %>%
+        separate(path, into=NA, sep = ' > ')
+
+    ?separate
+
+
+
+
+    sankey_dataframe <- first_last_channel %>%
+        mutate(path = paste(first_channel, '-', last_channel)) %>%
+        count(path, name='num_paths') %>%
+        arrange(desc(num_paths)) %>%
+        filter(num_paths > 20) %>%
+        separate(path, into = c('first_channel', 'last_channel'), sep = ' - ')
+
+
+    first_nodes <- unique(sankey_dataframe$first_channel)
+    last_nodes <- unique(sankey_dataframe$last_channel)
+
+
+    source_indexes <- match(sankey_dataframe$first_channel, first_nodes) - 1
+    target_indexes <- match(sankey_dataframe$last_channel, last_nodes) + length(first_nodes) - 1
+
+    sankey_dataframe$source <- source_indexes
+    sankey_dataframe$target <- target_indexes
+    sankey_nodes_df <- data.frame(name=c(first_nodes, last_nodes))
+
+    sankeyNetwork(Links = sankey_dataframe,
+                  Nodes = sankey_nodes_df,
+                  Source = 'source',
+                  Target = 'target',
+                  Value = 'num_paths',
+                  NodeID = 'name',
+                  #units = 'TWh',
+                  fontSize = 12, nodeWidth = 30)
+
+
+    ?sankeyNetwork
+    sankeyNetwork(Links = energy$links,
+                  Nodes = energy$nodes,
+                  Source = 'source',
+                  Target = 'target', Value = 'value', NodeID = 'name',
+                  units = 'TWh', fontSize = 12, nodeWidth = 30)
+
+
+
 
 
     ##### sankey
@@ -446,6 +560,7 @@ test_that("rt_xxxxx", {
     energy <- jsonlite::fromJSON(URL)
 
     # Plot
+    duplicated(energy$nodes)
     sankeyNetwork(Links = energy$links, Nodes = energy$nodes, Source = 'source',
                   Target = 'target', Value = 'value', NodeID = 'name',
                   units = 'TWh', fontSize = 12, nodeWidth = 30)
