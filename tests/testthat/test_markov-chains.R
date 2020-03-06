@@ -387,6 +387,10 @@ test_that("rt_xxxxx", {
     ########################################
 
     campaign_data_2 <- campaign_data %>%
+        # this is getting unique channel, but perhaps have an option not to get unique
+        group_by(cookie, channel) %>%
+        filter(row_number(time) == 1) %>%
+        ungroup() %>%
         group_by(cookie) %>%
         mutate(converted = any(conversion > 0)) %>%
         mutate(first_converted = min(time[conversion == 1], na.rm = TRUE)) %>%
@@ -409,13 +413,120 @@ test_that("rt_xxxxx", {
     converted_cookies$time <- converted_cookies$time + seconds(1)
 
 
-    campaign_data_2 <- campaign_data_2 %>%
+    campaign_data_t <- campaign_data_2 %>%
         select(cookie, time, channel) %>%
         bind_rows(bounced_cookies) %>%
         bind_rows(converted_cookies) %>%
         arrange(cookie, time) %>%
-        select(cookie, channel) %>%
-        distinct()
+        group_by(cookie) %>%
+        mutate(visit_index = row_number(time),
+               visit_index_rev = rev(visit_index)) %>%
+        ungroup() %>%
+        select(cookie, channel, visit_index, visit_index_rev)
+
+    campaign_data_t <- campaign_data_t %>%
+        unite(channel_source, c(channel, visit_index)) %>%
+        group_by(cookie) %>%
+        mutate(channel_target = lead(channel_source)) %>%
+        ungroup() %>%
+        filter(!is.na(channel_target)) %>%
+        mutate(channel_target = case_when(
+            str_detect(channel_target, 'Bounced') ~ 'Bounced',
+            str_detect(channel_target, 'Converted') ~ 'Converted',
+            TRUE ~ channel_target
+        ))
+
+    campaign_data_t <- campaign_data_t %>%
+        unite(step, c(channel_source, channel_target), remove = FALSE) %>%
+        group_by(step, channel_source, channel_target) %>%
+        summarise(n=n(),
+                  n_d=n_distinct(cookie)) %>%
+        ungroup()
+
+
+    #campaign_data_t %>% View()
+
+    unique_nodes <- bind_rows(campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% select(channel_source, n) %>% rename(channel_name=channel_source),
+              campaign_data_t %>% count(channel_target, wt=n) %>% arrange(n) %>% select(channel_target, n) %>% rename(channel_name=channel_target)) %>%
+        count(channel_name, wt=n) %>%
+        arrange(desc(n)) %>%
+        pull(channel_name)
+
+    #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
+    #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
+    #unique_nodes <- unique(c(campaign_data_t$channel_source, campaign_data_t$channel_target))
+    # target_nodes <- unique(campaign_data_t$channel_target)
+
+
+
+    source_indexes <- match(campaign_data_t$channel_source, unique_nodes) - 1
+    target_indexes <- match(campaign_data_t$channel_target, unique_nodes) - 1
+
+    campaign_data_t$source <- source_indexes
+    campaign_data_t$target <- target_indexes
+    sankey_nodes_df <- data.frame(name=c(unique_nodes))
+
+    color_string <- rt_str_collapse(rt_colors(),.surround = '"', .separate = ", ")
+    ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
+    #campaign_data_t %>% View()
+    #sankey_nodes_df %>% View()
+    sankeyNetwork(Links = campaign_data_t,
+                  Nodes = sankey_nodes_df,
+                  Source = 'source',
+                  Target = 'target',
+                  Value = 'n',
+                  NodeID = 'name',
+                  colourScale = ColourScal,
+                  #units = 'TWh',
+                  fontSize = 12, nodeWidth = 30)
+
+
+
+    first_nodes <- unique(sankey_dataframe$first_channel)
+    last_nodes <- unique(sankey_dataframe$last_channel)
+
+
+    source_indexes <- match(sankey_dataframe$first_channel, first_nodes) - 1
+    target_indexes <- match(sankey_dataframe$last_channel, last_nodes) + length(first_nodes) - 1
+
+    sankey_dataframe$source <- source_indexes
+    sankey_dataframe$target <- target_indexes
+    sankey_nodes_df <- data.frame(name=c(first_nodes, last_nodes))
+
+    sankeyNetwork(Links = sankey_dataframe,
+                  Nodes = sankey_nodes_df,
+                  Source = 'source',
+                  Target = 'target',
+                  Value = 'num_paths',
+                  NodeID = 'name',
+                  #units = 'TWh',
+                  fontSize = 12, nodeWidth = 30)
+
+
+
+
+
+
+
+
+    str_detect()
+
+    ?unite
+
+
+
+    energy$links
+    energy$nodes
+
+
+
+
+
+
+    campaign_data_2 %>%
+        group_by(cookie) %>%
+        summarise(n = n()) %>%
+        pull(n) %>% histogram()
 
     campaign_data_2 %>%
         group_by(cookie) %>%
@@ -426,10 +537,24 @@ test_that("rt_xxxxx", {
         View()
 
 
-        count(path, name='num_paths') %>%
-        arrange(desc(num_paths)) %>%
-        separate(path, into=NA, sep = ' > ') %>%
-        View()
+    energy$links
+    energy$nodes
+
+
+
+
+
+
+
+
+
+    # simple example
+    i <- c(1,3:8);
+    j <- c(2,9,6:10);
+    x <- 7 * (1:7)
+    library(Matrix)
+    (A <- sparseMatrix(i, j, x = x))                    ##  8 x 10 "dgCMatrix"
+    summary(A)
 
     campaign_data_2 %>% rt_peak()
     campaign_data_2 %>% View()
