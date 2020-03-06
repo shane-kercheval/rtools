@@ -386,35 +386,49 @@ test_that("rt_xxxxx", {
     # All
     ########################################
 
+    campaign_data %>%
+        group_by(cookie) %>%
+        summarise(converted = any(conversion > 0)) %>%
+        pull(converted) %>% sum()
+
     campaign_data_2 <- campaign_data %>%
-        # this is getting unique channel, but perhaps have an option not to get unique
-        group_by(cookie, channel) %>%
-        filter(row_number(time) == 1) %>%
-        ungroup() %>%
         group_by(cookie) %>%
         mutate(converted = any(conversion > 0)) %>%
         mutate(first_converted = min(time[conversion == 1], na.rm = TRUE)) %>%
         ungroup() %>%
+        # this is getting unique channel, but perhaps have an option not to get unique
+        # need to do this after conversion logic above because if the person converts on the nth time
+        # for a particular channel, this will have filtered out their conversion event
+        group_by(cookie, channel) %>%
+        filter(row_number(time) == 1) %>%
+        ungroup() %>%
         filter(is.na(first_converted) | time <= first_converted) %>%
         select(-first_converted)
+
+    campaign_data_2 %>%
+        group_by(cookie) %>%
+        summarise(converted = any(converted)) %>%
+        pull(converted) %>% sum()
 
     bounced_cookies <- campaign_data_2 %>%
         filter(!converted) %>%
         group_by(cookie) %>%
         summarise(time = max(time),
-                  channel = 'Bounced')
+                  channel = 'Bounced',
+                  converted=FALSE)
     bounced_cookies$time <- bounced_cookies$time + seconds(1)
 
     converted_cookies <- campaign_data_2 %>%
         filter(converted) %>%
         group_by(cookie) %>%
         summarise(time = max(time),
-                  channel = 'Converted')
+                  channel = 'Converted',
+                  converted=TRUE)
     converted_cookies$time <- converted_cookies$time + seconds(1)
 
 
     campaign_data_t <- campaign_data_2 %>%
-        select(cookie, time, channel) %>%
+        select(cookie, time, channel, converted) %>%
         bind_rows(bounced_cookies) %>%
         bind_rows(converted_cookies) %>%
         arrange(cookie, time) %>%
@@ -422,7 +436,9 @@ test_that("rt_xxxxx", {
         mutate(visit_index = row_number(time),
                visit_index_rev = rev(visit_index)) %>%
         ungroup() %>%
-        select(cookie, channel, visit_index, visit_index_rev)
+        select(cookie, channel, visit_index, visit_index_rev, converted)
+
+    campaign_data_t <- campaign_data_t %>% filter(converted)
 
     campaign_data_t <- campaign_data_t %>%
         unite(channel_source, c(channel, visit_index)) %>%
@@ -464,6 +480,10 @@ test_that("rt_xxxxx", {
 
     campaign_data_t$source <- source_indexes
     campaign_data_t$target <- target_indexes
+
+
+
+    unique_nodes <- str_remove(string=unique_nodes, pattern = "_.*")
     sankey_nodes_df <- data.frame(name=c(unique_nodes))
 
     color_string <- rt_str_collapse(rt_colors(),.surround = '"', .separate = ", ")
