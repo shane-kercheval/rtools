@@ -63,6 +63,10 @@ test_that("rt_clickstream_to_attribution", {
     expect_true(rt_are_dataframes_equal(campaign_data_original %>% arrange(id, timestamp, step),
                                         campaign_data_new %>% arrange(id, timestamp, step)))
 
+})
+
+test_that("rt_clickstream_to_attribution", {
+
     # what happens when the there are multiple types of conversions that are triggered from a single e.g. page
     # so
     # pricing -> (Lead Form-Fill & Lead Sign-up)
