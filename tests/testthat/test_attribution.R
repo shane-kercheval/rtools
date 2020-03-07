@@ -64,23 +64,43 @@ test_that("rt_clickstream_to_attribution", {
                                         campaign_data_new %>% arrange(id, timestamp, step)))
 })
 
+
+test_helper__campaign_filter_first_conversions <- function(.campaign_data) {
+    suppressWarnings(.campaign_data %>%
+                         #campaign_data %>% arrange(id, timestamp, conversion_value) %>%
+                         group_by(id) %>%
+                         filter(all(num_conversions == 0) | timestamp <= min(timestamp[num_conversions > 0])) %>%
+                         ungroup() %>%
+                         arrange(id, timestamp, conversion_value, step))
+}
+
 test_that("rt_campaign_add_columns", {
 
     campaign_data <- readRDS('data/campaign_data__small.RDS')
+    # make 1st and 2nd events have >0 conversions
+    campaign_data[1, 'num_conversions'] <- 1
+    campaign_data[2, 'num_conversions'] <- 2
+    # make 1st and 2nd events have >0 conversions
+    campaign_data[5, 'num_conversions'] <- 2
+    campaign_data[6, 'num_conversions'] <- 2
+    # make 2nd and 3rd events have >0 conversions
+    campaign_data[12, 'num_conversions'] <- 2
+    campaign_data[13, 'num_conversions'] <- 2
+    campaign_data[14, 'num_conversions'] <- 1
 
     set.seed(42)
     new_indexes <- sample(nrow(campaign_data), replace = FALSE)
+
+    ######
+    # .use_first_conversion=TRUE
+    # .reset_upon_conversion=TRUE
+    ######
     campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
                                                          .use_first_conversion=TRUE,
                                                          .reset_upon_conversion=TRUE,
                                                          .sort=TRUE)
 
-    expected_df <- suppressWarnings(campaign_data %>%
-        #campaign_data %>% arrange(id, timestamp, conversion_value) %>%
-        group_by(id) %>%
-        filter(all(num_conversions == 0) | timestamp <= min(timestamp[num_conversions > 0])) %>%
-        ungroup() %>%
-        arrange(id, timestamp, conversion_value, step))
+    expected_df <- test_helper__campaign_filter_first_conversions(campaign_data)
 
     expect_true(rt_are_dataframes_equal(expected_df,
                                         campaign_data_transformed %>%
@@ -89,7 +109,22 @@ test_that("rt_campaign_add_columns", {
     expect_identical(campaign_data_transformed$.path_id, campaign_data_transformed$id)
     expect_identical(campaign_data_transformed$.path_id, expected_df$id)
 
+    ######
+    # .use_first_conversion=TRUE
+    # .reset_upon_conversion=FALSE
+    ######
+    # this should be the same as above (TRUE/TRUE) because if .use_first_conversion is TRUE then
+    # .reset_upon_conversion doesn't apply
+    campaign_data_transformed_2 <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                          .use_first_conversion=TRUE,
+                                                          .reset_upon_conversion=FALSE,
+                                                          .sort=TRUE)
+    expect_true(rt_are_dataframes_equal(campaign_data_transformed, campaign_data_transformed_2))
 
+    ######
+    # .use_first_conversion=FALSE
+    # .reset_upon_conversion=FALSE
+    ######
     campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
                                                          .use_first_conversion=FALSE,
                                                          .reset_upon_conversion=FALSE,
@@ -104,28 +139,21 @@ test_that("rt_campaign_add_columns", {
     expect_identical(campaign_data_transformed$.path_id, expected_df$id)
 
 
-    campaign_data_2 <- campaign_data
-    # make 1st and 2nd events have >0 conversions
-    campaign_data_2[1, 'num_conversions'] <- 1
-    campaign_data_2[2, 'num_conversions'] <- 2
-    # make 1st and 2nd events have >0 conversions
-    campaign_data_2[5, 'num_conversions'] <- 2
-    campaign_data_2[6, 'num_conversions'] <- 2
-    # make 2nd and 3rd events have >0 conversions
-    campaign_data_2[12, 'num_conversions'] <- 2
-    campaign_data_2[13, 'num_conversions'] <- 2
-    campaign_data_2[14, 'num_conversions'] <- 1
-    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data_2[new_indexes, ],
+    ######
+    # .use_first_conversion=FALSE
+    # .reset_upon_conversion=TRUE
+    ######
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
                                                          .use_first_conversion=FALSE,
                                                          .reset_upon_conversion=TRUE,
                                                          .sort=TRUE)
 
-    expect_true(rt_are_dataframes_equal(campaign_data_2 %>%
+    expect_true(rt_are_dataframes_equal(campaign_data %>%
                                             arrange(id, timestamp, conversion_value, step),
                                         campaign_data_transformed %>%
                                             select(-.path_id) %>%
                                             arrange(id, timestamp, conversion_value, step)))
-#     campaign_data_2 %>% rt_peak()
+#     campaign_data %>% rt_peak()
 #     campaign_data_transformed %>% rt_peak()
 
     # test that the expected number of paths based on number of conversions
@@ -154,11 +182,126 @@ test_that("rt_campaign_add_columns", {
 
 test_that("rt_campaign_to_markov_paths", {
 
+    campaign_data <- readRDS('data/campaign_data__small.RDS')
+
+    # make 1st and 2nd events have >0 conversions
+    campaign_data[1, 'num_conversions'] <- 1
+    campaign_data[2, 'num_conversions'] <- 2
+    # make 1st and 2nd events have >0 conversions
+    campaign_data[5, 'num_conversions'] <- 2
+    campaign_data[6, 'num_conversions'] <- 2
+    # make 2nd and 3rd events have >0 conversions
+    campaign_data[12, 'num_conversions'] <- 2
+    campaign_data[13, 'num_conversions'] <- 2
+    campaign_data[14, 'num_conversions'] <- 1
+
+    ######
+    # .use_first_conversion=TRUE
+    # .reset_upon_conversion=TRUE/FALSE results in the same thing
+    ######
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                         .use_first_conversion=TRUE,
+                                                         .reset_upon_conversion=TRUE,
+                                                         .sort=TRUE)
+
+    campaign_data_paths <- rt_campaign_to_markov_paths(campaign_data_transformed)
+
+    # get the dataset that contains paths that either don't have a conversion or only includes up to first conversion
+    campaign_data__first_conversions <- test_helper__campaign_filter_first_conversions(campaign_data)
+
+    campaign_data__first_conversions__last_step <- campaign_data__first_conversions %>%
+        arrange(id, timestamp, num_conversions, step) %>%
+        group_by(id) %>%
+        # because there might be multiple events with the same timestamp; we don't care for this check
+        filter(row_number(timestamp) == max(row_number(timestamp))) %>%
+        ungroup()
+
+    # since we only keep the first event, the last event in campaign_data__first_conversions should have
+    # the same number of conversions that the end result of campaign_data_paths
+    expect_identical(campaign_data__first_conversions__last_step$num_conversions, campaign_data_paths$.num_conversions)
+    expect_identical(campaign_data__first_conversions__last_step$conversion_value, campaign_data_paths$.conversion_value)
+    expect_identical(campaign_data_paths$.null_conversion, ifelse(campaign_data__first_conversions__last_step$num_conversions > 0, 0, 1))
+
+    # the number of times a step appears in the path sequence should match the number of times the event
+    # appears in the (first time) campaign data
+    path_split <- str_split(campaign_data_paths$.path_sequence, pattern = ' > ', simplify =  TRUE)
+    step_counts_found <- table(path_split)
+    step_counts_found <- step_counts_found[-1]
+    step_counts_expected <- campaign_data__first_conversions %>% count(step)
+    expect_identical(names(step_counts_found), step_counts_expected$step)
+    expect_equal(as.numeric(step_counts_found), step_counts_expected$n)
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ######
+    # .use_first_conversion=FALSE
+    # .reset_upon_conversion=TRUE
+    ######
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                         .use_first_conversion=FALSE,
+                                                         .reset_upon_conversion=TRUE,
+                                                         .sort=TRUE)
+
+    rt_campaign_to_markov_paths(campaign_data_transformed)
+
+
+    ######
+    # .use_first_conversion=FALSE
+    # .reset_upon_conversion=FALSE
+    ######
+
+
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                         .use_first_conversion=FALSE,
+                                                         .reset_upon_conversion=FALSE,
+                                                         .sort=TRUE)
+
+    rt_campaign_to_markov_paths(campaign_data_transformed)
+
 })
 
 test_that("rt_campaign_add_columns", {
 
 })
+
+
+
+
+
+markov_attribution <- ChannelAttribution::markov_model(campaign_data_paths,
+                                                       var_path = ".path_sequence",
+                                                       var_conv = ".num_conversions",
+                                                       var_value = NULL,
+                                                       order = 1, # higher order markov chain
+                                                       var_null = ".null_conversion",
+                                                       out_more = TRUE,
+                                                       sep=">")
+
+library(ggplot2)
+library(forcats)
+markov_attribution$removal_effects %>%
+    mutate(channel_name = fct_reorder(channel_name, removal_effects)) %>%
+    ggplot(aes(x=channel_name, y=removal_effects)) +
+    geom_col() +
+    coord_flip() +
+    theme_light() +
+    expand_limits(y=1)
+
+
+
+
+
+
 
     # what happens when the there are multiple types of conversions that are triggered from a single e.g. page
     # so
