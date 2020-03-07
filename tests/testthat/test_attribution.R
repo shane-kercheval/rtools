@@ -62,7 +62,6 @@ test_that("rt_clickstream_to_attribution", {
         arrange(id, timestamp, step)
     expect_true(rt_are_dataframes_equal(campaign_data_original %>% arrange(id, timestamp, step),
                                         campaign_data_new %>% arrange(id, timestamp, step)))
-
 })
 
 test_that("rt_clickstream_to_attribution", {
