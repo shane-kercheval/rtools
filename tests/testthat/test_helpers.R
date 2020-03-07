@@ -22,3 +22,4 @@ test_helper__campaign_filter_first_conversions <- function(.campaign_data) {
                          ungroup() %>%
                          arrange(id, timestamp, conversion_value, step))
 }
+

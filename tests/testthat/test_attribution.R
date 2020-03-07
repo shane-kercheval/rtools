@@ -189,7 +189,7 @@ test_that("rt_campaign_to_markov_paths", {
     # .use_first_conversion=TRUE
     # .reset_upon_conversion=TRUE/FALSE results in the same thing
     ######
-    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data,
                                                          .use_first_conversion=TRUE,
                                                          .reset_upon_conversion=TRUE,
                                                          .sort=TRUE)
@@ -221,23 +221,11 @@ test_that("rt_campaign_to_markov_paths", {
     expect_identical(names(step_counts_found), step_counts_expected$step)
     expect_equal(as.numeric(step_counts_found), step_counts_expected$n)
 
-
-
-
-
-
-
-
-
-
-
-
-
     ######
     # .use_first_conversion=FALSE
     # .reset_upon_conversion=TRUE
     ######
-    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data,
                                                          .use_first_conversion=FALSE,
                                                          .reset_upon_conversion=TRUE,
                                                          .sort=TRUE)
@@ -251,7 +239,7 @@ test_that("rt_campaign_to_markov_paths", {
     ######
 
 
-    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data,
                                                          .use_first_conversion=FALSE,
                                                          .reset_upon_conversion=FALSE,
                                                          .sort=TRUE)

@@ -7,6 +7,8 @@ source("../../R/times_series.R")
 source("../../R/stats.R")
 source("../../R/attribution.R")
 
+source("test_helpers.R")
+
 library(testthat)
 library(ggplot2)
 library(dplyr)
