@@ -66,7 +66,74 @@ test_that("rt_clickstream_to_attribution", {
 
 test_that("rt_campaign_add_columns", {
 
+    campaign_data <- readRDS('data/campaign_data__small.RDS')
 
+    set.seed(42)
+    new_indexes <- sample(nrow(campaign_data), replace = FALSE)
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                         .use_first_conversion=TRUE,
+                                                         .reset_upon_conversion=TRUE,
+                                                         .sort=TRUE)
+
+    expected_df <- suppressWarnings(campaign_data %>%
+        #campaign_data %>% arrange(id, timestamp, conversion_value) %>%
+        group_by(id) %>%
+        filter(all(num_conversions == 0) | timestamp <= min(timestamp[num_conversions > 0])) %>%
+        ungroup() %>%
+        arrange(id, timestamp, conversion_value, step))
+
+    expect_true(rt_are_dataframes_equal(expected_df,
+                                        campaign_data_transformed %>%
+                                            select(-.path_id) %>%
+                                            arrange(id, timestamp, conversion_value, step)))
+    expect_identical(campaign_data_transformed$.path_id, campaign_data_transformed$id)
+    expect_identical(campaign_data_transformed$.path_id, expected_df$id)
+
+
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                         .use_first_conversion=FALSE,
+                                                         .reset_upon_conversion=FALSE,
+                                                         .sort=TRUE)
+    expected_df <- campaign_data %>% arrange(id, timestamp, conversion_value, step)
+
+    expect_true(rt_are_dataframes_equal(expected_df,
+                                        campaign_data_transformed %>%
+                                            select(-.path_id) %>%
+                                            arrange(id, timestamp, conversion_value, step)))
+    expect_identical(campaign_data_transformed$.path_id, campaign_data_transformed$id)
+    expect_identical(campaign_data_transformed$.path_id, expected_df$id)
+
+
+
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+                                                         .use_first_conversion=FALSE,
+                                                         .reset_upon_conversion=TRUE,
+                                                         .sort=TRUE)
+
+    expect_equal(nrow(campaign_data_transformed), nrow(campaign_data))
+
+    # test that the expected number of paths based on number of conversions
+    # if there are no additional steps after the last conversion, the number of paths should equal the number
+    # of conversions
+    # if there are additional steps after the last conversion then the number of paths will be 1 greater than
+    # the number of conversions
+    campaign_data_summary <- suppressWarnings(campaign_data_transformed %>%
+        mutate(conversion_timestamp = ifelse(num_conversions > 0, timestamp, NA)) %>%
+        group_by(id) %>%
+        mutate(step_index = row_number(timestamp),
+               conversion_index = row_number(conversion_timestamp),
+               max_conversion_index = max(conversion_index, na.rm = TRUE),
+               step_index_of_max_conversion_index = max(step_index[conversion_index == max_conversion_index], na.rm = TRUE)) %>%
+        ungroup() %>%
+        group_by(id) %>%
+        summarise(total_conversions = sum(num_conversions),
+                  num_path_ids = n_distinct(.path_id),
+                  max_conversion_index = max(conversion_index, na.rm = TRUE),
+                  max_index_equal_conversion_index = max(step_index) == max(step_index_of_max_conversion_index, na.rm = TRUE),
+                  conversion_is_last_step = total_conversions > 0 & max(step_index) == max(step_index_of_max_conversion_index, na.rm = TRUE)
+                  ))
+    # test that the expected number of paths based on number of conversions
+    expect_true(all(with(campaign_data_summary, ifelse(conversion_is_last_step, total_conversions == num_path_ids, total_conversions == num_path_ids - 1))))
 })
 
 test_that("rt_campaign_to_markov_paths", {
@@ -113,7 +180,7 @@ test_that("rt_campaign_add_columns", {
     library(readr)
     campaign_data <- suppressMessages(read_csv("data/campaign_data__small.csv"))
 
-    
+
 
     ?ChannelAttribution::markov_model
 
