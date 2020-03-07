@@ -39,9 +39,12 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
                                         conversion_clickstream %>%
                                             mutate(step = if_else(str_ends(id, 'f'), 'Button Submit Event 2', 'Button Submit Event'),
                                                    step_type = 'Conversion',
-                                                   # actually, i should make some of the time-stamps the same and some 1 second after to mimic what might
+                                                   # actually, i should make some of the time-stamps the same
+                                                   # and some 1 second after to mimic what might
                                                    # happen in the click-stream data
-                                                   timestamp = if_else(str_ends(id, 'f'), timestamp, timestamp + seconds(1)))
+                                                   # the dataset i'm working with, this id has another event 1
+                                                   # second after, so ensure the conversion event has the same timestamp for this particular id
+                                                   timestamp = if_else(str_ends(id, 'f') | id == '00F7EkFhfiA7fFA73E0niiBfn', timestamp, timestamp + seconds(1)))
     )
 
     click_stream_data <- bind_rows(.campaign_data %>% filter(num_conversions == 0),
@@ -49,4 +52,71 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
         arrange(id, timestamp)
 
     return (click_stream_data)
+}
+
+#' transforms .clickstream_data into the expected format for attribution calculations
+#' different types of conversion events will be ignored, so the user is expected to filter out any
+#' conversion events they are not interested in.
+#'
+#' This function does not handle the case when the there are multiple types of conversions that are
+#' triggered from a single step
+#' For example: Someone lands on the homepage and from that page does 2 conversions `Lead Form-Fill` & `Lead Sign-up`)
+#' The user is expected to filter the events of interest accordingly.
+#'
+#' @param .clickstream_data dataframe with id|timestamp|step|step_type|num_conversions|conversion_value columns
+#'     This dataframe has "clickstream" data, which means that it has a list of steps/events that might
+#'          correspond to, for example, page visits on a website.
+#'     num_conversions should indicate which steps are conversion events.
+#'     A conversion event should be its own step, that has a timestamp equal to or after the step that
+#'     should get the conversion event.
+#'         For example, if someone visits the pricing page, and then signs up for the product (which is the conversion),
+#'         there should be a single row (i.e. step) for the visit to the pricing page, and a single row for the conversion step.
+#'         The timestamp of the conversion event, in this case, would be immdediately after (seconds or minutes) the pricing step.
+#'         The step that is before the conversion event (regardless of how much before) gets credit (last-touch) for the conversion.
+#'
+#' @importFrom dplyr arrange group_by ungroup mutate lag lead row_number n select filter contains
+#'
+#' @export
+rt_clickstream_to_attribution <- function(.clickstream_data) {
+
+    temp <- .clickstream_data %>%
+        arrange(id, timestamp, step) %>%
+        # need to arrange by num_conversions so that if the conversion step and corresponding step that
+        # should get credit have the same timestamp, arranging by num_conversions should ensure
+        # that the conversion step comes after
+        arrange(id, timestamp, num_conversions) %>%
+        group_by(id) %>%
+        # need to create a unique index per unique id per each path up until a conversion event
+        # people can have multiple conversions
+        # this will allow us to identify the event immediately before (or with the same timestamp as) the
+        # conversion event (arranging by num_conversions ensures that if the corresponding step and
+        # conversion event have the same timestamp, the conversion event will be ordered after)
+        mutate(temp___lag_cumulative_conv=lag(cumsum(num_conversions)),
+               temp___path_no = ifelse(is.na(temp___lag_cumulative_conv), 0, temp___lag_cumulative_conv) + 1) %>%
+        ungroup() %>%
+        group_by(id, temp___path_no) %>%
+        mutate(temp___path_index = row_number(timestamp),
+               temp___path_num_steps = n(),
+               temp___path_has_conversions = any(num_conversions > 0),
+               temp___check = ifelse(any(num_conversions > 0),
+                              # temp___path_index of the conversion event should be the max path index
+                              max(temp___path_index[num_conversions > 0]) == max(temp___path_index),
+                              # if there aren't any conversions this check doesn't apply so return TRUE
+                              TRUE),
+               num_conversions = ifelse(temp___path_has_conversions, lead(num_conversions), num_conversions),
+               conversion_value = ifelse(temp___path_has_conversions, lead(conversion_value), conversion_value)
+               ) %>%
+        ungroup() %>%
+        select(-temp___lag_cumulative_conv)
+
+    # if the path has conversions, there should be more than 1 steps
+    # so either the path doesn't have conversinos, or it has 2 or more steps
+    stopifnot(all(!temp$temp___path_has_conversions | temp$temp___path_num_steps >= 2))
+
+    # this makes sure that the conversion event always has the max indexstep number
+    stopifnot(all(temp$temp___check))
+
+    return(temp %>%
+        filter(!is.na(num_conversions)) %>%
+        select(-contains('temp___')))
 }

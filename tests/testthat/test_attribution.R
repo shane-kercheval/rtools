@@ -55,25 +55,17 @@ test_that("rt__mock__attribution_to_clickstream", {
 
 test_that("rt_clickstream_to_attribution", {
 
+    campaign_data_original <- readRDS('data/campaign_data__small.RDS') %>%
+        arrange(id, timestamp, step)
+    clickstream_data <- rt__mock__attribution_to_clickstream(campaign_data)
+    campaign_data_new <- rt_clickstream_to_attribution(clickstream_data) %>%
+        arrange(id, timestamp, step)
+    expect_true(rt_are_dataframes_equal(campaign_data_original %>% arrange(id, timestamp, step),
+                                        campaign_data_new %>% arrange(id, timestamp, step)))
 
-
-    #' transforms .clickstream_data into the expected format for attribution calculations
-    #' @param .clickstream_data dataframe with id|timestamp|step|step_type|num_conversions|conversino_value columns
-    #'     This dataframe has "clickstream" data, which means that it has a list of steps/events that might
-    #'          correspond to, for example, page visits on a website.
-    #'     num_conversions should indicate which steps are conversion events.
-    #'     A conversion event should be its own step, that has a timestamp equal to or after the step that
-    #'     should get the conversion event.
-    #'         For example, if someone visits the pricing page, and then signs up for the product (which is the conversion),
-    #'         there should be a single row (i.e. step) for the visit to the pricing page, and a single row for the conversion step.
-    #'         The timestamp of the conversion event, in this case, would be immdediately after (seconds or minutes) the pricing step.
-    #'         The step that is before the conversion event (regardless of how much before) gets credit (last-touch) for the conversion.
-    rt_clickstream_to_attribution <- function(.clickstream_data) {
-
-        # the timestamp will either be the same time as the step that should get direct credit for the
-        # conversion, or will be after the step that gets credit
-
-    }
+    # what happens when the there are multiple types of conversions that are triggered from a single e.g. page
+    # so
+    # pricing -> (Lead Form-Fill & Lead Sign-up)
 
     .clickstream_data <- click_stream_data
     .clickstream_data %>% rt_peak(40)
