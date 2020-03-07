@@ -64,7 +64,18 @@ test_that("rt_clickstream_to_attribution", {
                                         campaign_data_new %>% arrange(id, timestamp, step)))
 })
 
-test_that("rt_clickstream_to_attribution", {
+test_that("rt_campaign_add_columns", {
+
+
+})
+
+test_that("rt_campaign_to_markov_paths", {
+
+})
+
+test_that("rt_campaign_add_columns", {
+
+})
 
     # what happens when the there are multiple types of conversions that are triggered from a single e.g. page
     # so
@@ -102,73 +113,7 @@ test_that("rt_clickstream_to_attribution", {
     library(readr)
     campaign_data <- suppressMessages(read_csv("data/campaign_data__small.csv"))
 
-    # only count up until the first conversion (e.g. only count web pages visited until the "goal" i.e. conversion is reached e.g. talk-to-sales form submit)
-    # reset upon each conversion (e.g. amazon style checkout where someone might convert multiple times, once they convert, it "resets" the experience and the next interactions/conversions are treated as a separate path/entity)
-    # cumulative
-
-    #' @param .df that is pre-arranged by id and time_stamp
-    #'              column has following columns
-    #'              optionally has a column representing the value of the conversions
-    #' @param .use_first_conversion if true, only use the first conversion
-    rt_campaign_add_columns <- function(.campaign_data,
-                                        .id,
-                                        .timestamp,
-                                        .conversion,
-                                        .conversion_value,
-
-
-                                        .use_first_conversion=TRUE,
-                                        .reset_upon_conversion=TRUE,
-                                        .sort=TRUE) {
-
-        if(.sort) {
-            .campaign_data <- .campaign_data %>% arrange(!!sym(.id), !!sym(.timestamp))
-        }
-
-        if(.use_first_conversion) {
-            .campaign_data <- suppressWarnings(.campaign_data %>%
-                group_by(cookie) %>%
-                # arrange(time) %>%
-                mutate(.___datetimes___ = !!sym(.timestamp)) %>%
-                mutate(.___first_conversion___=min(.___datetimes___[!!sym(.conversion) > 0], na.rm = TRUE)) %>%
-                ungroup() %>%
-                filter(!!sym(.timestamp) <= .___first_conversion___) %>%
-                select(-.___datetimes___, -.___first_conversion___))
-        }
-
-        if(.reset_upon_conversion) {
-            # treat events after conversion as new path
-            .campaign_data <- .campaign_data %>%
-                group_by(cookie) %>%
-                # arrange(time) %>%
-                mutate(.___path_no___ = ifelse(is.na(lag(cumsum(conversion))), 0, lag(cumsum(conversion))) + 1) %>%
-                ungroup() %>%
-                mutate(.path_id = paste0(cookie, '-', .___path_no___)) %>%
-                select(-.___path_no___)
-        } else {
-
-            # treat single person as 1 path regardless how many conversions
-            .campaign_data <- .campaign_data %>% mutate(.path_id = !!sym(.id))
-        }
-
-        return (.campaign_data)
-    }
-
-    rt_campaign_to_markov_paths <- function(.campaign_data, .timestamp, .sort=TRUE, .symbol=" > ") {
-
-        if(.sort) {
-            .campaign_data <- .campaign_data %>% arrange(.path_id, !!sym(.timestamp))
-        }
-
-        .campaign_data %>%
-            group_by(.path_id) %>%
-            #arrange(time) %>%
-            summarise(.path_sequence = paste(channel, collapse = .symbol),
-                      .total_conversions = sum(!!sym(.conversion))) %>%
-            ungroup() %>%
-            mutate(.null_conversion = ifelse(.total_conversions > 0 , 0, 1)) # adding information about path that have not led to conversion
-    }
-
+    
 
     ?ChannelAttribution::markov_model
 
