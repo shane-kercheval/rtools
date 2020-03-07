@@ -5,7 +5,129 @@ library(ggplot2)
 source('test_helpers.R')
 
 
-test_that("rt_xxxxx", {
+test_that("rt__mock__attribution_to_clickstream", {
+
+    ####
+    # Even though this is mock data we should still test that it is transformed as expected since
+    # other tests relay on the validity of the mock data
+    ####
+
+    campaign_data <- readRDS('data/campaign_data__small.RDS')
+    clickstream_data <- rt__mock__attribution_to_clickstream(campaign_data)
+
+
+    expect_equal(sum(campaign_data$num_conversions), sum(clickstream_data$num_conversions))
+    expect_equal(sum(campaign_data$conversion_value), sum(clickstream_data$conversion_value))
+
+    ####
+    # make sure conversion events in clickstream_data match expected values
+    ####
+    expected_df <- campaign_data %>%
+        filter(num_conversions > 0) %>%
+        select(id, timestamp, num_conversions, conversion_value) %>%
+        # the timestamp will either be the same 1 or second after as the corresponding step (won't work if
+        # of the timestamps that is incremenented by a second is midnight)
+        mutate(timestamp=floor_date(timestamp, unit = 'day'))
+
+    actual_df <- clickstream_data %>%
+        filter(num_conversions > 0) %>%
+        select(id, timestamp, num_conversions, conversion_value) %>%
+        # the timestamp will either be the same 1 or second after as the corresponding step (won't work if
+        # of the timestamps that is incremenented by a second is midnight)
+        mutate(timestamp=floor_date(timestamp, unit = 'day'))
+
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+    ####
+    # make sure non-conversion events in clickstream_data match expected values
+    ####
+    expected_df <- campaign_data %>%
+        # the clickstream data should have all of the original events, but non of them will have
+        # num_conversions or conversion_value values
+        mutate(num_conversions = 0,
+               conversion_value = 0)
+
+    actual_df <- clickstream_data %>%
+        filter(num_conversions == 0)
+
+    expect_true(rt_are_dataframes_equal(expected_df, actual_df))
+
+})
+
+test_that("rt__mock__attribution_to_clickstream", {
+
+
+
+    #' transforms .clickstream_data into the expected format for attribution calculations
+    #' @param .clickstream_data dataframe with id|timestamp|step|step_type|num_conversions|conversino_value columns
+    #'     This dataframe has "clickstream" data, which means that it has a list of steps/events that might
+    #'          correspond to, for example, page visits on a website.
+    #'     num_conversions should indicate which steps are conversion events.
+    #'     A conversion event should be its own step, that has a timestamp equal to or after the step that
+    #'     should get the conversion event.
+    #'         For example, if someone visits the pricing page, and then signs up for the product (which is the conversion),
+    #'         there should be a single row (i.e. step) for the visit to the pricing page, and a single row for the conversion step.
+    #'         The timestamp of the conversion event, in this case, would be immdediately after (seconds or minutes) the pricing step.
+    #'         The step that is before the conversion event (regardless of how much before) gets credit (last-touch) for the conversion.
+    rt_clickstream_to_attribution <- function(.clickstream_data) {
+
+        # the timestamp will either be the same time as the step that should get direct credit for the
+        # conversion, or will be after the step that gets credit
+
+    }
+
+    #' transforms .campaign_data into structure that is based on events, meaning the conversion would be
+    #' a specific event (e.g. clicking a submit button on a website)
+    #' this mimics what we would typically see from a clickstream
+    #' randomly assigns "Button Submit Event" & "Button Submit Event 2"
+    #' randomly gives the conversion timestamp either the same timestamp of the corresponding step or 1 second after
+    #' @param .campaign_data dataframe with id|timestamp|step|step_type|num_conversions|conversino_value columns
+    #'      This dataframe has a value num_conversions on the step association with the conversion.
+    #'      So for example, if a user signs up on the pricing page, there is no specific signup step/event,
+    #'      but rather a step for the pricing page indicating number of conversions (probably always 1 for a signup event)
+    #'      and total value of conversions
+    rt__mock__attribution_to_clickstream <- function(.campaign_data) {
+
+        conversion_clickstream <- .campaign_data %>%
+            filter(num_conversions > 0)
+        # need to make the current step worth 0 (because it isn't the conversion event, just where the conversion happened)
+        # then create a conversion event with a timestamp that is the same
+
+        conversion_clickstream <- bind_rows(conversion_clickstream %>%
+                                                mutate(num_conversions = 0, conversion_value = 0),
+                                            conversion_clickstream %>%
+                                                mutate(step = if_else(str_ends(id, 'f'), 'Button Submit Event 2', 'Button Submit Event'),
+                                                       step_type = 'Conversion',
+                                                       # actually, i should make some of the time-stamps the same and some 1 second after to mimic what might
+                                                       # happen in the click-stream data
+                                                       timestamp = if_else(str_ends(id, 'f'), timestamp, timestamp + seconds(1)))
+        )
+
+        click_stream_data <- bind_rows(.campaign_data %>% filter(num_conversions == 0),
+                                       conversion_clickstream) %>%
+            arrange(id, timestamp)
+
+        return (click_stream_data)
+    }
+
+
+    .clickstream_data <- click_stream_data
+    .clickstream_data %>% rt_peak(40)
+
+    non_conversion_clickstream
+
+    campaign_data %>%
+        filter(num_conversions > 0) %>%
+
+
+
+        campaign_data %>% rt_peak(40)
+
+
+
+
+
+
 
     library(ChannelAttribution)
     data(PathData)
