@@ -104,13 +104,31 @@ test_that("rt_campaign_add_columns", {
     expect_identical(campaign_data_transformed$.path_id, expected_df$id)
 
 
-
-    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data[new_indexes, ],
+    campaign_data_2 <- campaign_data
+    # make 1st and 2nd events have >0 conversions
+    campaign_data_2[1, 'num_conversions'] <- 1
+    campaign_data_2[2, 'num_conversions'] <- 2
+    # make 1st and 2nd events have >0 conversions
+    campaign_data_2[5, 'num_conversions'] <- 2
+    campaign_data_2[6, 'num_conversions'] <- 2
+    # make 2nd and 3rd events have >0 conversions
+    campaign_data_2[12, 'num_conversions'] <- 2
+    campaign_data_2[13, 'num_conversions'] <- 2
+    campaign_data_2[14, 'num_conversions'] <- 1
+    campaign_data_transformed <- rt_campaign_add_path_id(campaign_data_2[new_indexes, ],
                                                          .use_first_conversion=FALSE,
                                                          .reset_upon_conversion=TRUE,
                                                          .sort=TRUE)
 
-    expect_equal(nrow(campaign_data_transformed), nrow(campaign_data))
+    expect_true(rt_are_dataframes_equal(campaign_data_2 %>%
+                                            arrange(id, timestamp, conversion_value, step),
+                                        campaign_data_transformed %>%
+                                            select(-.path_id) %>%
+                                            arrange(id, timestamp, conversion_value, step)))
+
+#     campaign_data_2 %>% rt_peak()
+#     campaign_data_transformed %>% rt_peak()
+
 
     # test that the expected number of paths based on number of conversions
     # if there are no additional steps after the last conversion, the number of paths should equal the number
@@ -126,7 +144,7 @@ test_that("rt_campaign_add_columns", {
                step_index_of_max_conversion_index = max(step_index[conversion_index == max_conversion_index], na.rm = TRUE)) %>%
         ungroup() %>%
         group_by(id) %>%
-        summarise(total_conversions = sum(num_conversions),
+        summarise(total_conversions = sum(num_conversions > 0),
                   num_path_ids = n_distinct(.path_id),
                   max_conversion_index = max(conversion_index, na.rm = TRUE),
                   max_index_equal_conversion_index = max(step_index) == max(step_index_of_max_conversion_index, na.rm = TRUE),

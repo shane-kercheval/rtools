@@ -121,46 +121,56 @@ rt_clickstream_to_attribution <- function(.clickstream_data) {
         select(-contains('temp___')))
 }
 
-#' only count up until the first conversion (e.g. only count web pages visited until the "goal" i.e. conversion is reached e.g. talk-to-sales form submit)
-#' reset upon each conversion (e.g. amazon style checkout where someone might convert multiple times, once they convert, it "resets" the experience and the next interactions/conversions are treated as a separate path/entity)
-#' cumulative
-
-#' @param .df that is pre-arranged by id and time_stamp
+#' adds `.path_id` column to dataframe. 
+#'
+#' @param .campaign_data that is pre-arranged by id and time_stamp
 #'              column has following columns
 #'              optionally has a column representing the value of the conversions
+#' @param .id string identifying the id column
+#' @param .timestamp string identifying the timestamp column
+#' @param .num_conversions string identifying the num_conversions column 
+#' @param .conversion_values string identifying the conversion_values column 
 #' @param .use_first_conversion if true, only use the first conversion
-rt_campaign_add_columns <- function(.campaign_data,
-                                    .id,
-                                    .timestamp,
-                                    .conversion,
-                                    .conversion_value,
+#' @param .reset_upon_conversion if true, treat steps after each conversion as a different path, if false, the entire path of .id is treated as one path. (.path_id is simply the id)
+#' @param .sort if true, the df is sorted by id, timestamp, conversion_values, & num_conversions; the dataframe needs to be sorted in this way to work, but this option let's the user avoid this action if it has already been done
+#'
+#' @importFrom dplyr arrange group_by ungroup mutate filter select lag
+#'
+#' @export
+rt_campaign_add_path_id <- function(.campaign_data,
+                                    .id='id',
+                                    .timestamp='timestamp',
+                                    .num_conversions='num_conversions',
+                                    .conversion_values='conversion_value',
                                     .use_first_conversion=TRUE,
                                     .reset_upon_conversion=TRUE,
                                     .sort=TRUE) {
 
     if(.sort) {
-        .campaign_data <- .campaign_data %>% arrange(!!sym(.id), !!sym(.timestamp))
+        .campaign_data <- .campaign_data %>%
+            arrange(!!sym(.id), !!sym(.timestamp), !!sym(.conversion_values), !!sym(.num_conversions))
     }
 
     if(.use_first_conversion) {
         .campaign_data <- suppressWarnings(.campaign_data %>%
-            group_by(cookie) %>%
+            group_by(!!sym(.id)) %>%
             # arrange(time) %>%
             mutate(.___datetimes___ = !!sym(.timestamp)) %>%
-            mutate(.___first_conversion___=min(.___datetimes___[!!sym(.conversion) > 0], na.rm = TRUE)) %>%
+            mutate(.___first_conversion___=min(.___datetimes___[!!sym(.num_conversions) > 0], na.rm = TRUE)) %>%
             ungroup() %>%
             filter(!!sym(.timestamp) <= .___first_conversion___) %>%
             select(-.___datetimes___, -.___first_conversion___))
     }
 
-    if(.reset_upon_conversion) {
+    # .reset_upon_conversion doesn't make sense if we only are using the first conversion
+    if(.reset_upon_conversion & !.use_first_conversion) {
         # treat events after conversion as new path
         .campaign_data <- .campaign_data %>%
-            group_by(cookie) %>%
+            group_by(!!sym(.id)) %>%
             # arrange(time) %>%
-            mutate(.___path_no___ = ifelse(is.na(lag(cumsum(conversion))), 0, lag(cumsum(conversion))) + 1) %>%
+            mutate(.___path_no___ = ifelse(is.na(lag(cumsum(!!sym(.num_conversions)))), 0, lag(cumsum(!!sym(.num_conversions)))) + 1) %>%
             ungroup() %>%
-            mutate(.path_id = paste0(cookie, '-', .___path_no___)) %>%
+            mutate(.path_id = paste0(!!sym(.id), '-', .___path_no___)) %>%
             select(-.___path_no___)
     } else {
 
@@ -171,6 +181,21 @@ rt_campaign_add_columns <- function(.campaign_data,
     return (.campaign_data)
 }
 
+#' adds converts campaign data to path data in the format expected by ChannelAttribution::markov_model & ChannelAttribution::heuristic_models
+#'
+#' @param .df that is pre-arranged by id and time_stamp
+#'              column has following columns
+#'              optionally has a column representing the value of the conversions
+#' @param .id string identifying the id column
+#' @param .timestamp string identifying the timestamp column
+#' @param .num_conversions string identifying the num_conversions column 
+#' @param .conversion_values string identifying the conversion_values column 
+#' @param .use_first_conversion if true, only use the first conversion
+#' @param .reset_upon_conversion if true, treat steps after each conversion as a different path, if false, the entire path of .id is treated as one path. (.path_id is simply the id)
+#'
+#' @importFrom dplyr arrange group_by ungroup mutate filter select lag
+#'
+#' @export
 rt_campaign_to_markov_paths <- function(.campaign_data, .timestamp, .sort=TRUE, .symbol=" > ") {
 
     if(.sort) {
@@ -181,7 +206,7 @@ rt_campaign_to_markov_paths <- function(.campaign_data, .timestamp, .sort=TRUE, 
         group_by(.path_id) %>%
         #arrange(time) %>%
         summarise(.path_sequence = paste(channel, collapse = .symbol),
-                  .total_conversions = sum(!!sym(.conversion))) %>%
+                  .total_conversions = sum(!!sym(.num_conversions))) %>%
         ungroup() %>%
         mutate(.null_conversion = ifelse(.total_conversions > 0 , 0, 1)) # adding information about path that have not led to conversion
 }
