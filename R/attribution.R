@@ -209,9 +209,10 @@ rt_campaign_to_markov_paths <- function(.campaign_data,
     .campaign_data %>%
         group_by(!!sym(.path_id)) %>%
         #arrange(time) %>%
-        summarise(.path_sequence = paste(!!sym(.step), collapse = .symbol),
-                  .num_conversions = sum(!!sym(.num_conversions)),
-                  .conversion_value = sum(!!sym(.conversion_value))) %>%
+        summarise(path_sequence = paste(!!sym(.step), collapse = .symbol),
+                  num_conversions = sum(!!sym(.num_conversions)),
+                  conversion_value = sum(!!sym(.conversion_value))) %>%
         ungroup() %>%
-        mutate(.null_conversion = ifelse(.num_conversions > 0 | .conversion_value > 0, 0, 1)) # adding information about path that have not led to conversion
+        rename(path_id = !!sym(.path_id)) %>%
+        mutate(null_conversion = ifelse(num_conversions > 0 | conversion_value > 0, 0, 1)) # adding information about path that have not led to conversion
 }

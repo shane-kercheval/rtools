@@ -208,13 +208,13 @@ test_that("rt_campaign_to_markov_paths", {
 
     # since we only keep the first event, the last event in campaign_data__first_conversions should have
     # the same number of conversions that the end result of campaign_data_paths
-    expect_identical(campaign_data__first_conversions__last_step$num_conversions, campaign_data_paths$.num_conversions)
-    expect_identical(campaign_data__first_conversions__last_step$conversion_value, campaign_data_paths$.conversion_value)
-    expect_identical(campaign_data_paths$.null_conversion, ifelse(campaign_data__first_conversions__last_step$num_conversions > 0, 0, 1))
+    expect_identical(campaign_data_paths$num_conversions, campaign_data__first_conversions__last_step$num_conversions)
+    expect_identical(campaign_data_paths$conversion_value, campaign_data__first_conversions__last_step$conversion_value)
+    expect_identical(campaign_data_paths$null_conversion, ifelse(campaign_data__first_conversions__last_step$num_conversions > 0, 0, 1))
 
     # the number of times a step appears in the path sequence should match the number of times the event
     # appears in the (first time) campaign data
-    path_split <- str_split(campaign_data_paths$.path_sequence, pattern = ' > ', simplify =  TRUE)
+    path_split <- str_split(campaign_data_paths$path_sequence, pattern = ' > ', simplify =  TRUE)
     step_counts_found <- table(path_split)
     step_counts_found <- step_counts_found[-1]
     step_counts_expected <- campaign_data__first_conversions %>% count(step)
