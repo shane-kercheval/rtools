@@ -64,16 +64,6 @@ test_that("rt_clickstream_to_attribution", {
                                         campaign_data_new %>% arrange(id, timestamp, step)))
 })
 
-
-test_helper__campaign_filter_first_conversions <- function(.campaign_data) {
-    suppressWarnings(.campaign_data %>%
-                         #campaign_data %>% arrange(id, timestamp, conversion_value) %>%
-                         group_by(id) %>%
-                         filter(all(num_conversions == 0) | timestamp <= min(timestamp[num_conversions > 0])) %>%
-                         ungroup() %>%
-                         arrange(id, timestamp, conversion_value, step))
-}
-
 test_that("rt_campaign_add_columns", {
 
     campaign_data <- readRDS('data/campaign_data__small.RDS')
