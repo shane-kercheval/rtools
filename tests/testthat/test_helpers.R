@@ -13,4 +13,3 @@ test_helper_transform_campaign_data <- function(.campaign_data) {
         select(id, timestamp, step, step_type, num_conversions, conversion_value) %>%
         arrange(id, timestamp)
 }
-

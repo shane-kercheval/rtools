@@ -5,6 +5,7 @@ source("../../R/helpers.R")
 source("../../R/string_manipulation.R")
 source("../../R/times_series.R")
 source("../../R/stats.R")
+source("../../R/attribution.R")
 
 library(testthat)
 library(ggplot2)
