@@ -125,10 +125,8 @@ test_that("rt_campaign_add_columns", {
                                         campaign_data_transformed %>%
                                             select(-.path_id) %>%
                                             arrange(id, timestamp, conversion_value, step)))
-
 #     campaign_data_2 %>% rt_peak()
 #     campaign_data_transformed %>% rt_peak()
-
 
     # test that the expected number of paths based on number of conversions
     # if there are no additional steps after the last conversion, the number of paths should equal the number
