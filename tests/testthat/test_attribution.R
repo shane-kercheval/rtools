@@ -332,11 +332,11 @@ test_that("rt_campaign_add_columns", {
 
 
 markov_attribution <- ChannelAttribution::markov_model(campaign_data_paths,
-                                                       var_path = ".path_sequence",
-                                                       var_conv = ".num_conversions",
+                                                       var_path = "path_sequence",
+                                                       var_conv = "num_conversions",
                                                        var_value = NULL,
                                                        order = 1, # higher order markov chain
-                                                       var_null = ".null_conversion",
+                                                       var_null = "null_conversions",
                                                        out_more = TRUE,
                                                        sep=">")
 
