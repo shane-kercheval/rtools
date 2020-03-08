@@ -386,30 +386,237 @@ test_that("rt_markov_model", {
 
 
 
+test_that("rt_get_channel_attribution", {
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions()
 
-    markov_attribution <- ChannelAttribution::markov_model(campaign_paths,
-                                                       var_path = "path_sequence",
-                                                       var_conv = "num_conversions",
-                                                       var_value = NULL,
-                                                       order = 1, # higher order markov chain
-                                                       var_null = "null_conversions",
-                                                       out_more = TRUE,
-                                                       sep=">")
+    ########
+    # first conversion: TRUE
+    # separate path_ids
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+
+    expected_campaign_conversions <- campaign_data %>%
+        test_helper__campaign_filter_first_conversions() %>%
+        group_by(id) %>%
+        mutate(visit_index = row_number(timestamp)) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value),
+                  first_step = step[visit_index == 1],
+                  last_step = step[visit_index == max(visit_index)]
+                  ) %>%
+        filter(num_conversions > 0)
+
+    expected_first_touch_conversions <- expected_campaign_conversions %>%
+        group_by(first_step) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value)) %>%
+        ungroup() %>%
+        rename(channel_name = first_step)
+
+    expected_last_touch_conversions <- expected_campaign_conversions %>%
+        group_by(last_step) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value)) %>%
+        ungroup() %>%
+        rename(channel_name = last_step)
+
+    expect_equal(expected_first_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(num_conversions),
+                 channel_attribution %>%
+                     filter(attribution_name == 'First Touch' & attribution_type == 'Conversion') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_first_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(conversion_value),
+                 channel_attribution %>%
+                     filter(attribution_name == 'First Touch' & attribution_type == 'Conversion Value') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_last_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(num_conversions),
+                 channel_attribution %>%
+                     filter(attribution_name == 'Last Touch' & attribution_type == 'Conversion') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_last_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(conversion_value),
+                 channel_attribution %>%
+                     filter(attribution_name == 'Last Touch' & attribution_type == 'Conversion Value') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    ########
+    # first conversion: FALSE
+    # separate path_ids: FALSE
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=FALSE)
+
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+
+    expected_campaign_conversions <- campaign_data %>%
+        group_by(id) %>%
+        mutate(visit_index = row_number(timestamp)) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value),
+                  first_step = step[visit_index == 1],
+                  last_step = step[visit_index == max(visit_index)]
+        ) %>%
+        filter(num_conversions > 0)
+
+    expected_first_touch_conversions <- expected_campaign_conversions %>%
+        group_by(first_step) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value)) %>%
+        ungroup() %>%
+        rename(channel_name = first_step)
+
+    expected_last_touch_conversions <- expected_campaign_conversions %>%
+        group_by(last_step) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value)) %>%
+        ungroup() %>%
+        rename(channel_name = last_step)
+
+    expect_equal(expected_first_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(num_conversions),
+                 channel_attribution %>%
+                     filter(attribution_name == 'First Touch' & attribution_type == 'Conversion') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_first_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(conversion_value),
+                 channel_attribution %>%
+                     filter(attribution_name == 'First Touch' & attribution_type == 'Conversion Value') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_last_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(num_conversions),
+                 channel_attribution %>%
+                     filter(attribution_name == 'Last Touch' & attribution_type == 'Conversion') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_last_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(conversion_value),
+                 channel_attribution %>%
+                     filter(attribution_name == 'Last Touch' & attribution_type == 'Conversion Value') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
 
 
-    heuristic_attribution <- ChannelAttribution::heuristic_models(campaign_paths,
-                                              var_path = "path_sequence",
-                                              var_conv = "num_conversions")
+    ########
+    # first conversion: FALSE
+    # separate path_ids: TRUE
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+
+    conversions_paths <- campaign_paths %>% filter(num_conversions > 0)
+
+    path_split <- str_split(conversions_paths$path_sequence, pattern = ' > ', simplify =  FALSE)
+    conversions_paths$first_touch <- map_chr(path_split, ~ .[[1]])
+    conversions_paths$last_touch <- map_chr(path_split, ~ .[[length(.)]])
+
+    expected_first_touch_conversions <- conversions_paths %>%
+        group_by(first_touch) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value)) %>%
+        ungroup() %>%
+        rename(channel_name = first_touch)
+
+    expected_last_touch_conversions <- conversions_paths %>%
+        group_by(last_touch) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value)) %>%
+        ungroup() %>%
+        rename(channel_name = last_touch)
+
+    expect_equal(expected_first_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(num_conversions),
+                 channel_attribution %>%
+                     filter(attribution_name == 'First Touch' & attribution_type == 'Conversion') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_first_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(conversion_value),
+                 channel_attribution %>%
+                     filter(attribution_name == 'First Touch' & attribution_type == 'Conversion Value') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_last_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(num_conversions),
+                 channel_attribution %>%
+                     filter(attribution_name == 'Last Touch' & attribution_type == 'Conversion') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+
+    expect_equal(expected_last_touch_conversions %>%
+                     arrange(channel_name) %>%
+                     pull(conversion_value),
+                 channel_attribution %>%
+                     filter(attribution_name == 'Last Touch' & attribution_type == 'Conversion Value') %>%
+                     arrange(channel_name) %>%
+                     pull(attribution_value))
+})
+
+
+rt_get_channel_attribution(campaign_paths)
+
 
     all_models <- markov_attribution$result %>%
         rename(markov_weighting = total_conversions) %>%
         inner_join(heuristic_attribution, by='channel_name')
 
+
+
+
+    conversions_paths <- campaign_paths %>%
+        filter(num_conversions > 0)
+
+    path_split <- str_split(conversions_paths$path_sequence, pattern = ' > ', simplify =  FALSE)
+    conversions_paths$first_touch <- map_chr(path_split, ~ .[[1]])
+    conversions_paths$last_touch <- map_chr(path_split, ~ .[[length(.)]])
+
+    conversions_paths%>%
+        count(first_touch, wt = num_conversions)
+    conversions_paths%>%
+        count(last_touch, wt = num_conversions)
+
+
     all_models %>%
         gather(attribution_type, value, -channel_name) %>%
         mutate(attribution_type = rt_pretty_text(attribution_type)) %>%
         ggplot(aes(x=channel_name, y=value, fill=attribution_type)) +
-        geom_col(position = position_dodge(width = 0.9)) +
+        geom_col(position = position_dodge(width = 0.9),
+                 alpha=0.75) +
         geom_text(aes(label=round(value)),
                   position = position_dodge(width = 0.9),
                   vjust=-0.3) +
@@ -438,25 +645,27 @@ test_that("rt_markov_model", {
 
     markov_attribution$result$total_conversions / sum(markov_attribution$result$total_conversions)
 
-
+    campaign_data_trans <- rt_campaign_add_path_id(campaign_data,
+                                                                                .use_first_conversion=TRUE,
+                                                                                .sort=TRUE)
 
     t <- campaign_data_trans %>%
-        select(.path_id, channel, conversion) %>%
+        select(.path_id, step, num_conversions) %>%
         group_by(.path_id) %>%
-        mutate(had_conversion = max(conversion)) %>%
+        mutate(had_conversion = max(num_conversions)) %>%
         ungroup() %>%
-        select(-conversion)
+        select(-num_conversions)
 
 
     path_conversion_matrix <- campaign_data_trans %>%
-        select(.path_id, channel, conversion) %>%
+        select(.path_id, step, num_conversions) %>%
         group_by(.path_id) %>%
-        mutate(had_conversion = max(conversion)) %>%
+        mutate(had_conversion = max(num_conversions)) %>%
         ungroup() %>%
         filter(had_conversion == 1) %>%
-        select(-conversion) %>%
+        select(-num_conversions) %>%
         distinct() %>%
-        pivot_wider(names_from = channel,
+        pivot_wider(names_from = step,
                     values_from=had_conversion,
                     values_fill = list(had_conversion = 0)) %>%
         select(-.path_id)
@@ -465,16 +674,27 @@ test_that("rt_markov_model", {
     total_any_touch <- colSums(path_conversion_matrix)
     total_any_touch <- total_any_touch / sum(total_any_touch)
 
+    sum(total_any_touch) == 1
+
+    model_totals <- all_models %>% select_if(is.numeric) %>% colSums()
+    total_conversions <- unique(model_totals)
+    length(total_conversions) == 1
+    all(all_models %>%
+        mutate_if(is.numeric,~ . / total_conversions) %>%
+        select_if(is.numeric) %>%
+        colSums() == 1)
+
     all_models %>%
-        mutate_if(is.numeric,~ . / 250) %>%
+        mutate_if(is.numeric,~ . / total_conversions) %>%
         inner_join(data.frame(channel_name=names(total_any_touch), any_touch=as.numeric(total_any_touch)),
                    by='channel_name') %>%
 
         gather(attribution_type, value, -channel_name) %>%
         mutate(attribution_type = rt_pretty_text(attribution_type)) %>%
         ggplot(aes(x=channel_name, y=value, fill=attribution_type)) +
-        geom_col(position = position_dodge(width = 0.9)) +
-        geom_text(aes(label=round(value, 3)),
+        geom_col(position = position_dodge(width = 0.9),
+                 alpha=0.75) +
+        geom_text(aes(label=round(value, 2)),
                   position = position_dodge(width = 0.9),
                   vjust=-0.3) +
         scale_fill_manual(values=rt_colors()) +

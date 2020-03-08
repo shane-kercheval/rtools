@@ -292,7 +292,7 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
     markov_long <- .markov_attribution$removal_effects %>%
         pivot_longer(names(.markov_attribution$removal_effects) %>% rt_remove_val('channel_name'),
                      names_to = 'removal_type',
-                     values_to = 'removal_value', ) %>%
+                     values_to = 'removal_value') %>%
         mutate(channel_name = as.character(channel_name),
                removal_type = rt_pretty_text(removal_type),
                removal_type = str_replace(removal_type, "Removal Effects ", ""))
@@ -368,4 +368,83 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
     }
 
     return (markov_plot)
+}
+
+#' wrapper around ChannelAttribution::markov_model & ChannelAttribution::heuristic_models
+#'
+#' returns a dataframe with the combined results
+#'
+#' @param .path_data dataframe expected by ChannelAttribution::markov_model & & ChannelAttribution::heuristic_models
+#' @param .path_sequence var_path
+#' @param .num_conversions var_conv
+#' @param .conversion_value var_value
+#' @param .null_conversions var_null
+#' @param .order order
+#' @param .symbol sep
+#' @param .seed seed
+#'
+#' @importFrom ChannelAttribution heuristic_models
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr rename inner_join mutate case_when select
+#' @importFrom tidyr pivot_longer
+#' @importFrom stringr str_replace str_ends str_remove
+#'
+#' @export
+rt_get_channel_attribution <- function(.path_data,
+                                       .path_sequence='path_sequence',
+                                       .num_conversions='num_conversions',
+                                       .conversion_value='conversion_value',
+                                       .null_conversions='null_conversions',
+                                       .order=1,
+                                       .symbol='>',
+                                       .seed=42) {
+
+    markov_results <- rt_markov_model(.path_data=.path_data,
+                                      .path_sequence=.path_sequence,
+                                      .num_conversions=.num_conversions,
+                                      .conversion_value=.conversion_value,
+                                      .null_conversions=.null_conversions,
+                                      .order=.order,
+                                      .symbol=.symbol,
+                                      .seed=.seed)
+    markov_attribution <- markov_results$result
+    heuristic_attribution <- ChannelAttribution::heuristic_models(Data = .path_data,
+                                                                  var_path = .path_sequence,
+                                                                  var_conv = .num_conversions,
+                                                                  var_value = .conversion_value,
+                                                                  #out_more = TRUE,
+                                                                  sep=.symbol
+                                                                  )
+    # if var_value is null, heuristic_models returns column names like "first_touch"
+    # if var_value is not null, heuristic_models returns column names like "first_touch_conversions"
+    # let's make consistent regardless
+    if(is.null(.conversion_value)) {
+
+        colnames(heuristic_attribution) <- str_replace(colnames(heuristic_attribution), 'touch', 'touch_conversions')
+
+        markov_attribution <- markov_attribution %>%
+            rename(markov_conversions=total_conversions)
+    } else {
+
+        markov_attribution <- markov_attribution %>%
+            rename(markov_conversions=total_conversions,
+                   markov_value=total_conversion_value)
+    }
+
+    all_models <- inner_join(heuristic_attribution, markov_attribution, by = 'channel_name')
+    all_models <- all_models %>%
+        pivot_longer(colnames(all_models) %>% rt_remove_val('channel_name'),
+                     names_to = 'attribution_column_name',
+                     values_to = 'attribution_value') %>%
+        mutate(attribution_type = case_when(
+                                        str_ends(attribution_column_name, '_conversions') ~ 'Conversion',
+                                        str_ends(attribution_column_name, '_value') ~ 'Conversion Value',
+                                        TRUE ~ 'unknown'
+                                    ),
+               attribution_name = str_remove(attribution_column_name, "_conversions"),
+               attribution_name = str_remove(attribution_name, "_value"),
+               attribution_name = rt_pretty_text(attribution_name)) %>%
+        select(-attribution_column_name)
+
+    return (all_models)
 }
