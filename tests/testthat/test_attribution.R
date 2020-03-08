@@ -326,6 +326,13 @@ test_that("rt_markov_model", {
         rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
     markov_model_results <- rt_markov_model(campaign_paths)
 
+    # don't need to test separate_paths_ids=FALSE with .use_first_conversion=TRUE because it should be the
+    # same as .separate_paths_ids=TRUE
+    campaign_paths_2 <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=FALSE)
+    expect_true(rt_are_dataframes_equal(campaign_paths, campaign_paths_2))
+
     # the number and value of conversions should be the same in the campaign data and markov results
     campaign_data_first_conversions <- campaign_data %>% test_helper__campaign_filter_first_conversions()
     expect_equal(sum(campaign_data_first_conversions$num_conversions), sum(markov_model_results$result$total_conversions))
@@ -356,79 +363,25 @@ test_that("rt_markov_model", {
     test_save_plot(file_name='data/rt_plot_markov_removal_effects__all_conversions__sep_path__categories.png',
                    plot=rt_plot_markov_removal_effects(markov_model_results,
                                                        .channel_categories = channel_categories))
-
-
-
-
-
-    # don't need to test separate_paths_ids=FALSE with .use_first_conversion=TRUE because it should be the
-    # same as .separate_paths_ids=TRUE
-    campaign_paths_2 <- campaign_data %>%
-        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+    ########
+    # first conversion: FALSE
+    # separate path_ids: FALSE
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE) %>%
         rt_campaign_to_markov_paths(.separate_paths_ids=FALSE)
-    expect_true(rt_are_dataframes_equal(campaign_paths, campaign_paths_2))
+    markov_model_results <- rt_markov_model(campaign_paths)
 
-
-
-
-
+    # the number and value of conversions should be the same in the campaign data and markov results
     expect_equal(sum(campaign_data$num_conversions), sum(markov_model_results$result$total_conversions))
     expect_equal(sum(campaign_data$conversion_value), sum(markov_model_results$result$total_conversion_value))
 
+    test_save_plot(file_name='data/rt_plot_markov_removal_effects__all_conversions__all_path.png',
+                   plot=rt_plot_markov_removal_effects(markov_model_results))
 
-
-
-
-    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
-        test_helper__campaign_add_conversions() %>%
-        rt_campaign_add_path_id(.use_first_conversion=FALSE,
-                                .sort=TRUE)
-
-
-
-
-    campaign_paths <- rt_campaign_to_markov_paths(campaign_data, .separate_paths_ids=TRUE)
-
-    rt_markov_model(campaign_paths)
-
-
-    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
-        test_helper__campaign_add_conversions() %>%
-        rt_campaign_add_path_id(.use_first_conversion=FALSE,
-                                .sort=TRUE)
-
-    campaign_paths <- rt_campaign_to_markov_paths(campaign_data, .separate_paths_ids=TRUE)
-
-    markov_attribution <- rt_markov_model(campaign_paths)
-
-
-    steps <- campaign_data %>%
-        select(step, step_type) %>%
-        distinct()
-
-    channel_categories <- steps$step_type
-    names(channel_categories) <- steps$step
-
-
-    rt_plot_markov_removal_effects(markov_attribution)
-    rt_plot_markov_removal_effects(markov_attribution, .channel_categories = channel_categories)
-
-
-
-    markov_attribution <- rt_markov_model(campaign_paths, .conversion_value = NULL)
-
-
-    steps <- campaign_data %>%
-        select(step, step_type) %>%
-        distinct()
-
-    channel_categories <- steps$step_type
-    names(channel_categories) <- steps$step
-
-
-    rt_plot_markov_removal_effects(markov_attribution)
-    rt_plot_markov_removal_effects(markov_attribution, .channel_categories = channel_categories)
-
+    test_save_plot(file_name='data/rt_plot_markov_removal_effects__all_conversions__all_path__categories.png',
+                   plot=rt_plot_markov_removal_effects(markov_model_results,
+                                                       .channel_categories = channel_categories))
 })
 
 
