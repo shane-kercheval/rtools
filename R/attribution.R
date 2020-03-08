@@ -253,6 +253,7 @@ rt_markov_model <- function(.path_data,
                             .symbol='>',
                             .seed=42) {
 
+    set.seed(.seed)
     markov_attribution <- markov_model(Data = .path_data,
                                        var_path = .path_sequence,
                                        var_conv = .num_conversions,
@@ -444,7 +445,82 @@ rt_get_channel_attribution <- function(.path_data,
                attribution_name = str_remove(attribution_column_name, "_conversions"),
                attribution_name = str_remove(attribution_name, "_value"),
                attribution_name = rt_pretty_text(attribution_name)) %>%
-        select(-attribution_column_name)
+        select(-attribution_column_name) %>%
+        select(channel_name, attribution_name, attribution_type, attribution_value)
 
     return (all_models)
 }
+
+#' wrapper around ChannelAttribution::markov_model & ChannelAttribution::heuristic_models
+#'
+#' returns a dataframe with the combined results
+#'
+#' @param .channel_attribution dataframe returned by rt_get_channel_attribution()
+#' @param .channel_categories if provided, colors removal effects by channel categories; named vector with categories as value and channel names as vector names
+#' @param .num_conversions var_conv
+#' @param .conversion_value var_value
+#' @param .null_conversions var_null
+#' @param .order order
+#' @param .symbol sep
+#' @param .seed seed
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr 
+#' @importFrom tidyr 
+#' @importFrom stringr 
+#' @importFrom ggplot2 
+#'
+#' @export
+rt_plot_channel_attribution <- function(.channel_attribution, .channel_categories=NULL) {
+
+    base_attribution_plot <- function(channel_plot) {
+        channel_plot +
+        geom_col(position = position_dodge(width = 0.9),
+                 alpha=0.75) +
+        geom_text(aes(label=round(attribution_value)),
+                  position = position_dodge(width = 0.9),
+                  vjust=-0.3) +
+        scale_fill_manual(values=rt_colors()) +
+        theme_light() +
+        theme(axis.text.x = element_text(angle=45, hjust=1)) +
+        labs(y='Conversions',
+             x='Channel Name',
+             fill="Attribution Model")
+    }
+
+    if(length(unique(.channel_attribution$attribution_type)) == 1) {
+
+        if(is.null(.channel_categories)) {
+
+            channel_plot <- .channel_attribution %>%
+                mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
+                ggplot(aes(x=channel_name, y=attribution_value, fill=attribution_name)) %>%
+                base_attribution_plot()
+
+        } else {
+
+            .channel_categories <- data.frame(channel_name = names(.channel_categories),
+                                              category = as.character(.channel_categories),
+                                              stringsAsFactors = FALSE)
+
+            channel_plot <- .channel_attribution %>%
+                mutate(channel_name = as.character(channel_name)) %>%
+                left_join(.channel_categories, by = "channel_name") %>%
+                mutate(category = ifelse(is.na(category), 'Uncategorized', category)) %>%
+                mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
+                ggplot(aes(x=channel_name, y=attribution_value, fill=category)) %>%
+                base_attribution_plot() +
+                facet_wrap( ~ attribution_name)
+        }
+    } else {
+
+        channel_plot <- .channel_attribution %>%
+            mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
+            ggplot(aes(x=channel_name, y=attribution_value, fill=attribution_name)) %>%
+            base_attribution_plot() +
+            facet_wrap(~ attribution_type, scales = 'free_y')
+    }
+
+    return (channel_plot)
+}
+
