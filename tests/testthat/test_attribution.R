@@ -317,7 +317,6 @@ test_that("rt_markov_model", {
     channel_categories <- steps$step_type
     names(channel_categories) <- steps$step
 
-
     ########
     # first conversion: TRUE
     # separate path_ids
@@ -333,14 +332,11 @@ test_that("rt_markov_model", {
     expect_equal(sum(campaign_data_first_conversions$conversion_value), sum(markov_model_results$result$total_conversion_value))
 
     test_save_plot(file_name='data/rt_plot_markov_removal_effects__first_conversion.png',
-                   plot=rt_plot_markov_removal_effects(markov_attribution))
+                   plot=rt_plot_markov_removal_effects(markov_model_results))
 
     test_save_plot(file_name='data/rt_plot_markov_removal_effects__first_conversion__categories.png',
-                   plot=rt_plot_markov_removal_effects(markov_attribution,
+                   plot=rt_plot_markov_removal_effects(markov_model_results,
                                                        .channel_categories = channel_categories))
-
-
-
     ########
     # first conversion: FALSE
     # separate path_ids: TRUE
