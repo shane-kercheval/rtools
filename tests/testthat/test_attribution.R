@@ -387,125 +387,19 @@ test_that("rt_markov_model", {
 
 
 
-library(ggplot2)
-library(forcats)
-markov_attribution$removal_effects %>%
-    mutate(channel_name = fct_reorder(channel_name, removal_effects)) %>%
-    ggplot(aes(x=channel_name, y=removal_effects)) +
-    geom_col() +
-    coord_flip() +
-    theme_light() +
-    expand_limits(y=1)
-
-markov_attribution$removal_effects %>%
-    mutate(channel_name = fct_reorder(channel_name, removal_effects_conversion)) %>%
-    ggplot(aes(x=channel_name, y=removal_effects_conversion)) +
-    geom_col() +
-    coord_flip() +
-    theme_light() +
-    expand_limits(y=1)
-
-markov_attribution$removal_effects %>%
-    mutate(channel_name = fct_reorder(channel_name, removal_effects_conversion_value)) %>%
-    ggplot(aes(x=channel_name, y=removal_effects_conversion_value)) +
-    geom_col() +
-    coord_flip() +
-    theme_light() +
-    expand_limits(y=1)
-
-
-
-
-
-
-
-    # what happens when the there are multiple types of conversions that are triggered from a single e.g. page
-    # so
-    # pricing -> (Lead Form-Fill & Lead Sign-up)
-
-    .clickstream_data <- click_stream_data
-    .clickstream_data %>% rt_peak(40)
-
-    non_conversion_clickstream
-
-    campaign_data %>%
-        filter(num_conversions > 0) %>%
-
-
-
-        campaign_data %>% rt_peak(40)
-
-
-
-
-
-
-
-    library(ChannelAttribution)
-    data(PathData)
-    Data
-    markov_model(Data, "path", "total_conversions")
-    markov_model(Data, "path", "total_conversions", var_value="total_conversion_value")
-    markov_model(Data,"path","total_conversions", var_value="total_conversion_value",
-                 var_null="total_null")
-    markov_model(Data, "path", "total_conversions", var_value="total_conversion_value",
-                 var_null="total_null", out_more=TRUE)
-
-
-    library(readr)
-    campaign_data <- suppressMessages(read_csv("data/campaign_data__small.csv"))
-
-
-
-    ?ChannelAttribution::markov_model
-
-
-    .campaign_data <- campaign_data
-    .id <- 'cookie'
-    .timestamp = 'time'
-    .conversion = 'conversion'
-    .conversion_value = 'conversion_value'
-
-    campaign_data_trans <- rt_campaign_add_columns(.campaign_data = .campaign_data,
-                                                   .id = .id,
-                                                   .timestamp = .timestamp,
-                                                   .conversion = .conversion,
-                                                   .use_first_conversion = TRUE)
-
-
-    .campaign_data <- campaign_data_trans
-    campaign_paths <- rt_campaign_to_markov_paths(.campaign_data = .campaign_data,
-                                                  .timestamp = .timestamp)
-
-
-    #unique(campaign_paths$.path_sequence)
-    ?ChannelAttribution::markov_model
     markov_attribution <- ChannelAttribution::markov_model(campaign_paths,
-                                       var_path = ".path_sequence",
-                                       var_conv = ".total_conversions",
-                                       var_value = NULL,
-                                       order = 1, # higher order markov chain
-                                       var_null = ".null_conversion",
-                                       out_more = TRUE,
-                                       sep=">")
+                                                       var_path = "path_sequence",
+                                                       var_conv = "num_conversions",
+                                                       var_value = NULL,
+                                                       order = 1, # higher order markov chain
+                                                       var_null = "null_conversions",
+                                                       out_more = TRUE,
+                                                       sep=">")
 
-    library(ggplot2)
-    library(forcats)
-    markov_attribution$removal_effects %>%
-        mutate(channel_name = fct_reorder(channel_name, removal_effects)) %>%
-        ggplot(aes(x=channel_name, y=removal_effects)) +
-        geom_col() +
-        coord_flip() +
-        theme_light() +
-        expand_limits(y=1)
 
-    sum(markov_attribution$removal_effects$removal_effects)
-
-    #?heuristic_models
-    # todo: add U-shape
     heuristic_attribution <- ChannelAttribution::heuristic_models(campaign_paths,
-                                              var_path = ".path_sequence",
-                                              var_conv = ".total_conversions")
+                                              var_path = "path_sequence",
+                                              var_conv = "num_conversions")
 
     all_models <- markov_attribution$result %>%
         rename(markov_weighting = total_conversions) %>%
@@ -525,6 +419,13 @@ markov_attribution$removal_effects %>%
         labs(y='Conversions',
              x='Channel Name',
              fill="Attribution Model")
+
+
+
+
+
+
+
 
 
     all_models %>% select_if(is.numeric) %>% colSums()

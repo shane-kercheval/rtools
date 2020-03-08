@@ -312,7 +312,8 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
             mutate(removal_type = factor(removal_type, levels=c("Conversion Value", "Conversion"))) %>%
             mutate(channel_name = fct_reorder(channel_name, removal_value)) %>%
             ggplot(aes(x=channel_name, y=removal_value, fill=removal_type)) +
-            geom_col(position = position_dodge(0.9)) +
+            geom_col(position = position_dodge(0.9),
+                     alpha=0.75) +
             geom_text(aes(label=rt_pretty_percent(removal_value)),
                       position = position_dodge(0.9),
                       size=3.3) +
@@ -344,7 +345,8 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
             mutate(category = ifelse(is.na(category), 'Uncategorized', category)) %>%
             mutate(channel_name = fct_reorder(channel_name, removal_value)) %>%
             ggplot(aes(x=channel_name, y=removal_value, fill=category)) +
-            geom_col(position = position_dodge(0.9)) +
+            geom_col(position = position_dodge(0.9),
+                     alpha=0.75) +
             geom_text(aes(label=rt_pretty_percent(removal_value)),
                       position = position_dodge(0.9),
                       size=3.3) +
