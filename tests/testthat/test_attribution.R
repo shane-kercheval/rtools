@@ -384,8 +384,6 @@ test_that("rt_markov_model", {
                                                        .channel_categories = channel_categories))
 })
 
-
-
 test_that("rt_get_channel_attribution", {
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions()
@@ -399,6 +397,13 @@ test_that("rt_get_channel_attribution", {
         rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
 
     channel_attribution <- rt_get_channel_attribution(campaign_paths)
+    channel_attribution_2 <- rt_get_channel_attribution(campaign_paths, .conversion_value = NULL)
+    expect_true(rt_are_dataframes_equal(channel_attribution %>%
+                                            # for some reason, including .conversion_value slightly changes results for markov
+                                            filter(attribution_type == 'Conversion' & attribution_name != 'Markov'),
+                                        channel_attribution_2 %>%
+                                            # for some reason, including .conversion_value slightly changes results for markov
+                                            filter(attribution_name != 'Markov')))
 
     expected_campaign_conversions <- campaign_data %>%
         test_helper__campaign_filter_first_conversions() %>%
@@ -466,6 +471,13 @@ test_that("rt_get_channel_attribution", {
         rt_campaign_to_markov_paths(.separate_paths_ids=FALSE)
 
     channel_attribution <- rt_get_channel_attribution(campaign_paths)
+    channel_attribution_2 <- rt_get_channel_attribution(campaign_paths, .conversion_value = NULL)
+    expect_true(rt_are_dataframes_equal(channel_attribution %>%
+                                            # for some reason, including .conversion_value slightly changes results for markov
+                                            filter(attribution_type == 'Conversion' & attribution_name != 'Markov'),
+                                        channel_attribution_2 %>%
+                                            # for some reason, including .conversion_value slightly changes results for markov
+                                            filter(attribution_name != 'Markov')))
 
     expected_campaign_conversions <- campaign_data %>%
         group_by(id) %>%
@@ -523,7 +535,6 @@ test_that("rt_get_channel_attribution", {
                      arrange(channel_name) %>%
                      pull(attribution_value))
 
-
     ########
     # first conversion: FALSE
     # separate path_ids: TRUE
@@ -533,6 +544,13 @@ test_that("rt_get_channel_attribution", {
         rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
 
     channel_attribution <- rt_get_channel_attribution(campaign_paths)
+    channel_attribution_2 <- rt_get_channel_attribution(campaign_paths, .conversion_value = NULL)
+    expect_true(rt_are_dataframes_equal(channel_attribution %>%
+                                            # for some reason, including .conversion_value slightly changes results for markov
+                                            filter(attribution_type == 'Conversion' & attribution_name != 'Markov'),
+                                        channel_attribution_2 %>%
+                                            # for some reason, including .conversion_value slightly changes results for markov
+                                            filter(attribution_name != 'Markov')))
 
     conversions_paths <- campaign_paths %>% filter(num_conversions > 0)
 
@@ -587,48 +605,40 @@ test_that("rt_get_channel_attribution", {
                      pull(attribution_value))
 })
 
+test_that("rt_plot_channel_attribution", {
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions()
 
-rt_get_channel_attribution(campaign_paths)
+    ########
+    # first conversion: TRUE
+    # separate path_ids
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
 
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
 
-    all_models <- markov_attribution$result %>%
-        rename(markov_weighting = total_conversions) %>%
-        inner_join(heuristic_attribution, by='channel_name')
+    rt_plot_channel_attribution(channel_attribution)
 
+    .channel_attribution <- channel_attribution
+})
 
+rt_plot()
 
+steps <- campaign_data %>%
+    select(step, step_type) %>%
+    distinct()
 
-    conversions_paths <- campaign_paths %>%
-        filter(num_conversions > 0)
+channel_categories <- steps$step_type
+names(channel_categories) <- steps$step
 
-    path_split <- str_split(conversions_paths$path_sequence, pattern = ' > ', simplify =  FALSE)
-    conversions_paths$first_touch <- map_chr(path_split, ~ .[[1]])
-    conversions_paths$last_touch <- map_chr(path_split, ~ .[[length(.)]])
+.channel_attribution <- channel_attribution %>% filter(attribution_type == 'Conversion')
+.channel_categories <- channel_categories
 
-    conversions_paths%>%
-        count(first_touch, wt = num_conversions)
-    conversions_paths%>%
-        count(last_touch, wt = num_conversions)
-
-
-    all_models %>%
-        gather(attribution_type, value, -channel_name) %>%
-        mutate(attribution_type = rt_pretty_text(attribution_type)) %>%
-        ggplot(aes(x=channel_name, y=value, fill=attribution_type)) +
-        geom_col(position = position_dodge(width = 0.9),
-                 alpha=0.75) +
-        geom_text(aes(label=round(value)),
-                  position = position_dodge(width = 0.9),
-                  vjust=-0.3) +
-        scale_fill_manual(values=rt_colors()) +
-        theme_light() +
-        theme(axis.text.x = element_text(angle=45, hjust=1)) +
-        labs(y='Conversions',
-             x='Channel Name',
-             fill="Attribution Model")
-
-
-
+rt_plot_channel_attribution(channel_attribution)
+rt_plot_channel_attribution(channel_attribution, channel_categories)
+rt_plot_channel_attribution(channel_attribution %>% filter(attribution_type == 'Conversion'), channel_categories)
 
 
 
