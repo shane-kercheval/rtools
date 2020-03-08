@@ -66,17 +66,8 @@ test_that("rt_clickstream_to_attribution", {
 
 test_that("rt_campaign_add_columns", {
 
-    campaign_data <- readRDS('data/campaign_data__small.RDS')
-    # make 1st and 2nd events have >0 conversions
-    campaign_data[1, 'num_conversions'] <- 1
-    campaign_data[2, 'num_conversions'] <- 2
-    # make 1st and 2nd events have >0 conversions
-    campaign_data[5, 'num_conversions'] <- 2
-    campaign_data[6, 'num_conversions'] <- 2
-    # make 2nd and 3rd events have >0 conversions
-    campaign_data[12, 'num_conversions'] <- 2
-    campaign_data[13, 'num_conversions'] <- 2
-    campaign_data[14, 'num_conversions'] <- 1
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions()
 
     set.seed(42)
     new_indexes <- sample(nrow(campaign_data), replace = FALSE)
@@ -139,18 +130,10 @@ test_that("rt_campaign_add_columns", {
 
 test_that("rt_campaign_to_markov_paths", {
 
-    campaign_data <- readRDS('data/campaign_data__small.RDS')
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions()
 
-    # make 1st and 2nd events have >0 conversions
-    campaign_data[1, c('num_conversions', 'conversion_value')] <- 1
-    campaign_data[2, c('num_conversions', 'conversion_value')] <- 2
-    # make 1st and 2nd events have >0 conversions
-    campaign_data[5, c('num_conversions', 'conversion_value')] <- 2
-    campaign_data[6, c('num_conversions', 'conversion_value')] <- 2
-    # make 2nd and 3rd events have >0 conversions
-    campaign_data[12, c('num_conversions', 'conversion_value')] <- 2
-    campaign_data[13, c('num_conversions', 'conversion_value')] <- 2
-    campaign_data[14, c('num_conversions', 'conversion_value')] <- 1
+
 
     ######
     # .use_first_conversion=TRUE
@@ -323,28 +306,91 @@ test_that("rt_campaign_to_markov_paths", {
     expect_equal(num_steps, campaign_data_transformed %>% count(id) %>% pull(n))
 })
 
-test_that("rt_campaign_add_columns", {
+test_that("rt_markov_model", {
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE,
+                                .sort=TRUE)
+
+    campaign_paths <- rt_campaign_to_markov_paths(campaign_data, .separate_paths_ids=TRUE)
+
+    rt_markov_model(campaign_paths)
+
+
+
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE,
+                                .sort=TRUE)
+
+    campaign_paths <- rt_campaign_to_markov_paths(campaign_data, .separate_paths_ids=TRUE)
+
+    rt_markov_model(campaign_paths)
+
+
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE,
+                                .sort=TRUE)
+
+    campaign_paths <- rt_campaign_to_markov_paths(campaign_data, .separate_paths_ids=TRUE)
+
+    markov_attribution <- rt_markov_model(campaign_paths)
+
+
+    steps <- campaign_data %>%
+        select(step, step_type) %>%
+        distinct()
+
+    channel_categories <- steps$step_type
+    names(channel_categories) <- steps$step
+
+
+    rt_plot_markov_removal_effects(markov_attribution)
+    rt_plot_markov_removal_effects(markov_attribution, .channel_categories = channel_categories)
+
+
+
+    markov_attribution <- rt_markov_model(campaign_paths, .conversion_value = NULL)
+
+
+    steps <- campaign_data %>%
+        select(step, step_type) %>%
+        distinct()
+
+    channel_categories <- steps$step_type
+    names(channel_categories) <- steps$step
+
+
+    rt_plot_markov_removal_effects(markov_attribution)
+    rt_plot_markov_removal_effects(markov_attribution, .channel_categories = channel_categories)
 
 })
 
 
 
 
-
-markov_attribution <- ChannelAttribution::markov_model(campaign_data_paths,
-                                                       var_path = "path_sequence",
-                                                       var_conv = "num_conversions",
-                                                       var_value = NULL,
-                                                       order = 1, # higher order markov chain
-                                                       var_null = "null_conversions",
-                                                       out_more = TRUE,
-                                                       sep=">")
-
 library(ggplot2)
 library(forcats)
 markov_attribution$removal_effects %>%
     mutate(channel_name = fct_reorder(channel_name, removal_effects)) %>%
     ggplot(aes(x=channel_name, y=removal_effects)) +
+    geom_col() +
+    coord_flip() +
+    theme_light() +
+    expand_limits(y=1)
+
+markov_attribution$removal_effects %>%
+    mutate(channel_name = fct_reorder(channel_name, removal_effects_conversion)) %>%
+    ggplot(aes(x=channel_name, y=removal_effects_conversion)) +
+    geom_col() +
+    coord_flip() +
+    theme_light() +
+    expand_limits(y=1)
+
+markov_attribution$removal_effects %>%
+    mutate(channel_name = fct_reorder(channel_name, removal_effects_conversion_value)) %>%
+    ggplot(aes(x=channel_name, y=removal_effects_conversion_value)) +
     geom_col() +
     coord_flip() +
     theme_light() +

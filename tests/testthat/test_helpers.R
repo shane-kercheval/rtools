@@ -23,3 +23,17 @@ test_helper__campaign_filter_first_conversions <- function(.campaign_data) {
                          arrange(id, timestamp, conversion_value, step))
 }
 
+test_helper__campaign_add_conversions <- function(.campaign_data) {
+    # make 1st and 2nd events have >0 conversions
+    .campaign_data[1, c('num_conversions', 'conversion_value')] <- 1
+    .campaign_data[2, c('num_conversions', 'conversion_value')] <- 2
+    # make 1st and 2nd events have >0 conversions
+    .campaign_data[5, c('num_conversions', 'conversion_value')] <- 2
+    .campaign_data[6, c('num_conversions', 'conversion_value')] <- 2
+    # make 2nd and 3rd events have >0 conversions
+    .campaign_data[12, c('num_conversions', 'conversion_value')] <- 2
+    .campaign_data[13, c('num_conversions', 'conversion_value')] <- 2
+    .campaign_data[14, c('num_conversions', 'conversion_value')] <- 1
+
+    return (.campaign_data)
+}

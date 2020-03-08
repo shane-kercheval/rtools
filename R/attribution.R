@@ -1,16 +1,3 @@
-#' xxxx
-#'
-#' @param xxx xxx
-#'
-#' @importFrom xxx xxx
-#' @export
-rt_markov_chains_example_data <- function(seed=42){
-
-
-    return (xxx)
-}
-
-
 #' transforms .campaign_data into structure that is based on events, meaning the conversion would be
 #' a specific event (e.g. clicking a submit button on a website)
 #' this mimics what we would typically see from a clickstream
@@ -22,6 +9,7 @@ rt_markov_chains_example_data <- function(seed=42){
 #'      but rather a step for the pricing page indicating number of conversions (probably always 1 for a signup event)
 #'      and total value of conversions
 #'
+#' @importFrom magrittr "%>%"
 #' @importFrom dplyr filter bind_rows mutate if_else arrange
 #' @importFrom stringr str_ends
 #' @importFrom lubridate seconds
@@ -74,6 +62,7 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
 #'         The timestamp of the conversion event, in this case, would be immdediately after (seconds or minutes) the pricing step.
 #'         The step that is before the conversion event (regardless of how much before) gets credit (last-touch) for the conversion.
 #'
+#' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange group_by ungroup mutate lag lead row_number n select filter contains
 #'
 #' @export
@@ -123,7 +112,7 @@ rt_clickstream_to_attribution <- function(.clickstream_data) {
 
 #' adds `.path_id` column to dataframe. Each conversion step triggers a new path-id for subsequent steps
 #'
-#' @param .campaign_data dataframe with columns: id | timestamp | step | num_conversions | conversion_value
+#' @param .campaign_data dataframe with columns: `id | timestamp | step | num_conversions | conversion_value`
 #' @param .id string identifying the id column
 #' @param .timestamp string identifying the timestamp column
 #' @param .num_conversions string identifying the num_conversions column
@@ -131,6 +120,7 @@ rt_clickstream_to_attribution <- function(.clickstream_data) {
 #' @param .use_first_conversion if true, only use the first conversion - the path id will be identical to the .id (by definition there will never be more than 1 path)
 #' @param .sort if true, the df is sorted by id, timestamp, conversion_values, & num_conversions; the dataframe needs to be sorted in this way to work, but this option let's the user avoid this action if it has already been done
 #'
+#' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange group_by ungroup mutate filter select lag
 #'
 #' @export
@@ -179,7 +169,7 @@ rt_campaign_add_path_id <- function(.campaign_data,
 
 #' adds converts campaign data to path data in the format expected by ChannelAttribution::markov_model & ChannelAttribution::heuristic_models
 #'
-#' @param .campaign_data id                        timestamp           step           step_type num_conversions conversion_value
+#' @param .campaign_data dataframe with columns `id | timestamp | step | num_conversions | conversion_value`
 #' @param .id string identifying the id column
 #' @param .timestamp string identifying the timestamp column
 #' @param .num_conversions string identifying the num_conversions column
@@ -187,6 +177,7 @@ rt_campaign_add_path_id <- function(.campaign_data,
 #' @param .separate_paths_ids if TRUE, each .path_id gets its own row & path_sequence. Each .id will be represented >= 1 times
 #'    if FALSE, each person will only be counted once, with their entire path, and cumulative conversions/conversion-value/null-conversions
 #'
+#' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange group_by ungroup mutate filter select lag
 #'
 #' @export
@@ -235,4 +226,144 @@ rt_campaign_to_markov_paths <- function(.campaign_data,
                 rename(path_id = !!sym(.id)),
             by = "path_id")
     }
+}
+
+#' wrapper around ChannelAttribution::markov_model
+#'
+#' @param .path_data dataframe expected by ChannelAttribution::markov_model
+#' @param .path_sequence var_path
+#' @param .num_conversions var_conv
+#' @param .conversion_value var_value
+#' @param .null_conversions var_null
+#' @param .order order
+#' @param .symbol sep
+#' @param .seed seed
+#'
+#' @importFrom ChannelAttribution markov_model
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr rename
+#'
+#' @export
+rt_markov_model <- function(.path_data,
+                            .path_sequence='path_sequence',
+                            .num_conversions='num_conversions',
+                            .conversion_value='conversion_value',
+                            .null_conversions='null_conversions',
+                            .order=1,
+                            .symbol='>',
+                            .seed=42) {
+
+    markov_attribution <- markov_model(Data = .path_data,
+                                       var_path = .path_sequence,
+                                       var_conv = .num_conversions,
+                                       var_value = .conversion_value,
+                                       var_null = .null_conversions,
+                                       order = .order, # higher order markov chain
+                                       out_more = TRUE,
+                                       sep=.symbol,
+                                       seed = .seed)
+
+    # inconsistent naming if var_value is NULL
+    if('removal_effects' %in% names(markov_attribution$removal_effects)) {
+
+        markov_attribution$removal_effects <- markov_attribution$removal_effects %>%
+            rename(removal_effects_conversion = removal_effects)
+    }
+
+    return (markov_attribution)
+}
+
+#' graphs removal effects returned by rt_markov_model (i.e. ChannelAttribution::markov_model)
+#'
+#' @param .markov_attribution results from rt_markov_model
+#' @param .channel_categories if provided, colors removal effects by channel categories; named vector with categories as value and channel names as vector names
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr mutate left_join
+#' @importFrom tidyr pivot_longer
+#' @importFrom stringr str_replace
+#' @importFrom forcats fct_reorder
+#' @importFrom ggplot2 ggplot aes geom_col position_dodge geom_text coord_flip scale_fill_manual scale_y_continuous theme_light guides guide_legend labs theme facet_wrap
+#' @importFrom scales pretty_breaks
+#'
+#' @export
+rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categories=NULL) {
+
+    markov_long <- .markov_attribution$removal_effects %>%
+        pivot_longer(names(.markov_attribution$removal_effects) %>% rt_remove_val('channel_name'),
+                     names_to = 'removal_type',
+                     values_to = 'removal_value', ) %>%
+        mutate(channel_name = as.character(channel_name),
+               removal_type = rt_pretty_text(removal_type),
+               removal_type = str_replace(removal_type, "Removal Effects ", ""))
+
+    if(is.null(.channel_categories)) {
+
+        if(length(unique(markov_long$removal_type)) == 1) {
+
+            fill_colors <- rt_colors()[1]
+
+        } else {
+
+            fill_colors <- rev(rt_colors()[1:2])
+        }
+
+        markov_plot <- markov_long %>%
+            mutate(removal_type = factor(removal_type, levels=c("Conversion Value", "Conversion"))) %>%
+            mutate(channel_name = fct_reorder(channel_name, removal_value)) %>%
+            ggplot(aes(x=channel_name, y=removal_value, fill=removal_type)) +
+            geom_col(position = position_dodge(0.9)) +
+            geom_text(aes(label=rt_pretty_percent(removal_value)),
+                      position = position_dodge(0.9),
+                      size=3.3) +
+            coord_flip() +
+            scale_fill_manual(values=fill_colors) +
+            scale_y_continuous(breaks=pretty_breaks(10),
+                               labels=rt_pretty_percent) +
+
+            theme_light() +
+            #expand_limits(y=1) +
+            guides(fill = guide_legend(reverse = TRUE)) +
+            labs(title="Markov Removal Effects",
+                 subtitle = "Shows the estimated percent decrease in conversions from removing specific channels.",
+                 x='Channel',
+                 y='Estimated Removal Effect')
+
+        if(length(unique(markov_long$removal_type)) == 1) {
+
+            markov_plot <- markov_plot + theme(legend.position = 'none')
+        }
+
+    } else {
+        .channel_categories <- data.frame(channel_name = names(.channel_categories),
+                                         category = as.character(.channel_categories),
+                                         stringsAsFactors = FALSE)
+
+        markov_plot <- markov_long %>%
+            left_join(.channel_categories, by = "channel_name") %>%
+            mutate(category = ifelse(is.na(category), 'Uncategorized', category)) %>%
+            mutate(channel_name = fct_reorder(channel_name, removal_value)) %>%
+            ggplot(aes(x=channel_name, y=removal_value, fill=category)) +
+            geom_col(position = position_dodge(0.9)) +
+            geom_text(aes(label=rt_pretty_percent(removal_value)),
+                      position = position_dodge(0.9),
+                      size=3.3) +
+            coord_flip() +
+            scale_fill_manual(values=rt_colors()) +
+            scale_y_continuous(breaks=pretty_breaks(10),
+                               labels=rt_pretty_percent) +
+
+            theme_light() +
+            labs(title="Markov Removal Effects",
+                 subtitle = "Shows the estimated percent decrease in conversions from removing specific channels (i.e. the removal effect).",
+                 x='Channel',
+                 y='Estimated Removal Effect')
+
+        if(length(unique(markov_long$removal_type)) > 1) {
+
+            markov_plot <- markov_plot + facet_wrap(~removal_type)
+        }
+    }
+
+    return (markov_plot)
 }
