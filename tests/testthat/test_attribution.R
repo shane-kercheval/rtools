@@ -405,6 +405,26 @@ test_that("rt_get_channel_attribution", {
                                             # for some reason, including .conversion_value slightly changes results for markov
                                             filter(attribution_name != 'Markov')))
 
+    found_conversions <- channel_attribution %>%
+        filter(attribution_type == 'Conversion') %>%
+        pivot_wider(names_from = 'attribution_name',
+                    values_from = 'attribution_value') %>%
+        select_if(is.numeric) %>%
+        colSums() %>%
+        unique()
+    expect_equal(length(found_conversions), 1)
+    expect_equal(found_conversions, sum(campaign_paths$num_conversions))
+
+    found_conversions <- channel_attribution %>%
+        filter(attribution_type == 'Conversion Value') %>%
+        pivot_wider(names_from = 'attribution_name',
+                    values_from = 'attribution_value') %>%
+        select_if(is.numeric) %>%
+        colSums() %>%
+        unique()
+    expect_equal(length(found_conversions), 1)
+    expect_equal(found_conversions, sum(campaign_paths$conversion_value))
+
     expected_campaign_conversions <- campaign_data %>%
         test_helper__campaign_filter_first_conversions() %>%
         group_by(id) %>%
@@ -479,6 +499,28 @@ test_that("rt_get_channel_attribution", {
                                             # for some reason, including .conversion_value slightly changes results for markov
                                             filter(attribution_name != 'Markov')))
 
+    found_conversions <- channel_attribution %>%
+        filter(attribution_type == 'Conversion') %>%
+        pivot_wider(names_from = 'attribution_name',
+                    values_from = 'attribution_value') %>%
+        select_if(is.numeric) %>%
+        colSums() %>%
+        unique()
+    expect_equal(length(found_conversions), 1)
+    expect_equal(found_conversions, sum(campaign_paths$num_conversions))
+
+    found_conversions <- channel_attribution %>%
+        filter(attribution_type == 'Conversion Value') %>%
+        pivot_wider(names_from = 'attribution_name',
+                    values_from = 'attribution_value') %>%
+        select_if(is.numeric) %>%
+        colSums() %>%
+        round(6) %>%
+        unique()
+
+    expect_equal(length(found_conversions), 1)
+    expect_equal(found_conversions, sum(campaign_paths$conversion_value))
+
     expected_campaign_conversions <- campaign_data %>%
         group_by(id) %>%
         mutate(visit_index = row_number(timestamp)) %>%
@@ -551,6 +593,28 @@ test_that("rt_get_channel_attribution", {
                                         channel_attribution_2 %>%
                                             # for some reason, including .conversion_value slightly changes results for markov
                                             filter(attribution_name != 'Markov')))
+
+    found_conversions <- channel_attribution %>%
+        filter(attribution_type == 'Conversion') %>%
+        pivot_wider(names_from = 'attribution_name',
+                    values_from = 'attribution_value') %>%
+        select_if(is.numeric) %>%
+        colSums() %>%
+        unique()
+    expect_equal(length(found_conversions), 1)
+    expect_equal(found_conversions, sum(campaign_paths$num_conversions))
+
+    found_conversions <- channel_attribution %>%
+        filter(attribution_type == 'Conversion Value') %>%
+        pivot_wider(names_from = 'attribution_name',
+                    values_from = 'attribution_value') %>%
+        select_if(is.numeric) %>%
+        colSums() %>%
+        round(6) %>%
+        unique()
+
+    expect_equal(length(found_conversions), 1)
+    expect_equal(found_conversions, sum(campaign_paths$conversion_value))
 
     conversions_paths <- campaign_paths %>% filter(num_conversions > 0)
 
@@ -664,56 +728,65 @@ test_that("rt_plot_channel_attribution", {
                                                     channel_categories))
 })
 
-rt_plot()
+test_that("rt_get_conversion_matrix", {
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
 
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE)
 
+    .campaign_data <- campaign_data
+    rt_get_conversion_matrix(campaign_data)
 
+})
 
+#' gives each step credit for the number of conversions that resulted from the corresponding path conversions
+rt_get_conversion_matrix <- function(.campaign_data,
+                                     .path_id='.path_id',
+                                     .step='step',
+                                     .num_conversions='num_conversions',
+                                     .conversion_value='conversion_value')
 
-    all_models %>% select_if(is.numeric) %>% colSums()
-
-
-    sum(campaign_paths$.total_conversions)
-    sum(campaign_data$conversion)
-
-    campaign_data
-
-    markov_attribution$result$total_conversions / sum(markov_attribution$result$total_conversions)
-
-    campaign_data_trans <- rt_campaign_add_path_id(campaign_data,
-                                                                                .use_first_conversion=TRUE,
-                                                                                .sort=TRUE)
-
-    t <- campaign_data_trans %>%
-        select(.path_id, step, num_conversions) %>%
-        group_by(.path_id) %>%
-        mutate(had_conversion = max(num_conversions)) %>%
+    path_conversions <- .campaign_data %>%
+        select(!!sym(.path_id), !!sym(.step), !!sym(.num_conversions)) %>%
+        group_by(!!sym(.path_id)) %>%
+        mutate(temp___path_conversion = sum(!!sym(.num_conversions))) %>%
         ungroup() %>%
-        select(-num_conversions)
+        filter(temp___path_conversion > 0)
 
-
-    path_conversion_matrix <- campaign_data_trans %>%
-        select(.path_id, step, num_conversions) %>%
-        group_by(.path_id) %>%
-        mutate(had_conversion = max(num_conversions)) %>%
-        ungroup() %>%
-        filter(had_conversion == 1) %>%
-        select(-num_conversions) %>%
+    path_conversion_matrix <- path_conversions %>%
+        select(-!!sym(.num_conversions)) %>%
         distinct() %>%
-        pivot_wider(names_from = step,
-                    values_from=had_conversion,
-                    values_fill = list(had_conversion = 0)) %>%
-        select(-.path_id)
+        pivot_wider(names_from = !!sym(.step),
+                    values_from = temp___path_conversion,
+                    values_fill = list(temp___path_conversion = 0)) %>%
+        select(-!!sym(.path_id))
+
+    path_conversions <- path_conversions %>%
+        select(!!sym(.path_id), temp___path_conversion) %>%
+        distinct()
+
     stopifnot(all(rowSums(path_conversion_matrix) > 0))
+    all.equal(apply(path_conversion_matrix, 1, max), path_conversions$temp___path_conversion)
 
     total_any_touch <- colSums(path_conversion_matrix)
     total_any_touch <- total_any_touch / sum(total_any_touch)
 
     sum(total_any_touch) == 1
 
+    # they should equal 2, unless there is a path that had all channels, which isn't the case
+    all(apply(path_conversion_matrix, 1, function(x) length(unique(x))) == 2)
+
+    any_touch_df <- data.frame(channel_name=names(total_any_touch), any_touch=as.numeric(total_any_touch))
+
+
+
     model_totals <- all_models %>% select_if(is.numeric) %>% colSums()
     total_conversions <- unique(model_totals)
     length(total_conversions) == 1
+
     all(all_models %>%
         mutate_if(is.numeric,~ . / total_conversions) %>%
         select_if(is.numeric) %>%
@@ -742,27 +815,27 @@ rt_plot()
 
 
 
-    path_matrix <- campaign_data_trans %>%
-        select(.path_id, channel) %>%
+    path_matrix <- .campaign_data %>%
+        select(.path_id, step) %>%
         distinct() %>%
         mutate(visit=1) %>%
-        pivot_wider(names_from = channel,
+        pivot_wider(names_from = step,
                                     values_from=visit,
                                     values_fill = list(visit = 0)) %>%
-        inner_join(campaign_data_trans %>%
+        inner_join(.campaign_data %>%
                        group_by(.path_id) %>%
                        summarise(num_touches = n(),
-                                 converted = max(conversion)),
+                                 converted = max(num_conversions)),
                    by = '.path_id') %>%
         select(-.path_id)
 
-    table(ifelse(path_matrix$Facebook == 1, 'Yes', 'No'),
-          ifelse(path_matrix$converted == 1, 'Converted', 'Not Converted'))
+    table(ifelse(path_matrix$Facebook > 0, 'Yes', 'No'),
+          ifelse(path_matrix$converted > 0, 'Converted', 'Not Converted'))
 
     path_matrix %>% rt_peak(1000)
 
     total_touches <- colSums(path_matrix %>% select(-converted, -num_touches))
-    total_conversions <- colSums(path_conversion_matrix %>% select(-converted, -num_touches))
+    total_conversions <- colSums(path_conversion_matrix)
     percent_conversions <- total_conversions / total_touches
 
     data.frame(channel_name=names(percent_conversions),
@@ -774,17 +847,31 @@ rt_plot()
         expand_limits(y=c(0, 1), x=0) +
         theme_light()
 
+    data.frame(channel_name=names(percent_conversions),
+               percent_conversions=percent_conversions,
+               total_touches=total_touches) %>%
+        ggplot(aes(x=total_touches, y =percent_conversions)) +
+        geom_point() +
+        geom_text(aes(label = channel_name), vjust=-1) +
+        #expand_limits(y=c(0, 1), x=0) +
+        theme_light()
 
-    markov_attribution$removal_effects
+
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+    markov_model_results <- rt_markov_model(campaign_paths)
+
+    markov_model_results$removal_effects
 
     data.frame(channel_name=names(percent_conversions),
                percent_conversions=percent_conversions,
                total_touches=total_touches) %>%
-        inner_join(markov_attribution$removal_effects, by='channel_name') %>%
+        inner_join(markov_model_results$removal_effects, by='channel_name') %>%
         ggplot(aes(x=total_touches, y =percent_conversions)) +
-        geom_point(aes(size=removal_effects)) +
+        geom_point(aes(size=removal_effects_conversion)) +
         geom_text(aes(label = channel_name), vjust=-1) +
-        geom_text(aes(label = paste0("(", round(removal_effects, 3), ")")), vjust=2) +
+        geom_text(aes(label = paste0("(", round(removal_effects_conversion, 3), ")")), vjust=2) +
         theme_light()
 
 
