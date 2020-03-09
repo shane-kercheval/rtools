@@ -814,7 +814,7 @@ rt_get_conversion_matrix <- function(.campaign_data,
 
 
 
-
+####################
     path_matrix <- .campaign_data %>%
         select(.path_id, step) %>%
         distinct() %>%
@@ -856,7 +856,6 @@ rt_get_conversion_matrix <- function(.campaign_data,
         #expand_limits(y=c(0, 1), x=0) +
         theme_light()
 
-
     campaign_paths <- campaign_data %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
         rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
@@ -870,10 +869,14 @@ rt_get_conversion_matrix <- function(.campaign_data,
         inner_join(markov_model_results$removal_effects, by='channel_name') %>%
         ggplot(aes(x=total_touches, y =percent_conversions)) +
         geom_point(aes(size=removal_effects_conversion)) +
-        geom_text(aes(label = channel_name), vjust=-1) +
-        geom_text(aes(label = paste0("(", round(removal_effects_conversion, 3), ")")), vjust=2) +
-        theme_light()
-
+        geom_text(aes(label = channel_name),
+                  vjust=-1,
+                  size=3.3) +
+        geom_text(aes(label = paste0("(", round(removal_effects_conversion, 3), ")")),
+                  vjust=2,
+                  size=3.3) +
+        theme_light() +
+        labs(size = 'Remove Effects')
 
     colnames(path_matrix)
     summary(path_matrix)
