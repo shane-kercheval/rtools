@@ -465,27 +465,36 @@ rt_get_channel_attribution <- function(.path_data,
 #' @param .seed seed
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr 
-#' @importFrom tidyr 
-#' @importFrom stringr 
-#' @importFrom ggplot2 
+#' @importFrom dplyr
+#' @importFrom tidyr
+#' @importFrom stringr
+#' @importFrom ggplot2
 #'
 #' @export
-rt_plot_channel_attribution <- function(.channel_attribution, .channel_categories=NULL) {
+rt_plot_channel_attribution <- function(.channel_attribution, .channel_categories=NULL, .show_values=TRUE) {
 
-    base_attribution_plot <- function(channel_plot) {
-        channel_plot +
-        geom_col(position = position_dodge(width = 0.9),
-                 alpha=0.75) +
-        geom_text(aes(label=round(attribution_value)),
-                  position = position_dodge(width = 0.9),
-                  vjust=-0.3) +
-        scale_fill_manual(values=rt_colors()) +
-        theme_light() +
-        theme(axis.text.x = element_text(angle=45, hjust=1)) +
-        labs(y='Conversions',
-             x='Channel Name',
-             fill="Attribution Model")
+    base_attribution_plot <- function(channel_plot, .show_values) {
+
+        channel_plot <- channel_plot +
+            geom_col(position = position_dodge(width = 0.9),
+                     alpha=0.75) +
+            scale_fill_manual(values=rt_colors()) +
+            theme_light() +
+            theme(axis.text.x = element_text(angle=45, hjust=1)) +
+            labs(y='Conversions',
+                 x='Channel Name',
+                 fill="Attribution Model")
+
+        if(.show_values) {
+
+            channel_plot <- channel_plot +
+                geom_text(aes(label=round(attribution_value)),
+                          position = position_dodge(width = 0.9),
+                          angle=90,
+                          hjust=1)
+        }
+
+        return (channel_plot)
     }
 
     if(length(unique(.channel_attribution$attribution_type)) == 1) {
@@ -495,7 +504,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             channel_plot <- .channel_attribution %>%
                 mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
                 ggplot(aes(x=channel_name, y=attribution_value, fill=attribution_name)) %>%
-                base_attribution_plot()
+                base_attribution_plot(.show_values)
 
         } else {
 
@@ -509,7 +518,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
                 mutate(category = ifelse(is.na(category), 'Uncategorized', category)) %>%
                 mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
                 ggplot(aes(x=channel_name, y=attribution_value, fill=category)) %>%
-                base_attribution_plot() +
+                base_attribution_plot(.show_values) +
                 facet_wrap( ~ attribution_name)
         }
     } else {
@@ -517,7 +526,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
         channel_plot <- .channel_attribution %>%
             mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
             ggplot(aes(x=channel_name, y=attribution_value, fill=attribution_name)) %>%
-            base_attribution_plot() +
+            base_attribution_plot(.show_values) +
             facet_wrap(~ attribution_type, scales = 'free_y')
     }
 

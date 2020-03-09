@@ -609,6 +609,12 @@ test_that("rt_plot_channel_attribution", {
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions()
 
+    steps <- campaign_data %>%
+        select(step, step_type) %>%
+        distinct()
+    channel_categories <- steps$step_type
+    names(channel_categories) <- steps$step
+
     ########
     # first conversion: TRUE
     # separate path_ids
@@ -616,30 +622,49 @@ test_that("rt_plot_channel_attribution", {
     campaign_paths <- campaign_data %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
         rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
-
     channel_attribution <- rt_get_channel_attribution(campaign_paths)
 
-    rt_plot_channel_attribution(channel_attribution)
+    test_save_plot(file_name='data/rt_plot_channel_attribution__first_conversion__separate_paths.png',
+                   plot=rt_plot_channel_attribution(channel_attribution))
 
-    .channel_attribution <- channel_attribution
+    test_save_plot(file_name='data/rt_plot_channel_attribution__first_conversion__separate_paths_2.png',
+                   plot=rt_plot_channel_attribution(channel_attribution, channel_categories))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__first_conversion__separate_paths_conv.png',
+                   plot=rt_plot_channel_attribution(channel_attribution %>%
+                                                        filter(attribution_type == 'Conversion')))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__first_conversion__separate_paths_chan.png',
+                   plot=rt_plot_channel_attribution(channel_attribution %>%
+                                                        filter(attribution_type == 'Conversion'),
+                                                    channel_categories))
+
+    ########
+    # first conversion: FALSE
+    # separate path_ids TRUE
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__all_conversion__separate_paths.png',
+                   plot=rt_plot_channel_attribution(channel_attribution))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__all_conversion__separate_paths_2.png',
+                   plot=rt_plot_channel_attribution(channel_attribution, channel_categories))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__all_conversion__separate_paths_conv.png',
+                   plot=rt_plot_channel_attribution(channel_attribution %>%
+                                                        filter(attribution_type == 'Conversion')))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__all_conversion__separate_paths_chan.png',
+                   plot=rt_plot_channel_attribution(channel_attribution %>%
+                                                        filter(attribution_type == 'Conversion'),
+                                                    channel_categories))
 })
 
 rt_plot()
-
-steps <- campaign_data %>%
-    select(step, step_type) %>%
-    distinct()
-
-channel_categories <- steps$step_type
-names(channel_categories) <- steps$step
-
-.channel_attribution <- channel_attribution %>% filter(attribution_type == 'Conversion')
-.channel_categories <- channel_categories
-
-rt_plot_channel_attribution(channel_attribution)
-rt_plot_channel_attribution(channel_attribution, channel_categories)
-rt_plot_channel_attribution(channel_attribution %>% filter(attribution_type == 'Conversion'), channel_categories)
-
 
 
 
