@@ -171,12 +171,16 @@ rt_campaign_add_path_id <- function(.campaign_data,
 #'
 #' @param .campaign_data dataframe with columns `id | timestamp | step | num_conversions | conversion_value`
 #' @param .id string identifying the id column
+#' @param .path_id string identifying the path_id column
+#' @param .step string identifying the step column
 #' @param .timestamp string identifying the timestamp column
 #' @param .num_conversions string identifying the num_conversions column
 #' @param .conversion_value string identifying the conversion_values column
 #' @param .separate_paths_ids if TRUE, each .path_id gets its own row & path_sequence. Each .id will be represented >= 1 times
 #'    if FALSE, each person will only be counted once, with their entire path, and cumulative conversions/conversion-value/null-conversions
-#'
+#' @param .sort if true, the df is sorted by id, timestamp, conversion_values, & num_conversions; the dataframe needs to be sorted in this way to work, but this option let's the user avoid this action if it has already been done
+#' @param .symbol the symbol to separate the steps
+#'                                        
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange group_by ungroup mutate filter select lag
 #'
@@ -219,7 +223,7 @@ rt_campaign_to_markov_paths <- function(.campaign_data,
                 rename(path_id = !!sym(.id)),
             .campaign_data %>%
                 group_by(!!sym(.id), !!sym(.path_id)) %>%
-                summarise(path_converted = any(!!sym(.num_conversions) > 0) | any(!!sym(.conversion_value) >0)) %>%
+                summarise(path_converted = any(!!sym(.num_conversions) > 0) | any(!!sym(.conversion_value) > 0)) %>%
                 ungroup() %>%
                 group_by(!!sym(.id)) %>%
                 summarise(null_conversions = sum(!path_converted)) %>%
@@ -457,18 +461,14 @@ rt_get_channel_attribution <- function(.path_data,
 #'
 #' @param .channel_attribution dataframe returned by rt_get_channel_attribution()
 #' @param .channel_categories if provided, colors removal effects by channel categories; named vector with categories as value and channel names as vector names
-#' @param .num_conversions var_conv
-#' @param .conversion_value var_value
-#' @param .null_conversions var_null
-#' @param .order order
-#' @param .symbol sep
-#' @param .seed seed
+#' @param .show_values show the attribution values 
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr
+#' @importFrom dplyr mutate left_join
+#' @importFrom forcats fct_reorder
 #' @importFrom tidyr
 #' @importFrom stringr
-#' @importFrom ggplot2
+#' @importFrom ggplot2 ggplot geom_col position_dodge scale_fill_manual theme_light theme labs geom_text aes facet_wrap
 #'
 #' @export
 rt_plot_channel_attribution <- function(.channel_attribution, .channel_categories=NULL, .show_values=TRUE) {
@@ -533,3 +533,61 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
     return (channel_plot)
 }
 
+#' gives each step credit for the number of conversions that resulted from the corresponding path conversions
+#'
+#' if the path is Facebook -> Facebook -> Facebook -> Instagram -> 2 Conversions, then both Facebook & Instagram get credit for two conversions, regardless how many times they are in the path
+#'
+#' returns a dataframe with the combined results
+#'
+#' @param .campaign_data dataframe with columns `id | timestamp | step | num_conversions | conversion_value`
+#' @param .path_id string identifying the path_id column
+#' @param .step string identifying the step column
+#' @param .num_conversions string identifying the num_conversions column
+#' @param .conversion_value string identifying the conversion_values column
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr select group_by ungroup mutate filter distinct
+#' @importFrom tidyr pivot_wider
+#'
+#' @export
+rt_get_conversion_matrix <- function(.campaign_data,
+                                     .path_id='.path_id',
+                                     .step='step',
+                                     .num_conversions='num_conversions',
+                                     .conversion_value='conversion_value') {
+
+    path_conversions <- .campaign_data %>%
+        select(!!sym(.path_id), !!sym(.step), !!sym(.num_conversions)) %>%
+        group_by(!!sym(.path_id)) %>%
+        mutate(temp___path_conversion = sum(!!sym(.num_conversions))) %>%
+        ungroup() %>%
+        filter(temp___path_conversion > 0)
+
+    path_conversion_matrix <- path_conversions %>%
+        select(-!!sym(.num_conversions)) %>%
+        distinct() %>%
+        pivot_wider(names_from = !!sym(.step),
+                    values_from = temp___path_conversion,
+                    values_fill = list(temp___path_conversion = 0)) %>%
+        select(-!!sym(.path_id))
+
+    path_conversions <- path_conversions %>%
+        select(!!sym(.path_id), temp___path_conversion) %>%
+        distinct()
+
+    rt_stopif(any(duplicated(path_conversions$.path_id)))
+
+    stopifnot(all(rowSums(path_conversion_matrix) > 0))
+    stopifnot(all.equal(apply(path_conversion_matrix, 1, max), path_conversions$temp___path_conversion))
+    # they should equal 2, unless there is a path that had all channels, which isn't the case
+    stopifnot(all(apply(path_conversion_matrix, 1, function(x) length(unique(x))) == 2))
+
+    any_touch <- colSums(path_conversion_matrix)
+    any_touch <- any_touch / sum(any_touch)
+
+    stopifnot(sum(any_touch) == 1)
+
+    any_touch_df <- data.frame(channel_name=names(any_touch), any_touch=as.numeric(any_touch))
+
+    return (any_touch_df)
+}

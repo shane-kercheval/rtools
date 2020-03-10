@@ -729,6 +729,7 @@ test_that("rt_plot_channel_attribution", {
 })
 
 test_that("rt_get_conversion_matrix", {
+
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
@@ -737,49 +738,12 @@ test_that("rt_get_conversion_matrix", {
         test_helper__campaign_add_conversions() %>%
         rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE)
 
-    .campaign_data <- campaign_data
-    rt_get_conversion_matrix(campaign_data)
-
+    # function has internal checks
+    conversion_matrix <- rt_get_conversion_matrix(campaign_data)
+    expect_identical(as.character(conversion_matrix$channel_name),
+                     c("Instagram", "Online Display", "Paid Search", "Facebook", "Online Video"))
+    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.1735751, 0.1191710, 0.2642487, 0.2979275, 0.1450777), 5)))
 })
-
-#' gives each step credit for the number of conversions that resulted from the corresponding path conversions
-rt_get_conversion_matrix <- function(.campaign_data,
-                                     .path_id='.path_id',
-                                     .step='step',
-                                     .num_conversions='num_conversions',
-                                     .conversion_value='conversion_value')
-
-    path_conversions <- .campaign_data %>%
-        select(!!sym(.path_id), !!sym(.step), !!sym(.num_conversions)) %>%
-        group_by(!!sym(.path_id)) %>%
-        mutate(temp___path_conversion = sum(!!sym(.num_conversions))) %>%
-        ungroup() %>%
-        filter(temp___path_conversion > 0)
-
-    path_conversion_matrix <- path_conversions %>%
-        select(-!!sym(.num_conversions)) %>%
-        distinct() %>%
-        pivot_wider(names_from = !!sym(.step),
-                    values_from = temp___path_conversion,
-                    values_fill = list(temp___path_conversion = 0)) %>%
-        select(-!!sym(.path_id))
-
-    path_conversions <- path_conversions %>%
-        select(!!sym(.path_id), temp___path_conversion) %>%
-        distinct()
-
-    stopifnot(all(rowSums(path_conversion_matrix) > 0))
-    all.equal(apply(path_conversion_matrix, 1, max), path_conversions$temp___path_conversion)
-
-    total_any_touch <- colSums(path_conversion_matrix)
-    total_any_touch <- total_any_touch / sum(total_any_touch)
-
-    sum(total_any_touch) == 1
-
-    # they should equal 2, unless there is a path that had all channels, which isn't the case
-    all(apply(path_conversion_matrix, 1, function(x) length(unique(x))) == 2)
-
-    any_touch_df <- data.frame(channel_name=names(total_any_touch), any_touch=as.numeric(total_any_touch))
 
 
 
