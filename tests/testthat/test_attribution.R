@@ -802,68 +802,25 @@ test_that("rt_get_any_touch_attribution2", {
 
     test_save_plot(file_name='data/rt_plot_channel_attribution__any_touch_all_models.png',
                    plot=rt_plot_channel_attribution(all_models))
-
 })
 
 
 
 
-    test_save_plot(file_name='data/rt_plot_channel_attribution__first_conversion__separate_paths.png',
-                   plot=rt_plot_channel_attribution(channel_attribution))
-
-    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
-        test_helper__campaign_add_conversions() %>%
-        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
-
-
-
-    # function has internal checks
-conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions')
-
-
-    model_totals <- all_models %>% select_if(is.numeric) %>% colSums()
-    total_conversions <- unique(model_totals)
-    length(total_conversions) == 1
-
-    all(all_models %>%
-        mutate_if(is.numeric,~ . / total_conversions) %>%
-        select_if(is.numeric) %>%
-        colSums() == 1)
-
-    all_models %>%
-        mutate_if(is.numeric,~ . / total_conversions) %>%
-        inner_join(data.frame(channel_name=names(total_any_touch), any_touch=as.numeric(total_any_touch)),
-                   by='channel_name') %>%
-
-        gather(attribution_type, value, -channel_name) %>%
-        mutate(attribution_type = rt_pretty_text(attribution_type)) %>%
-        ggplot(aes(x=channel_name, y=value, fill=attribution_type)) +
-        geom_col(position = position_dodge(width = 0.9),
-                 alpha=0.75) +
-        geom_text(aes(label=round(value, 2)),
-                  position = position_dodge(width = 0.9),
-                  vjust=-0.3) +
-        scale_fill_manual(values=rt_colors()) +
-        theme_light() +
-        theme(axis.text.x = element_text(angle=45, hjust=1)) +
-        labs(y='Conversions',
-             x='Channel Name',
-             fill="Attribution Model")
 
 
 
 ####################
-    path_matrix <- .campaign_data %>%
+    path_matrix <- campaign_data %>%
         select(.path_id, step) %>%
         distinct() %>%
         mutate(visit=1) %>%
         pivot_wider(names_from = step,
                                     values_from=visit,
                                     values_fill = list(visit = 0)) %>%
-        inner_join(.campaign_data %>%
+        inner_join(campaign_data %>%
                        group_by(.path_id) %>%
-                       summarise(num_touches = n(),
-                                 converted = max(num_conversions)),
+                       summarise(converted = any(num_conversions > 0)),
                    by = '.path_id') %>%
         select(-.path_id)
 
@@ -872,8 +829,8 @@ conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_col
 
     path_matrix %>% rt_peak(1000)
 
-    total_touches <- colSums(path_matrix %>% select(-converted, -num_touches))
-    total_conversions <- colSums(path_conversion_matrix)
+    total_touches <- colSums(path_matrix %>% select(-converted))
+    total_conversions <- colSums(path_matrix %>% filter(converted) %>% select(-converted))
     percent_conversions <- total_conversions / total_touches
 
     data.frame(channel_name=names(percent_conversions),
@@ -918,6 +875,24 @@ conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_col
 
     colnames(path_matrix)
     summary(path_matrix)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     table(ifelse(path_matrix$Facebook == 1, 'Yes', 'No'),
           ifelse(path_matrix$converted == 1, 'Converted', 'Not Converted'))
@@ -981,9 +956,9 @@ conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_col
     # First & Last Touchf
     ########################################
     campaign_data_first_last <- campaign_data %>%
-        group_by(cookie) %>%
-        mutate(visit_index = row_number(time),
-               visit_index_rev = row_number(desc(time))) %>%
+        group_by(id) %>%
+        mutate(visit_index = row_number(timestamp),
+               visit_index_rev = row_number(desc(timestamp))) %>%
         ungroup() %>%
         filter(visit_index == 1 | visit_index_rev == 1)
 
@@ -1370,4 +1345,3 @@ conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_col
                   Target = 'target', Value = 'value', NodeID = 'name',
                   LinkGroup = 'energy_type', NodeGroup = NULL)
 
-})
