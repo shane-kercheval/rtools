@@ -437,20 +437,7 @@ rt_get_channel_attribution <- function(.path_data,
     }
 
     all_models <- inner_join(heuristic_attribution, markov_attribution, by = 'channel_name')
-    all_models <- all_models %>%
-        pivot_longer(colnames(all_models) %>% rt_remove_val('channel_name'),
-                     names_to = 'attribution_column_name',
-                     values_to = 'attribution_value') %>%
-        mutate(attribution_type = case_when(
-                                        str_ends(attribution_column_name, '_conversions') ~ 'Conversion',
-                                        str_ends(attribution_column_name, '_value') ~ 'Conversion Value',
-                                        TRUE ~ 'unknown'
-                                    ),
-               attribution_name = str_remove(attribution_column_name, "_conversions"),
-               attribution_name = str_remove(attribution_name, "_value"),
-               attribution_name = rt_pretty_text(attribution_name)) %>%
-        select(-attribution_column_name) %>%
-        select(channel_name, attribution_name, attribution_type, attribution_value)
+    all_models <- rt_attribution_pivot_longer(all_models)
 
     return (all_models)
 }
@@ -487,8 +474,11 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
 
         if(.show_values) {
 
+            round_values_by <- 0
             channel_plot <- channel_plot +
-                geom_text(aes(label=round(attribution_value)),
+                geom_text(aes(label=ifelse(attribution_value < 1,
+                                           rt_pretty_percent(attribution_value),
+                                           round(attribution_value))),
                           position = position_dodge(width = 0.9),
                           angle=90,
                           hjust=1)
@@ -588,4 +578,24 @@ rt_get_any_touch_attribution <- function(.campaign_data,
     any_touch_df <- data.frame(channel_name=names(any_touch), any_touch=as.numeric(any_touch))
 
     return (any_touch_df)
+}
+
+rt_attribution_pivot_longer <- function(attribution_models) {
+
+    attribution_models <- attribution_models %>%
+        pivot_longer(colnames(attribution_models) %>% rt_remove_val('channel_name'),
+                     names_to = 'attribution_column_name',
+                     values_to = 'attribution_value') %>%
+        mutate(attribution_type = case_when(
+                str_ends(attribution_column_name, '_conversions') ~ 'Conversion',
+                str_ends(attribution_column_name, '_value') ~ 'Conversion Value',
+                TRUE ~ 'unknown'
+            ),
+            attribution_name = str_remove(attribution_column_name, "_conversions"),
+            attribution_name = str_remove(attribution_name, "_value"),
+            attribution_name = rt_pretty_text(attribution_name)) %>%
+        select(-attribution_column_name) %>%
+        select(channel_name, attribution_name, attribution_type, attribution_value)
+
+    return (attribution_models)
 }

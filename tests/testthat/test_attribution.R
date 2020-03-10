@@ -771,6 +771,54 @@ test_that("rt_get_any_touch_attribution", {
     expect_true(sum(conversion_matrix$any_touch) == 1)
 })
 
+test_that("rt_get_any_touch_attribution2", {
+
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
+
+    # function has internal checks
+    conversion_matrix_conv <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions') %>%
+        rename(any_touch_conversions = any_touch)
+
+    conversion_matrix_value <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'conversion_value') %>%
+        rename(any_touch_value = any_touch)
+
+    any_touch_attribution <- inner_join(conversion_matrix_conv, conversion_matrix_value, by = 'channel_name')
+    any_touch_attribution <- rt_attribution_pivot_longer(any_touch_attribution)
+
+    campaign_paths <- campaign_data %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+
+    all_models <- any_touch_attribution %>%
+        bind_rows(channel_attribution %>%
+                      group_by(attribution_name, attribution_type) %>%
+                      mutate(total_attribution = sum(attribution_value)) %>%
+                      ungroup() %>%
+                      mutate(attribution_value = attribution_value / total_attribution) %>%
+                      select(-total_attribution))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__any_touch_all_models.png',
+                   plot=rt_plot_channel_attribution(all_models))
+
+})
+
+
+
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__first_conversion__separate_paths.png',
+                   plot=rt_plot_channel_attribution(channel_attribution))
+
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
+
+
+
+    # function has internal checks
+conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions')
 
 
     model_totals <- all_models %>% select_if(is.numeric) %>% colSums()
