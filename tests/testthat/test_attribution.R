@@ -728,21 +728,47 @@ test_that("rt_plot_channel_attribution", {
                                                     channel_categories))
 })
 
-test_that("rt_get_conversion_matrix", {
+test_that("rt_get_any_touch_attribution", {
 
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
+
+    # function has internal checks
+    conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions') %>%
+        arrange(channel_name)
+    expect_identical(as.character(conversion_matrix$channel_name),
+                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
+    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.2932551, 0.1700880, 0.1202346, 0.1524927, 0.2639296), 5)))
+    expect_true(sum(conversion_matrix$any_touch) == 1)
+
+    # function has internal checks
+    conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'conversion_value') %>%
+        arrange(channel_name)
+    expect_identical(as.character(conversion_matrix$channel_name),
+                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
+    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.3014159, 0.1732661, 0.1187905, 0.1569474, 0.2495800), 5)))
+    expect_true(sum(conversion_matrix$any_touch) == 1)
 
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE)
 
     # function has internal checks
-    conversion_matrix <- rt_get_conversion_matrix(campaign_data)
+    conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions') %>%
+        arrange(channel_name)
     expect_identical(as.character(conversion_matrix$channel_name),
-                     c("Instagram", "Online Display", "Paid Search", "Facebook", "Online Video"))
-    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.1735751, 0.1191710, 0.2642487, 0.2979275, 0.1450777), 5)))
+                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
+    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.2979275, 0.1735751, 0.1191710, 0.1450777, 0.2642487), 5)))
+    expect_true(sum(conversion_matrix$any_touch) == 1)
+
+    # function has internal checks
+    conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'conversion_value') %>%
+        arrange(channel_name)
+    expect_identical(as.character(conversion_matrix$channel_name),
+                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
+    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.3109495, 0.1813516, 0.1146279, 0.1509837, 0.2420873), 5)))
+    expect_true(sum(conversion_matrix$any_touch) == 1)
 })
 
 

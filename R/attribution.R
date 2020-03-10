@@ -180,7 +180,7 @@ rt_campaign_add_path_id <- function(.campaign_data,
 #'    if FALSE, each person will only be counted once, with their entire path, and cumulative conversions/conversion-value/null-conversions
 #' @param .sort if true, the df is sorted by id, timestamp, conversion_values, & num_conversions; the dataframe needs to be sorted in this way to work, but this option let's the user avoid this action if it has already been done
 #' @param .symbol the symbol to separate the steps
-#'                                        
+#'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr arrange group_by ungroup mutate filter select lag
 #'
@@ -461,7 +461,7 @@ rt_get_channel_attribution <- function(.path_data,
 #'
 #' @param .channel_attribution dataframe returned by rt_get_channel_attribution()
 #' @param .channel_categories if provided, colors removal effects by channel categories; named vector with categories as value and channel names as vector names
-#' @param .show_values show the attribution values 
+#' @param .show_values show the attribution values
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr mutate left_join
@@ -540,31 +540,29 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
 #' returns a dataframe with the combined results
 #'
 #' @param .campaign_data dataframe with columns `id | timestamp | step | num_conversions | conversion_value`
+#' @param .conversion_column e.g. num_conversions or conversion_value
 #' @param .path_id string identifying the path_id column
 #' @param .step string identifying the step column
-#' @param .num_conversions string identifying the num_conversions column
-#' @param .conversion_value string identifying the conversion_values column
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr select group_by ungroup mutate filter distinct
 #' @importFrom tidyr pivot_wider
 #'
 #' @export
-rt_get_conversion_matrix <- function(.campaign_data,
-                                     .path_id='.path_id',
-                                     .step='step',
-                                     .num_conversions='num_conversions',
-                                     .conversion_value='conversion_value') {
+rt_get_any_touch_attribution <- function(.campaign_data,
+                                         .conversion_column,
+                                         .path_id='.path_id',
+                                         .step='step') {
 
     path_conversions <- .campaign_data %>%
-        select(!!sym(.path_id), !!sym(.step), !!sym(.num_conversions)) %>%
+        select(!!sym(.path_id), !!sym(.step), !!sym(.conversion_column)) %>%
         group_by(!!sym(.path_id)) %>%
-        mutate(temp___path_conversion = sum(!!sym(.num_conversions))) %>%
+        mutate(temp___path_conversion = sum(!!sym(.conversion_column))) %>%
         ungroup() %>%
         filter(temp___path_conversion > 0)
 
     path_conversion_matrix <- path_conversions %>%
-        select(-!!sym(.num_conversions)) %>%
+        select(-!!sym(.conversion_column)) %>%
         distinct() %>%
         pivot_wider(names_from = !!sym(.step),
                     values_from = temp___path_conversion,
