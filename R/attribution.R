@@ -580,6 +580,16 @@ rt_get_any_touch_attribution <- function(.campaign_data,
     return (any_touch_df)
 }
 
+#' transforms attribution dataframe to long format
+#'
+#' @param attribution_models dataframe with columns `channel_name | xxx_conversions | xxx_value`
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom dplyr mutate select
+#' @importFrom tidyr pivot_longer case_when
+#' @importFrom stringr str_ends str_remove
+#'
+#' @export
 rt_attribution_pivot_longer <- function(attribution_models) {
 
     attribution_models <- attribution_models %>%
