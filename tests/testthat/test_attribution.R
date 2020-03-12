@@ -1,4 +1,4 @@
-context('Stats')
+context('Attribution')
 library(testthat)
 library(dplyr)
 library(ggplot2)
@@ -56,7 +56,7 @@ test_that("rt_clickstream_to_attribution", {
 
     campaign_data_original <- readRDS('data/campaign_data__small.RDS') %>%
         arrange(id, timestamp, step)
-    clickstream_data <- rt__mock__attribution_to_clickstream(campaign_data)
+    clickstream_data <- rt__mock__attribution_to_clickstream(campaign_data_original)
     campaign_data_new <- rt_clickstream_to_attribution(clickstream_data) %>%
         arrange(id, timestamp, step)
     expect_true(rt_are_dataframes_equal(campaign_data_original %>% arrange(id, timestamp, step),
