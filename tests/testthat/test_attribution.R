@@ -930,6 +930,7 @@ test_that("TODO", {
     #     summarise(converted = any(num_conversions > 0)) %>%
     #     pull(converted) %>% sum()
 
+    library(networkD3)
     campaign_data_2 <- campaign_data %>%
         group_by(id) %>%
         mutate(converted = any(num_conversions > 0)) %>%
