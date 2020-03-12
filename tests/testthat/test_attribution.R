@@ -4,7 +4,6 @@ library(dplyr)
 library(ggplot2)
 source('test_helpers.R')
 
-
 test_that("rt__mock__attribution_to_clickstream", {
 
     ####
