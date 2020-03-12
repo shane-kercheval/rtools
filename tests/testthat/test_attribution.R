@@ -804,13 +804,11 @@ test_that("rt_get_any_touch_attribution2", {
                    plot=rt_plot_channel_attribution(all_models))
 })
 
-
-####################
-
-campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
-    test_helper__campaign_add_conversions() %>%
-    # only care about the first conversion since it is percent converted
-    rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
+test_that("TODO", {
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        # only care about the first conversion since it is percent converted
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
 
     touch_type <- "any touch"
     if(touch_type == "first touch") {
@@ -851,7 +849,7 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
                        group_by(.path_id) %>%
                        summarise(converted = any(num_conversions > 0)),
                    by = '.path_id') #%>%
-        #select(-.path_id)
+    #select(-.path_id)
 
     rt_stopif(any(duplicated(path_matrix$.path_id)))
     if(touch_type == "any touch") {
@@ -867,8 +865,8 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
                                                 markov_model_results=NULL) {
         percent_conversions <- total_conversions / total_touches
         conversion_df <- data.frame(channel_name=names(percent_conversions),
-                   percent_conversions=percent_conversions,
-                   total_touches=total_touches)
+                                    percent_conversions=percent_conversions,
+                                    total_touches=total_touches)
 
         if(is.null(markov_model_results)) {
 
@@ -920,23 +918,130 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
     markov_model_results$removal_effects
     show_conversion_rate_vs_touches(total_touches, total_conversions, markov_model_results)
 
+})
+
+test_that("TODO", {
+    ########################################
+    # All
+    ########################################
+
+    # campaign_data %>%
+    #     group_by(id) %>%
+    #     summarise(converted = any(num_conversions > 0)) %>%
+    #     pull(converted) %>% sum()
+
+    campaign_data_2 <- campaign_data %>%
+        group_by(id) %>%
+        mutate(converted = any(num_conversions > 0)) %>%
+        mutate(first_converted = min(timestamp[num_conversions == 1], na.rm = TRUE)) %>%
+        ungroup() %>%
+        # this is getting unique channel, but perhaps have an option not to get unique
+        # need to do this after conversion logic above because if the person converts on the nth time
+        # for a particular channel, this will have filtered out their conversion event
+        group_by(id, step) %>%
+        filter(row_number(timestamp) == 1) %>%
+        ungroup() %>%
+        filter(is.na(first_converted) | timestamp <= first_converted) %>%
+        select(-first_converted) %>%
+        arrange(id, timestamp)
+
+    # campaign_data_2 %>%
+    #     group_by(id) %>%
+    #     summarise(converted = any(converted)) %>%
+    #     pull(converted) %>% sum()
+
+    bounced_cookies <- campaign_data_2 %>%
+        filter(!converted) %>%
+        group_by(id) %>%
+        summarise(timestamp = max(timestamp),
+                  step = 'Bounced',
+                  converted=FALSE)
+    bounced_cookies$timestamp <- bounced_cookies$timestamp + seconds(1)
+
+    converted_cookies <- campaign_data_2 %>%
+        filter(converted) %>%
+        group_by(id) %>%
+        summarise(timestamp = max(timestamp),
+                  step = 'Converted',
+                  converted=TRUE)
+    converted_cookies$timestamp <- converted_cookies$timestamp + seconds(1)
 
 
+    campaign_data_t <- campaign_data_2 %>%
+        select(id, timestamp, step, converted) %>%
+        bind_rows(bounced_cookies) %>%
+        bind_rows(converted_cookies) %>%
+        arrange(id, timestamp) %>%
+        group_by(id) %>%
+        mutate(visit_index = row_number(timestamp),
+               visit_index_rev = rev(visit_index)) %>%
+        ungroup() %>%
+        select(id, step, visit_index, visit_index_rev, converted)
+
+    # comment this out to get bounced
+    campaign_data_t <- campaign_data_t %>% filter(converted)
+
+    campaign_data_t <- campaign_data_t %>%
+        unite(channel_source, c(step, visit_index)) %>%
+        group_by(id) %>%
+        mutate(channel_target = lead(channel_source)) %>%
+        ungroup() %>%
+        filter(!is.na(channel_target)) %>%
+        mutate(channel_target = case_when(
+            str_detect(channel_target, 'Bounced') ~ 'Bounced',
+            str_detect(channel_target, 'Converted') ~ 'Converted',
+            TRUE ~ channel_target
+        ))
+
+    campaign_data_t <- campaign_data_t %>%
+        unite(step, c(channel_source, channel_target), remove = FALSE) %>%
+        group_by(step, channel_source, channel_target) %>%
+        summarise(n=n(),
+                  n_d=n_distinct(id)) %>%
+        ungroup()
 
 
+    #campaign_data_t %>% View()
 
+    unique_nodes <- bind_rows(campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% select(channel_source, n) %>% rename(channel_name=channel_source),
+                              campaign_data_t %>% count(channel_target, wt=n) %>% arrange(n) %>% select(channel_target, n) %>% rename(channel_name=channel_target)) %>%
+        count(channel_name, wt=n) %>%
+        arrange(desc(n)) %>%
+        pull(channel_name)
 
+    #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
+    #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
+    #unique_nodes <- unique(c(campaign_data_t$channel_source, campaign_data_t$channel_target))
+    # target_nodes <- unique(campaign_data_t$channel_target)
 
+    source_indexes <- match(campaign_data_t$channel_source, unique_nodes) - 1
+    target_indexes <- match(campaign_data_t$channel_target, unique_nodes) - 1
 
+    campaign_data_t$source <- source_indexes
+    campaign_data_t$target <- target_indexes
 
+    unique_nodes <- str_remove(string=unique_nodes, pattern = "_.*")
+    sankey_nodes_df <- data.frame(name=c(unique_nodes))
 
+    color_string <- rt_str_collapse(rt_colors(),.surround = '"', .separate = ", ")
+    ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
+    #campaign_data_t %>% View()
+    #sankey_nodes_df %>% View()
+    sankeyNetwork(Links = campaign_data_t,
+                  Nodes = sankey_nodes_df,
+                  Source = 'source',
+                  Target = 'target',
+                  Value = 'n',
+                  NodeID = 'name',
+                  colourScale = ColourScal,
+                  #units = 'TWh',
+                  fontSize = 12, nodeWidth = 30)
 
+})
 
+test_that("TODO", {
 
-
-
-
-
+    skip("sandbox")
 
     table(ifelse(path_matrix$Facebook == 1, 'Yes', 'No'),
           ifelse(path_matrix$converted == 1, 'Converted', 'Not Converted'))
@@ -962,9 +1067,9 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
     rt_explore_correlations(path_matrix)
 
     regression_result <- arm::bayesglm(converted ~ .,
-                             data = path_matrix,
-                             family = "binomial",
-                             maxit = 100)
+                                       data = path_matrix,
+                                       family = "binomial",
+                                       maxit = 100)
 
     summary(regression_result)
 
@@ -1037,125 +1142,6 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
                   units = 'TWh', fontSize = 12, nodeWidth = 30)
 
 
-
-
-
-
-    ########################################
-    # All
-    ########################################
-
-    # campaign_data %>%
-    #     group_by(id) %>%
-    #     summarise(converted = any(num_conversions > 0)) %>%
-    #     pull(converted) %>% sum()
-
-    campaign_data_2 <- campaign_data %>%
-        group_by(id) %>%
-        mutate(converted = any(num_conversions > 0)) %>%
-        mutate(first_converted = min(timestamp[num_conversions == 1], na.rm = TRUE)) %>%
-        ungroup() %>%
-        # this is getting unique channel, but perhaps have an option not to get unique
-        # need to do this after conversion logic above because if the person converts on the nth time
-        # for a particular channel, this will have filtered out their conversion event
-        group_by(id, step) %>%
-        filter(row_number(timestamp) == 1) %>%
-        ungroup() %>%
-        filter(is.na(first_converted) | timestamp <= first_converted) %>%
-        select(-first_converted) %>%
-        arrange(id, timestamp)
-
-    # campaign_data_2 %>%
-    #     group_by(id) %>%
-    #     summarise(converted = any(converted)) %>%
-    #     pull(converted) %>% sum()
-
-    bounced_cookies <- campaign_data_2 %>%
-        filter(!converted) %>%
-        group_by(id) %>%
-        summarise(timestamp = max(timestamp),
-                  step = 'Bounced',
-                  converted=FALSE)
-    bounced_cookies$timestamp <- bounced_cookies$timestamp + seconds(1)
-
-    converted_cookies <- campaign_data_2 %>%
-        filter(converted) %>%
-        group_by(id) %>%
-        summarise(timestamp = max(timestamp),
-                  step = 'Converted',
-                  converted=TRUE)
-    converted_cookies$timestamp <- converted_cookies$timestamp + seconds(1)
-
-
-    campaign_data_t <- campaign_data_2 %>%
-        select(id, timestamp, step, converted) %>%
-        bind_rows(bounced_cookies) %>%
-        bind_rows(converted_cookies) %>%
-        arrange(id, timestamp) %>%
-        group_by(id) %>%
-        mutate(visit_index = row_number(timestamp),
-               visit_index_rev = rev(visit_index)) %>%
-        ungroup() %>%
-        select(id, step, visit_index, visit_index_rev, converted)
-
-# comment this out to get bounced
-campaign_data_t <- campaign_data_t %>% filter(converted)
-
-    campaign_data_t <- campaign_data_t %>%
-        unite(channel_source, c(step, visit_index)) %>%
-        group_by(id) %>%
-        mutate(channel_target = lead(channel_source)) %>%
-        ungroup() %>%
-        filter(!is.na(channel_target)) %>%
-        mutate(channel_target = case_when(
-            str_detect(channel_target, 'Bounced') ~ 'Bounced',
-            str_detect(channel_target, 'Converted') ~ 'Converted',
-            TRUE ~ channel_target
-        ))
-
-    campaign_data_t <- campaign_data_t %>%
-        unite(step, c(channel_source, channel_target), remove = FALSE) %>%
-        group_by(step, channel_source, channel_target) %>%
-        summarise(n=n(),
-                  n_d=n_distinct(id)) %>%
-        ungroup()
-
-
-    #campaign_data_t %>% View()
-
-    unique_nodes <- bind_rows(campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% select(channel_source, n) %>% rename(channel_name=channel_source),
-              campaign_data_t %>% count(channel_target, wt=n) %>% arrange(n) %>% select(channel_target, n) %>% rename(channel_name=channel_target)) %>%
-        count(channel_name, wt=n) %>%
-        arrange(desc(n)) %>%
-        pull(channel_name)
-
-    #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
-    #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
-    #unique_nodes <- unique(c(campaign_data_t$channel_source, campaign_data_t$channel_target))
-    # target_nodes <- unique(campaign_data_t$channel_target)
-
-    source_indexes <- match(campaign_data_t$channel_source, unique_nodes) - 1
-    target_indexes <- match(campaign_data_t$channel_target, unique_nodes) - 1
-
-    campaign_data_t$source <- source_indexes
-    campaign_data_t$target <- target_indexes
-
-    unique_nodes <- str_remove(string=unique_nodes, pattern = "_.*")
-    sankey_nodes_df <- data.frame(name=c(unique_nodes))
-
-    color_string <- rt_str_collapse(rt_colors(),.surround = '"', .separate = ", ")
-    ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
-    #campaign_data_t %>% View()
-    #sankey_nodes_df %>% View()
-    sankeyNetwork(Links = campaign_data_t,
-                  Nodes = sankey_nodes_df,
-                  Source = 'source',
-                  Target = 'target',
-                  Value = 'n',
-                  NodeID = 'name',
-                  colourScale = ColourScal,
-                  #units = 'TWh',
-                  fontSize = 12, nodeWidth = 30)
 
 
 
@@ -1399,4 +1385,12 @@ campaign_data_t <- campaign_data_t %>% filter(converted)
     sankeyNetwork(Links = energy$links, Nodes = energy$nodes, Source = 'source',
                   Target = 'target', Value = 'value', NodeID = 'name',
                   LinkGroup = 'energy_type', NodeGroup = NULL)
+
+})
+
+
+
+
+
+
 
