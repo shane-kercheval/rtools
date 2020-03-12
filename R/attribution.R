@@ -390,7 +390,7 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
 #'
 #' @importFrom ChannelAttribution heuristic_models
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr rename inner_join mutate case_when select
+#' @importFrom dplyr rename inner_join mutate select
 #' @importFrom tidyr pivot_longer
 #' @importFrom stringr str_replace str_ends str_remove
 #'
@@ -453,8 +453,6 @@ rt_get_channel_attribution <- function(.path_data,
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr mutate left_join
 #' @importFrom forcats fct_reorder
-#' @importFrom tidyr
-#' @importFrom stringr
 #' @importFrom ggplot2 ggplot geom_col position_dodge scale_fill_manual theme_light theme labs geom_text aes facet_wrap
 #'
 #' @export
@@ -585,8 +583,8 @@ rt_get_any_touch_attribution <- function(.campaign_data,
 #' @param attribution_models dataframe with columns `channel_name | xxx_conversions | xxx_value`
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr mutate select
-#' @importFrom tidyr pivot_longer case_when
+#' @importFrom dplyr mutate select case_when
+#' @importFrom tidyr pivot_longer
 #' @importFrom stringr str_ends str_remove
 #'
 #' @export
