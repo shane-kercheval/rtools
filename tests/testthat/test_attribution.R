@@ -811,45 +811,111 @@ test_that("rt_get_any_touch_attribution2", {
 
 
 ####################
-    path_matrix <- campaign_data %>%
-        select(.path_id, step) %>%
-        distinct() %>%
-        mutate(visit=1) %>%
+
+campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+    test_helper__campaign_add_conversions() %>%
+    # only care about the first conversion since it is percent converted
+    rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
+
+    touch_type <- "any touch"
+    if(touch_type == "first touch") {
+
+        path_matrix <- campaign_data %>%
+            select(.path_id, timestamp, step) %>%
+            distinct() %>%
+            mutate(visit=1) %>%
+            group_by(.path_id) %>%
+            filter(row_number(timestamp) == 1) %>%
+            ungroup()
+
+    } else if(touch_type == "last touch") {
+        path_matrix <- campaign_data %>%
+            select(.path_id, timestamp, step) %>%
+            distinct() %>%
+            mutate(visit=1) %>%
+            group_by(.path_id) %>%
+            filter(row_number(timestamp) == max(row_number(timestamp))) %>%
+            ungroup()
+
+    } else if(touch_type == "any touch") {
+
+        path_matrix <- campaign_data %>%
+            select(.path_id, step) %>%
+            distinct() %>%
+            mutate(visit=1)
+
+    } else {
+        stopifnot(FALSE)
+    }
+
+    path_matrix <- path_matrix %>%
         pivot_wider(names_from = step,
-                                    values_from=visit,
-                                    values_fill = list(visit = 0)) %>%
+                    values_from=visit,
+                    values_fill = list(visit = 0)) %>%
         inner_join(campaign_data %>%
                        group_by(.path_id) %>%
                        summarise(converted = any(num_conversions > 0)),
-                   by = '.path_id') %>%
-        select(-.path_id)
+                   by = '.path_id') #%>%
+        #select(-.path_id)
 
-    table(ifelse(path_matrix$Facebook > 0, 'Yes', 'No'),
-          ifelse(path_matrix$converted > 0, 'Converted', 'Not Converted'))
+    rt_stopif(any(duplicated(path_matrix$.path_id)))
+    if(touch_type == "any touch") {
 
-    path_matrix %>% rt_peak(1000)
+        path_matrix <- path_matrix %>% select(-.path_id)
+    } else {
 
-    total_touches <- colSums(path_matrix %>% select(-converted))
-    total_conversions <- colSums(path_matrix %>% filter(converted) %>% select(-converted))
-    percent_conversions <- total_conversions / total_touches
+        path_matrix <- path_matrix %>% select(-.path_id, -timestamp)
+    }
 
-    data.frame(channel_name=names(percent_conversions),
-                  percent_conversions=percent_conversions,
-                  total_touches=total_touches) %>%
-        ggplot(aes(x=total_touches, y =percent_conversions)) +
-        geom_point() +
-        geom_text(aes(label = channel_name), vjust=-1) +
-        expand_limits(y=c(0, 1), x=0) +
-        theme_light()
+    show_conversion_rate_vs_touches <- function(total_touches,
+                                                total_conversions,
+                                                markov_model_results=NULL) {
+        percent_conversions <- total_conversions / total_touches
+        conversion_df <- data.frame(channel_name=names(percent_conversions),
+                   percent_conversions=percent_conversions,
+                   total_touches=total_touches)
 
-    data.frame(channel_name=names(percent_conversions),
-               percent_conversions=percent_conversions,
-               total_touches=total_touches) %>%
-        ggplot(aes(x=total_touches, y =percent_conversions)) +
-        geom_point() +
-        geom_text(aes(label = channel_name), vjust=-1) +
-        #expand_limits(y=c(0, 1), x=0) +
-        theme_light()
+        if(is.null(markov_model_results)) {
+
+            expand_scale_multiplier <- 0.1
+
+        } else {
+            expand_scale_multiplier <- 0.2
+
+            conversion_df <- conversion_df %>%
+                inner_join(markov_model_results$removal_effects, by='channel_name')
+        }
+
+        plot_object <- conversion_df %>%
+            filter(channel_name != 'converted') %>%
+            ggplot(aes(x=total_touches, y =percent_conversions)) +
+            geom_text(aes(label = channel_name), vjust=-1) +
+            scale_y_continuous(expand=expand_scale(mult=expand_scale_multiplier),
+                               breaks = pretty_breaks(10), labels = percent_format()) +
+            scale_x_continuous(expand=expand_scale(mult=expand_scale_multiplier),
+                               breaks = pretty_breaks(10), labels = rt_pretty_numbers_short) +
+            #expand_limits(y=c(0, 1), x=0) +
+            theme_light()
+
+        if(!is.null(markov_model_results)) {
+            plot_object <- plot_object +
+                geom_text(aes(label = paste0("(", round(removal_effects_conversion, 3), ")")),
+                          vjust=2,
+                          size=3.3) +
+                geom_point(aes(size=removal_effects_conversion)) +
+                labs(size='Markov Removal Effects')
+        } else {
+            plot_object <- plot_object +
+                geom_point()
+        }
+
+        return (plot_object)
+    }
+
+    total_touches <- colSums(path_matrix)
+    total_conversions <- colSums(path_matrix %>% filter(converted))
+
+    show_conversion_rate_vs_touches(total_touches, total_conversions)
 
     campaign_paths <- campaign_data %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
@@ -857,24 +923,7 @@ test_that("rt_get_any_touch_attribution2", {
     markov_model_results <- rt_markov_model(campaign_paths)
 
     markov_model_results$removal_effects
-
-    data.frame(channel_name=names(percent_conversions),
-               percent_conversions=percent_conversions,
-               total_touches=total_touches) %>%
-        inner_join(markov_model_results$removal_effects, by='channel_name') %>%
-        ggplot(aes(x=total_touches, y =percent_conversions)) +
-        geom_point(aes(size=removal_effects_conversion)) +
-        geom_text(aes(label = channel_name),
-                  vjust=-1,
-                  size=3.3) +
-        geom_text(aes(label = paste0("(", round(removal_effects_conversion, 3), ")")),
-                  vjust=2,
-                  size=3.3) +
-        theme_light() +
-        labs(size = 'Remove Effects')
-
-    colnames(path_matrix)
-    summary(path_matrix)
+    show_conversion_rate_vs_touches(total_touches, total_conversions, markov_model_results)
 
 
 
@@ -964,9 +1013,9 @@ test_that("rt_get_any_touch_attribution2", {
 
 
     first_last_channel <- campaign_data_first_last %>%
-        group_by(cookie) %>%
-        summarise(first_channel = channel[visit_index == 1],
-                  last_channel = channel[visit_index_rev == 1])
+        group_by(id) %>%
+        summarise(first_channel = step[visit_index == 1],
+                  last_channel = step[visit_index_rev == 1])
 
     sankey_dataframe <- first_last_channel %>%
         mutate(path = paste(first_channel, '-', last_channel)) %>%
@@ -1014,62 +1063,62 @@ test_that("rt_get_any_touch_attribution2", {
     ########################################
 
     campaign_data %>%
-        group_by(cookie) %>%
-        summarise(converted = any(conversion > 0)) %>%
+        group_by(id) %>%
+        summarise(converted = any(num_conversions > 0)) %>%
         pull(converted) %>% sum()
 
     campaign_data_2 <- campaign_data %>%
-        group_by(cookie) %>%
-        mutate(converted = any(conversion > 0)) %>%
-        mutate(first_converted = min(time[conversion == 1], na.rm = TRUE)) %>%
+        group_by(id) %>%
+        mutate(converted = any(num_conversions > 0)) %>%
+        mutate(first_converted = min(timestamp[num_conversions == 1], na.rm = TRUE)) %>%
         ungroup() %>%
         # this is getting unique channel, but perhaps have an option not to get unique
         # need to do this after conversion logic above because if the person converts on the nth time
         # for a particular channel, this will have filtered out their conversion event
-        group_by(cookie, channel) %>%
-        filter(row_number(time) == 1) %>%
+        group_by(id, step) %>%
+        filter(row_number(timestamp) == 1) %>%
         ungroup() %>%
-        filter(is.na(first_converted) | time <= first_converted) %>%
+        filter(is.na(first_converted) | timestamp <= first_converted) %>%
         select(-first_converted)
 
     campaign_data_2 %>%
-        group_by(cookie) %>%
+        group_by(id) %>%
         summarise(converted = any(converted)) %>%
         pull(converted) %>% sum()
 
     bounced_cookies <- campaign_data_2 %>%
         filter(!converted) %>%
-        group_by(cookie) %>%
-        summarise(time = max(time),
+        group_by(id) %>%
+        summarise(timestamp = max(timestamp),
                   channel = 'Bounced',
                   converted=FALSE)
-    bounced_cookies$time <- bounced_cookies$time + seconds(1)
+    bounced_cookies$timestamp <- bounced_cookies$timestamp + seconds(1)
 
     converted_cookies <- campaign_data_2 %>%
         filter(converted) %>%
-        group_by(cookie) %>%
-        summarise(time = max(time),
-                  channel = 'Converted',
+        group_by(id) %>%
+        summarise(timestamp = max(timestamp),
+                  step = 'Converted',
                   converted=TRUE)
-    converted_cookies$time <- converted_cookies$time + seconds(1)
+    converted_cookies$timestamp <- converted_cookies$timestamp + seconds(1)
 
 
     campaign_data_t <- campaign_data_2 %>%
-        select(cookie, time, channel, converted) %>%
+        select(id, timestamp, step, converted) %>%
         bind_rows(bounced_cookies) %>%
         bind_rows(converted_cookies) %>%
-        arrange(cookie, time) %>%
-        group_by(cookie) %>%
-        mutate(visit_index = row_number(time),
+        arrange(id, timestamp) %>%
+        group_by(id) %>%
+        mutate(visit_index = row_number(timestamp),
                visit_index_rev = rev(visit_index)) %>%
         ungroup() %>%
-        select(cookie, channel, visit_index, visit_index_rev, converted)
+        select(id, step, visit_index, visit_index_rev, converted)
 
     campaign_data_t <- campaign_data_t %>% filter(converted)
 
     campaign_data_t <- campaign_data_t %>%
-        unite(channel_source, c(channel, visit_index)) %>%
-        group_by(cookie) %>%
+        unite(channel_source, c(step, visit_index)) %>%
+        group_by(id) %>%
         mutate(channel_target = lead(channel_source)) %>%
         ungroup() %>%
         filter(!is.na(channel_target)) %>%
@@ -1083,7 +1132,7 @@ test_that("rt_get_any_touch_attribution2", {
         unite(step, c(channel_source, channel_target), remove = FALSE) %>%
         group_by(step, channel_source, channel_target) %>%
         summarise(n=n(),
-                  n_d=n_distinct(cookie)) %>%
+                  n_d=n_distinct(id)) %>%
         ungroup()
 
 
@@ -1099,8 +1148,6 @@ test_that("rt_get_any_touch_attribution2", {
     #campaign_data_t %>% count(channel_source, wt=n) %>% arrange(n) %>% pull(channel_source)
     #unique_nodes <- unique(c(campaign_data_t$channel_source, campaign_data_t$channel_target))
     # target_nodes <- unique(campaign_data_t$channel_target)
-
-
 
     source_indexes <- match(campaign_data_t$channel_source, unique_nodes) - 1
     target_indexes <- match(campaign_data_t$channel_target, unique_nodes) - 1
