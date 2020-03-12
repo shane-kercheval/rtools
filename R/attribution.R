@@ -63,7 +63,7 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
 #'         The step that is before the conversion event (regardless of how much before) gets credit (last-touch) for the conversion.
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr arrange group_by ungroup mutate lag lead row_number n select filter contains
+#' @importFrom dplyr arrange group_by ungroup mutate lead row_number n select filter contains
 #'
 #' @export
 rt_clickstream_to_attribution <- function(.clickstream_data) {
@@ -80,7 +80,7 @@ rt_clickstream_to_attribution <- function(.clickstream_data) {
         # this will allow us to identify the event immediately before (or with the same timestamp as) the
         # conversion event (arranging by num_conversions ensures that if the corresponding step and
         # conversion event have the same timestamp, the conversion event will be ordered after)
-        mutate(temp___lag_cumulative_conv=lag(cumsum(num_conversions)),
+        mutate(temp___lag_cumulative_conv=dplyr::lag(cumsum(num_conversions)),
                temp___path_no = ifelse(is.na(temp___lag_cumulative_conv), 0, temp___lag_cumulative_conv) + 1) %>%
         ungroup() %>%
         group_by(id, temp___path_no) %>%
@@ -121,7 +121,7 @@ rt_clickstream_to_attribution <- function(.clickstream_data) {
 #' @param .sort if true, the df is sorted by id, timestamp, conversion_values, & num_conversions; the dataframe needs to be sorted in this way to work, but this option let's the user avoid this action if it has already been done
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr arrange group_by ungroup mutate filter select lag
+#' @importFrom dplyr arrange group_by ungroup mutate filter select
 #'
 #' @export
 rt_campaign_add_path_id <- function(.campaign_data,
@@ -158,7 +158,7 @@ rt_campaign_add_path_id <- function(.campaign_data,
         .campaign_data <- .campaign_data %>%
             group_by(!!sym(.id)) %>%
             # arrange(time) %>%
-            mutate(.___path_no___ = ifelse(is.na(lag(cumsum(!!sym(.num_conversions)))), 0, lag(cumsum(!!sym(.num_conversions)))) + 1) %>%
+            mutate(.___path_no___ = ifelse(is.na(dplyr::lag(cumsum(!!sym(.num_conversions)))), 0, dplyr::lag(cumsum(!!sym(.num_conversions)))) + 1) %>%
             ungroup() %>%
             mutate(.path_id = paste0(!!sym(.id), '-', .___path_no___)) %>%
             select(-.___path_no___)
@@ -182,7 +182,7 @@ rt_campaign_add_path_id <- function(.campaign_data,
 #' @param .symbol the symbol to separate the steps
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom dplyr arrange group_by ungroup mutate filter select lag
+#' @importFrom dplyr arrange group_by ungroup mutate filter select
 #'
 #' @export
 rt_campaign_to_markov_paths <- function(.campaign_data,
