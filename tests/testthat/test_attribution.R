@@ -805,11 +805,6 @@ test_that("rt_get_any_touch_attribution2", {
 })
 
 
-
-
-
-
-
 ####################
 
 campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
@@ -976,18 +971,6 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
 
 
 
-
-
-
-
-
-
-    markov_attribution$result
-
-
-
-    campaign_data %>% rt_peak()
-
     campaign_data %>%
         head(400) %>%
         group_by(cookie) %>%
@@ -1062,10 +1045,10 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
     # All
     ########################################
 
-    campaign_data %>%
-        group_by(id) %>%
-        summarise(converted = any(num_conversions > 0)) %>%
-        pull(converted) %>% sum()
+    # campaign_data %>%
+    #     group_by(id) %>%
+    #     summarise(converted = any(num_conversions > 0)) %>%
+    #     pull(converted) %>% sum()
 
     campaign_data_2 <- campaign_data %>%
         group_by(id) %>%
@@ -1079,18 +1062,19 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         filter(row_number(timestamp) == 1) %>%
         ungroup() %>%
         filter(is.na(first_converted) | timestamp <= first_converted) %>%
-        select(-first_converted)
+        select(-first_converted) %>%
+        arrange(id, timestamp)
 
-    campaign_data_2 %>%
-        group_by(id) %>%
-        summarise(converted = any(converted)) %>%
-        pull(converted) %>% sum()
+    # campaign_data_2 %>%
+    #     group_by(id) %>%
+    #     summarise(converted = any(converted)) %>%
+    #     pull(converted) %>% sum()
 
     bounced_cookies <- campaign_data_2 %>%
         filter(!converted) %>%
         group_by(id) %>%
         summarise(timestamp = max(timestamp),
-                  channel = 'Bounced',
+                  step = 'Bounced',
                   converted=FALSE)
     bounced_cookies$timestamp <- bounced_cookies$timestamp + seconds(1)
 
@@ -1114,7 +1098,8 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         ungroup() %>%
         select(id, step, visit_index, visit_index_rev, converted)
 
-    campaign_data_t <- campaign_data_t %>% filter(converted)
+# comment this out to get bounced
+campaign_data_t <- campaign_data_t %>% filter(converted)
 
     campaign_data_t <- campaign_data_t %>%
         unite(channel_source, c(step, visit_index)) %>%
@@ -1155,8 +1140,6 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
     campaign_data_t$source <- source_indexes
     campaign_data_t$target <- target_indexes
 
-
-
     unique_nodes <- str_remove(string=unique_nodes, pattern = "_.*")
     sankey_nodes_df <- data.frame(name=c(unique_nodes))
 
@@ -1173,6 +1156,31 @@ campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
                   colourScale = ColourScal,
                   #units = 'TWh',
                   fontSize = 12, nodeWidth = 30)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
