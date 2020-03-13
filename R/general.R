@@ -518,3 +518,46 @@ rt_peak <- function(.df, .n=25) {
 
     return (.df %>% head(.n) %>% as.data.frame())
 }
+
+#' returns year and month factors in list
+#'
+#' @param .date_vector date vector
+#' @param .abbreviate use month abbreviations
+#'
+#' @importFrom lubridate year
+#'
+#' @export
+rt_get_year_month_factors <- function(.date_vector, .abbreviate=FALSE) {
+
+    if(.abbreviate) {
+    
+        month_names <- month.abb
+
+    } else {
+
+        month_names <- month.name
+    }
+    
+    return(list(
+        year_factor=as.factor(as.character(year(.date_vector))),
+        month_factor=factor(months(.date_vector, abbreviate = .abbreviate), levels=month_names)
+        )
+    )
+}
+
+#' as `[.column]_year` and `[.column]_month` factor variables to .data based off of date column .column
+#'
+#' @param .data date vector
+#' @param .column name of date column in .data
+#' @param .abbreviate use month abbreviations
+#'
+#' @export
+rt_add_year_month_factors <- function(.data, .column, .abbreviate=FALSE) {
+
+    .column <- deparse(substitute(.column))
+    year_month_factors <- rt_get_year_month_factors(.data[[.column]], .abbreviate)
+    .data[[paste0(.column, '_year')]] <- year_month_factors$year_factor
+    .data[[paste0(.column, '_month')]] <- year_month_factors$month_factor
+    
+    return (.data)
+}

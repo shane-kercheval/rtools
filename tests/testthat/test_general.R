@@ -1,5 +1,6 @@
 context('General')
 library(testthat)
+library(lubridate)
 library(dplyr)
 
 test_that("rt_get_date_fields_lubridate", {
@@ -564,4 +565,41 @@ test_that("rt_group_by_all_of", {
     expected <- dataset %>% group_by(`Default Column`) %>% summarise(n=n())
     actual <- dataset %>% rt_group_by_all_of('Default Column') %>% summarise(n=n())
     expect_true(rt_are_dataframes_equal(expected, actual))
+})
+
+test_that("rt_get_year_month_factors", {
+
+    date_vector <- ymd('2020-01-01') + months(0:23)
+
+    factor_list <- rt_get_year_month_factors(date_vector, .abbreviate = FALSE)
+    expect_identical(levels(factor_list$year_factor), c('2020', '2021'))
+    expect_identical(as.character(factor_list$year_factor), c(rep('2020', 12), rep('2021', 12)))
+    expect_identical(levels(factor_list$month_factor), month.name)
+    expect_identical(as.character(factor_list$month_factor), rep(month.name, 2))
+
+    factor_list <- rt_get_year_month_factors(date_vector, .abbreviate = TRUE)
+    expect_identical(levels(factor_list$year_factor), c('2020', '2021'))
+    expect_identical(as.character(factor_list$year_factor), c(rep('2020', 12), rep('2021', 12)))
+    expect_identical(levels(factor_list$month_factor), month.abb)
+    expect_identical(as.character(factor_list$month_factor), rep(month.abb, 2))
+
+})
+
+test_that("rt_add_year_month_factors", {
+
+    date_vector <- ymd('2020-01-01') + months(0:23)
+    date_df <- data.frame(date_column=date_vector)
+    date_df <- date_df %>% rt_add_year_month_factors(date_column, .abbreviate = FALSE)
+    expect_identical(levels(date_df$date_column_year), c('2020', '2021'))
+    expect_identical(as.character(date_df$date_column_year), c(rep('2020', 12), rep('2021', 12)))
+    expect_identical(levels(date_df$date_column_month), month.name)
+    expect_identical(as.character(date_df$date_column_month), rep(month.name, 2))
+
+    date_vector <- ymd('2020-01-01') + months(0:23)
+    date_df <- data.frame(date_column=date_vector)
+    date_df <- date_df %>% rt_add_year_month_factors(date_column, .abbreviate = TRUE)
+    expect_identical(levels(date_df$date_column_year), c('2020', '2021'))
+    expect_identical(as.character(date_df$date_column_year), c(rep('2020', 12), rep('2021', 12)))
+    expect_identical(levels(date_df$date_column_month), month.abb)
+    expect_identical(as.character(date_df$date_column_month), rep(month.abb, 2))
 })
