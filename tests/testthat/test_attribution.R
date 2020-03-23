@@ -805,6 +805,182 @@ test_that("rt_get_any_touch_attribution2", {
 })
 
 test_that("TODO", {
+    skip("sandbox")
+
+    ampaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions()
+
+    steps <- campaign_data %>%
+        select(step, step_type) %>%
+        distinct()
+
+    channel_categories <- steps$step_type
+    names(channel_categories) <- steps$step
+
+    ########
+    # first conversion: TRUE
+    # separate path_ids
+    ########
+    campaign_paths <- campaign_data %>%
+        mutate(num_conversions = ifelse(num_conversions > 0, 1, 0)) %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+    markov_model_results <- rt_markov_model(campaign_paths)
+
+
+
+    P <- markov_model_results$transition_matrix %>%
+        pivot_wider(names_from = c('channel_to'), values_from='transition_probability')
+
+    rowSums(P %>% select(-channel_from), na.rm = TRUE)
+
+    P <- P %>%
+        bind_rows(data.frame(channel_from="(conversion)")) %>%
+        bind_rows(data.frame(channel_from="(null)"))
+    P[['(start)']] <- NA
+
+    identical(sort(P$channel_from), sort(colnames(P) %>% rt_remove_val('channel_from')))
+
+    P <- P %>% select(P$channel_from) %>% as.matrix()
+    rownames(P) <- colnames(P)
+    P[is.na(P)] <- 0
+    P["(conversion)", "(conversion)"] <- 1
+    P["(null)", "(null)"] <- 1
+    rowSums(P)
+    P %>% View()
+
+    P_states <- unique()
+
+
+
+
+    matrixpower <- function(mat,k) {
+        if (k == 0) {
+
+            mat_diag <- diag(dim(mat)[1])
+            rownames(mat_diag) <- rownames(mat)
+            colnames(mat_diag) <- colnames(mat)
+            return (mat_diag)
+        }
+        if (k == 1) return(mat)
+        if (k > 1) return( mat %*% matrixpower(mat, k-1))
+    }
+
+    long_term <- matrixpower(P, 1000)
+    rowSums(long_term)
+
+    Q_absorb <- function(P, transient_states) {
+        P[transient_states, transient_states]
+    }
+
+    R_absorb <- function(P, transient_states, absorbing_states) {
+        P[transient_states, absorbing_states]
+    }
+    fundamental_matrix <- function(P, transient_states) {
+        Q <- Q_absorb(P, transient_states)
+        return (solve(diag(length(transient_states)) - Q))
+    }
+
+    transient_states <- 1:6
+    absorbing_states <- 7:8
+
+    Q <- Q_absorb(P, transient_states)
+    Q
+
+    R <- R_absorb(P, transient_states, absorbing_states)
+    R
+
+    (fund_matrix <- fundamental_matrix(P, transient_states))
+    rowSums(fund_matrix)
+    fund_matrix %*% R
+    long_term
+
+    #long_term %>% View()
+    long_term <- long_term[, c('(conversion)', '(null)')]
+    long_term
+    long_term["(start)", "(conversion)"]
+    sum(campaign_paths$num_conversions) / nrow(campaign_paths)
+
+    as.data.frame(long_term) %>%
+        mutate(channel=rownames(.)) %>%
+        filter(!str_detect(channel, "\\(")) %>%
+        ggplot(aes(channel, `(conversion)`)) +
+        geom_point()
+
+
+
+    temp <- campaign_data %>%
+        rt__mock__attribution_to_clickstream()
+    temp <- bind_rows(temp %>%
+                          select(id) %>%
+                          distinct() %>%
+                          mutate(step="(start)",
+                                 index = 0),
+                      temp %>%
+                          group_by(id) %>%
+                          mutate(index = row_number()) %>%
+                          ungroup() %>%
+                          mutate(step = ifelse(num_conversions > 0, '(conversion)', step)) %>%
+                          select(id, step, index)) %>%
+        bind_rows(temp %>%
+                      group_by(id) %>%
+                      summarise(had_conversion = any(num_conversions > 0)) %>%
+                      filter(!had_conversion) %>%
+                      select(-had_conversion) %>%
+                      mutate(step="(null)",
+                             index = 10000000)) %>%
+        arrange(id, index)
+
+    temp <- temp %>%
+        group_by(id) %>%
+        mutate(next_step = lead(step)) %>%
+        ungroup() %>%
+        mutate(next_step = case_when(
+            is.na(next_step) & step == "(conversion)" ~ "(conversion)",
+            is.na(next_step) & step == "(null)" ~ "(null)",
+            TRUE ~ next_step
+        ))
+    #mutate(next_step = ifelse(is.na(next_step), "(conversion)", next_step))
+
+    temp_table <- table(Current=temp$step, Next=temp$next_step)
+    temp_table <- temp_table / rowSums(temp_table)
+    temp_table <- temp_table[colnames(temp_table), ]
+    temp_table %>% View()
+
+
+
+    matrixpower(temp_table, 1000)[, c(1,2)]
+    long_term[rownames(temp_table),]
+
+    matrixpower(temp_table, 100) %>% View()
+    P %>% View()
+
+
+    initial_paths <- str_split(campaign_paths$path_sequence, ' > ', simplify = TRUE)[, 1]
+
+    initial_counts <- table(initial_paths)
+    # put in correct order
+    initial_counts <- initial_counts[colnames(P) %>% rt_remove_val(c("(start)", "(conversion)", "(null)"))]
+
+    initial_state <- c(0, as.numeric(initial_counts), 0, 0)
+
+    initial_state %*% matrixpower(P, 100)
+    markov_model_results$removal_effects
+
+    c(sum(initial_state), rep(0, 7)) %*% matrixpower(P, 100) %>% View()
+
+    sum(initial_state)
+    254.8636 + 3415.136
+
+    total_conversions
+    total_touches
+
+
+    sum(total_conversions)
+    sum(total_touches)
+})
+
+test_that("TODO", {
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         # only care about the first conversion since it is percent converted
