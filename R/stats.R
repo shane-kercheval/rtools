@@ -601,6 +601,7 @@ rt_plot_proportions <- function(numerators,
             labs(x=x_label,
                  y=y_label,
                  title=title,
+                 subtitle=subtitle,
                  caption=caption)
 
     } else {
