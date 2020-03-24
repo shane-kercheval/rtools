@@ -6,7 +6,7 @@
 \usage{
 rt_explore_plot_histogram(dataset, variable, comparison_variable = NULL,
   density = FALSE, num_bins = 30, x_zoom_min = NULL,
-  x_zoom_max = NULL, base_size = 11)
+  x_zoom_max = NULL, log_scale_x = FALSE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -22,6 +22,8 @@ rt_explore_plot_histogram(dataset, variable, comparison_variable = NULL,
 \item{x_zoom_min}{adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment}
 
 \item{x_zoom_max}{adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment}
+
+\item{log_scale_x}{if TRUE, applies scale_x_log10}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

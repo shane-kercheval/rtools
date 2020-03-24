@@ -1489,10 +1489,12 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 #' @param simple_mode if a comparison variable is used (and no color variable), use a single color
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param log_scale_y if TRUE, applies scale_y_log10
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge geom_hline
+#' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge geom_hline scale_y_log10
+#' @importFerom grDevices axisTicks
 #' @importFrom dplyr group_by summarise n filter bind_rows
 #' @importFrom scales pretty_breaks
 #' @export
@@ -1504,6 +1506,7 @@ rt_explore_plot_boxplot <- function(dataset,
                                     simple_mode=FALSE,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
+                                    log_scale_y=FALSE,
                                     base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
@@ -1534,7 +1537,6 @@ rt_explore_plot_boxplot <- function(dataset,
                       mapping = aes(y=y_position, x=0, group=1,
                                     label = rt_pretty_numbers_long(med)),
                       vjust=-0.5, check_overlap = TRUE) +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
             scale_x_discrete(breaks = NULL) +
             labs(caption = paste("\n", rt_pretty_numbers_long(plot_labels[['cnt']]),
                                  'Non-NA Values',
@@ -1646,7 +1648,6 @@ rt_explore_plot_boxplot <- function(dataset,
                                aes(y=!!symbol_variable,
                                    x=!!symbol_comparison_variable,
                                    color=!!symbol_color_variable)) +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
             geom_boxplot(position=position_dodge(0.9)) +
             geom_text(data = aggregations,
                       mapping = aes(y=median,
@@ -1689,6 +1690,23 @@ rt_explore_plot_boxplot <- function(dataset,
         }
     }
 
+    custom_breaks <- function(n = 10){
+        function(x) {
+            axisTicks(log10(range(x, na.rm = TRUE)), log = TRUE, n = n)
+        }
+    }
+
+    if(log_scale_y) {
+
+        boxplot_plot <- boxplot_plot +
+            scale_y_log10(breaks=custom_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
+
+    } else {
+
+        boxplot_plot <- boxplot_plot +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
+    }
+
     # zoom in on graph is parameters are set
     if(!rt_is_null_na_nan(y_zoom_min) || !rt_is_null_na_nan(y_zoom_max)) {
         # if one of the zooms is specified then we hae to provide both, so get corresponding min/max
@@ -1719,10 +1737,12 @@ rt_explore_plot_boxplot <- function(dataset,
 #' @param num_bins the number of bins that the histogram will use
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
+#' @param log_scale_x if TRUE, applies scale_x_log10
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_histogram geom_freqpoly geom_density labs theme_light coord_cartesian scale_color_manual
+#' @importFrom ggplot2 ggplot aes geom_histogram geom_freqpoly geom_density labs theme_light coord_cartesian scale_color_manual scale_y_continuous scale_x_log10
+#' @importFrom scales pretty_breaks
 #' @export
 rt_explore_plot_histogram <- function(dataset,
                                       variable,
@@ -1731,42 +1751,97 @@ rt_explore_plot_histogram <- function(dataset,
                                       num_bins=30,
                                       x_zoom_min=NULL,
                                       x_zoom_max=NULL,
+                                      log_scale_x=FALSE,
                                       base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
 
-    # if no comparison_variable, then do histogram with density; otherwise do histogram with group
+    bin_width <- 2 * IQR(dataset[[variable]], na.rm = TRUE) / length(dataset[[variable]])^(1/3)
+
     if(is.null(comparison_variable)) {
 
-        histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
-            geom_histogram(bins = num_bins) +
-            geom_density(aes(y = ..count..), col='red') +
-            labs(title=paste0('Histogram & Density Plot of `', variable, '`'),
-                 x=variable) +
-            theme_light(base_size = base_size)
+        if(log_scale_x) {
+
+            histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
+                geom_histogram(bins=num_bins) +
+                scale_x_log10(labels = rt_pretty_numbers_short)
+        } else {
+            histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
+                geom_histogram(binwidth = bin_width) +
+                geom_density(aes(y = bin_width * ..count..), col='red')
+        }
+
     } else {
 
-        symbol_comparison_variable <- sym(comparison_variable)  # because we are using string variables
-        histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable,
-                                              color=!!symbol_comparison_variable))
+        # FYI should include NA
+        symbol_facet_variable <- sym(comparison_variable)
+        unique_facet_values <- unique(dataset[[comparison_variable]])
+        # preserve order
+        if(is.factor(unique_facet_values)) {
 
-        if(density) {
+            if(any(is.na(unique_facet_values))) {
 
-            histogram_plot <- histogram_plot +
-                geom_density()
+                unique_facet_values <- c(levels(unique_facet_values), "<NA>")
+            } else {
+
+                unique_facet_values <- levels(unique_facet_values)
+            }
+        } else {
+
+            if(any(is.na(unique_facet_values))) {
+
+                unique_facet_values <- c(unique_facet_values %>% rt_remove_val(NA), "<NA>")
+            }
+        }
+
+        unique_facet_values <- paste(comparison_variable, '-', unique_facet_values)
+
+        dataset[[comparison_variable]] <- ifelse(is.na(dataset[[comparison_variable]]),
+                                                 paste(comparison_variable, '- <NA>'),
+                                                 paste(comparison_variable, '-', dataset[[comparison_variable]]))
+
+        dataset[[comparison_variable]] <- factor(dataset[[comparison_variable]], levels=unique_facet_values)
+
+        if(log_scale_x) {
+
+            histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable, fill=!!sym(comparison_variable))) +
+                geom_histogram(bins=num_bins) +
+                scale_x_log10(labels = rt_pretty_numbers_short)
 
         } else {
 
-            histogram_plot <- histogram_plot +
-                geom_freqpoly(binwidth= 100 / num_bins)
+            histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable, fill=!!sym(comparison_variable))) +
+                geom_histogram(binwidth = bin_width) +
+                geom_density(aes(y = bin_width * ..count..), col='red')
         }
 
         histogram_plot <- histogram_plot +
-            scale_color_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132') +
-            labs(title=paste0('Distribution of `', variable, '` by `', comparison_variable, '`'),
-                 x=variable,
-                 color=comparison_variable) +
-            theme_light(base_size = base_size)
+            facet_wrap(facets = paste0("`",comparison_variable, "`"),
+                       scales = 'free_y',
+                       ncol = 3) +
+            scale_fill_manual(values=c(rt_colors(), rt_colors()), na.value = '#2A3132')
+    }
+
+    histogram_plot <- histogram_plot +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+        labs(title=paste0('Histogram of `', variable, '`'),
+             x=variable) +
+        theme_light(base_size = base_size) +
+        theme(legend.position = 'none')
+
+    if(!log_scale_x) {
+
+        if(is.null(comparison_variable)) {
+
+            num_breaks <- 10
+
+        } else {
+
+            num_breaks <- 5
+        }
+
+        histogram_plot <- histogram_plot +
+            scale_x_continuous(breaks=pretty_breaks(num_breaks), labels = rt_pretty_numbers_short)
     }
 
     # zoom in on graph is parameters are set
@@ -1805,10 +1880,13 @@ rt_explore_plot_histogram <- function(dataset,
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param log_scale_x if TRUE, applies scale_x_log10
+#' @param log_scale_y if TRUE, applies scale_y_log10
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
-#' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text
+#' @importFrom ggplot2 ggplot aes geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text scale_x_log10 scale_y_log10
+#' @importFrom grDevices axisTicks
 #' @importFrom scales pretty_breaks
 #' @importFrom dplyr arrange desc
 #' @importFrom tidyr unite
@@ -1826,6 +1904,8 @@ rt_explore_plot_scatter <- function(dataset,
                                     x_zoom_max=NULL,
                                     y_zoom_min=NULL,
                                     y_zoom_max=NULL,
+                                    log_scale_x=FALSE,
+                                    log_scale_y=FALSE,
                                     base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
@@ -1888,9 +1968,35 @@ rt_explore_plot_scatter <- function(dataset,
         scatter_plot <- scatter_plot + geom_point(alpha=alpha)
     }
 
+    custom_breaks <- function(n = 10){
+        function(x) {
+            axisTicks(log10(range(x, na.rm = TRUE)), log = TRUE, n = n)
+        }
+    }
+
+    if(log_scale_x) {
+
+        scatter_plot <- scatter_plot +
+            scale_x_log10(breaks=custom_breaks(10), labels = rt_pretty_numbers_short)
+
+    } else {
+
+        scatter_plot <- scatter_plot +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+    }
+
+    if(log_scale_y) {
+
+        scatter_plot <- scatter_plot +
+            scale_y_log10(breaks=custom_breaks(10), labels = rt_pretty_numbers_short)
+
+    } else {
+
+        scatter_plot <- scatter_plot +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+    }
+
     scatter_plot <- scatter_plot +
-        scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
         theme_light(base_size = base_size) +
         labs(x=comparison_variable,
              y=variable)
@@ -1988,11 +2094,13 @@ rt_explore_plot_scatter <- function(dataset,
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
 #' @param y_zoom_min adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment
 #' @param y_zoom_max adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment
+#' @param log_scale_x if TRUE, applies scale_x_log10
+#' @param log_scale_y if TRUE, applies scale_y_log10
 #' @param base_size uses ggplot's base_size parameter for controling the size of the text
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr group_by filter n ungroup summarise rename
-#' @importFrom ggplot2 ggplot aes geom_boxplot geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text labs theme element_text geom_line scale_x_continuous expand_limits geom_ribbon
+#' @importFrom ggplot2 ggplot aes geom_boxplot geom_point theme_light coord_cartesian geom_jitter position_jitter scale_y_continuous scale_color_manual geom_text labs theme element_text geom_line scale_x_continuous expand_limits geom_ribbon scale_x_log10 scale_y_log10
 #' @importFrom scales pretty_breaks
 #' @importFrom rsample bootstraps
 #' @importFrom tidyr unnest
@@ -2010,6 +2118,8 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
                                                  x_zoom_max=NULL,
                                                  y_zoom_min=NULL,
                                                  y_zoom_max=NULL,
+                                                 log_scale_x=FALSE,
+                                                 log_scale_y=FALSE,
                                                  base_size=11) {
 
     symbol_variable <- sym(variable)  # because we are using string variables
@@ -2041,7 +2151,6 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
                                     label = rt_pretty_numbers_long(count)),
                       vjust=1.3,
                       check_overlap = TRUE) +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
             labs(title=paste0("`", variable, "` grouped by `", comparison_variable, "`"),
                  caption="\n# above median line is the median value, # below median line is the size of the group.",
                  x=comparison_variable,
@@ -2056,8 +2165,6 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
             summarise(agg_variable = aggregation_function(!!symbol_variable))
         aggregate_plot <- ggplot(t, aes(x=!!symbol_comparison_variable)) +
             geom_line(aes(y=agg_variable)) +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
-            expand_limits(y=0) +
             labs(title = paste0(aggregation_function_name, " of `", variable, "` by `", comparison_variable, "`"),
                  y = paste0(aggregation_function_name, " of `", variable, "`"),
                  x = comparison_variable)
@@ -2099,8 +2206,29 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
         }
     }
 
+    if(log_scale_x) {
+
+        aggregate_plot <- aggregate_plot +
+            scale_x_log10()
+
+    } else {
+
+        aggregate_plot <- aggregate_plot +
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+    }
+
+    if(log_scale_y) {
+
+        aggregate_plot <- aggregate_plot +
+            scale_y_log10()
+
+    } else {
+
+        aggregate_plot <- aggregate_plot +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+    }
+
     aggregate_plot <- aggregate_plot +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
         theme_light(base_size = base_size)
 
     x_zooms <- NULL

@@ -9,7 +9,8 @@ rt_explore_plot_aggregate_2_numerics(dataset, variable,
   aggregation_function_name = NULL, aggregation_count_minimum = 30,
   show_resampled_confidence_interval = FALSE, show_points = FALSE,
   show_labels = FALSE, x_zoom_min = NULL, x_zoom_max = NULL,
-  y_zoom_min = NULL, y_zoom_max = NULL, base_size = 11)
+  y_zoom_min = NULL, y_zoom_max = NULL, log_scale_x = FALSE,
+  log_scale_y = FALSE, base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe}
@@ -44,6 +45,10 @@ to show a confidence interval based on resampling}
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
+
+\item{log_scale_x}{if TRUE, applies scale_x_log10}
+
+\item{log_scale_y}{if TRUE, applies scale_y_log10}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

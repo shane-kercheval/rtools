@@ -6,7 +6,8 @@
 \usage{
 rt_explore_plot_boxplot(dataset, variable, comparison_variable = NULL,
   color_variable = NULL, facet_variable = NULL, simple_mode = FALSE,
-  y_zoom_min = NULL, y_zoom_max = NULL, base_size = 11)
+  y_zoom_min = NULL, y_zoom_max = NULL, log_scale_y = FALSE,
+  base_size = 11)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}
@@ -24,6 +25,8 @@ rt_explore_plot_boxplot(dataset, variable, comparison_variable = NULL,
 \item{y_zoom_min}{adjust (i.e. zoom in) to the y-axis; sets the minimum y-value for the adjustment}
 
 \item{y_zoom_max}{adjust (i.e. zoom in) to the y-axis; sets the maximum y-value for the adjustment}
+
+\item{log_scale_y}{if TRUE, applies scale_y_log10}
 
 \item{base_size}{uses ggplot's base_size parameter for controling the size of the text}
 }

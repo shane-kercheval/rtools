@@ -2619,6 +2619,13 @@ test_that("rt_explore_plot_boxplot", {
                                                   y_zoom_max=40,
                                                   base_size=15))
 
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard__log_scale_y.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=NULL,
+                                                  log_scale_y=TRUE,
+                                                  base_size=11))
+
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
                                                   variable=variable,
@@ -2635,6 +2642,13 @@ test_that("rt_explore_plot_boxplot", {
                                                 y_zoom_min=NULL,
                                                 y_zoom_max=NULL,
                                                 base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard__log_scale_y__comp.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                  variable=variable,
+                                                  comparison_variable=comparison_variable,
+                                                  log_scale_y=TRUE,
+                                                  base_size=11))
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot_comparison2.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
@@ -2653,6 +2667,14 @@ test_that("rt_explore_plot_boxplot", {
                                                 y_zoom_max=NULL,
                                                 base_size=11))
 
+    test_save_plot(file_name='data/rt_explore_plot_boxplot_standard__log_scale_y__color.png',
+                   plot=rt_explore_plot_boxplot(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable='Checking Balance Col',
+                                                color_variable='Default Col',
+                                                log_scale_y=TRUE,
+                                                base_size=11))
+
     # simple should have no effect
     test_save_plot(file_name='data/rt_explore_plot_boxplot_color__defualt__simple.png',
                    plot=rt_explore_plot_boxplot(dataset=dataset,
@@ -2665,7 +2687,6 @@ test_that("rt_explore_plot_boxplot", {
                                                 base_size=11))
     temp_dataset <- dataset
     temp_dataset[1, 'Default Col'] <- NA
-
 
     test_save_plot(file_name='data/rt_explore_plot_boxplot__default__NAs.png',
                    plot=rt_explore_plot_boxplot(dataset=temp_dataset,
@@ -3030,6 +3051,28 @@ test_that("rt_explore_plot_histogram", {
                                                   x_zoom_min=20,
                                                   x_zoom_max=40,
                                                   base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram__log_scale_x__comp.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable="Amount Col", comparison_variable = 'Default Col',
+                                                  num_bins=15,
+                                                  log_scale_x=TRUE,
+                                                  base_size=11))
+
+    dataset[1, "Default Col"] <- NA
+    test_save_plot(file_name='data/rt_explore_plot_histogram__log_scale_x.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable="Amount Col",
+                                                  num_bins=15,
+                                                  log_scale_x=TRUE,
+                                                  base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_histogram__log_scale_x__comp__NA.png',
+                   plot=rt_explore_plot_histogram(dataset=dataset,
+                                                  variable="Amount Col", comparison_variable = 'Default Col',
+                                                  num_bins=15,
+                                                  log_scale_x=TRUE,
+                                                  base_size=11))
 })
 
 test_that("rt_explore_plot_histogram_with_categoric_comparison", {
@@ -3250,6 +3293,45 @@ test_that("rt_explore_plot_scatterplot", {
                                                 y_zoom_min=200000,
                                                 y_zoom_max=300000,
                                                 base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_log_scale_x.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                log_scale_x = TRUE,
+                                                base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_log_scale_y.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                log_scale_y = TRUE,
+                                                base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_log_scale_xy.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                log_scale_x = TRUE,
+                                                log_scale_y = TRUE,
+                                                base_size=15))
+
+    test_save_plot(file_name='data/rt_explore_plot_scatter_all_log.png',
+                   plot=rt_explore_plot_scatter(dataset=dataset,
+                                                variable=variable,
+                                                comparison_variable=comparison_variable,
+                                                alpha=0.1,
+                                                x_zoom_min=5,
+                                                x_zoom_max=10,
+                                                y_zoom_min=200000,
+                                                y_zoom_max=300000,
+                                                log_scale_x = TRUE,
+                                                log_scale_y = TRUE,
+                                                base_size=15))
+
 })
 
 test_that('rt_explore_plot_scatterplot_size_color', {
@@ -3410,6 +3492,47 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
                                                              x_zoom_max=40,
                                                              y_zoom_min=1900,
                                                              y_zoom_max=5000,
+                                                             base_size=11))
+
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__scale_log_x.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=FALSE,
+                                                             show_points=FALSE,
+                                                             show_labels=TRUE,
+                                                             log_scale_x=TRUE,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__scale_log_y.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=FALSE,
+                                                             show_points=FALSE,
+                                                             show_labels=TRUE,
+                                                             log_scale_y=TRUE,
+                                                             base_size=11))
+
+    test_save_plot(file_name='data/rt_explore_plot_aggregate_2_numerics__scale_log_xy.png',
+                   plot=rt_explore_plot_aggregate_2_numerics(dataset=dataset,
+                                                             variable=variable,
+                                                             comparison_variable=comparison_variable,
+                                                             aggregation_function=aggregation_function,
+                                                             aggregation_function_name=aggregation_function_name,
+                                                             aggregation_count_minimum=30, # need at least 30 samples, otherwise when we bootstrap resample e.g. with a group that has 1 sample we'd pull e.g. 100 random samples of the same value
+                                                             show_resampled_confidence_interval=FALSE,
+                                                             show_points=TRUE,
+                                                             show_labels=TRUE,
+                                                             log_scale_x=TRUE,
+                                                             log_scale_y=TRUE,
                                                              base_size=11))
 
     variable <- 'Months Loan Duration Col'
