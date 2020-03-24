@@ -1494,7 +1494,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom ggplot2 ggplot aes geom_boxplot scale_x_discrete xlab ylab theme_light theme element_text coord_cartesian scale_color_manual geom_text position_dodge geom_hline scale_y_log10
-#' @importFerom grDevices axisTicks
+#' @importFrom grDevices axisTicks
 #' @importFrom dplyr group_by summarise n filter bind_rows
 #' @importFrom scales pretty_breaks
 #' @export
