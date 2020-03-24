@@ -1733,7 +1733,6 @@ rt_explore_plot_boxplot <- function(dataset,
 #' @param dataset dataframe containing numberic columns
 #' @param variable the variable from which to create a histogram
 #' @param comparison_variable (optional) the additional variable to group by; must be a string/factor column
-#' @param density use geom_density rather than geom_freqpoly for comparison_variable
 #' @param num_bins the number of bins that the histogram will use
 #' @param x_zoom_min adjust (i.e. zoom in) to the x-axis; sets the minimum x-value for the adjustment
 #' @param x_zoom_max adjust (i.e. zoom in) to the x-axis; sets the maximum x-value for the adjustment
@@ -1747,7 +1746,6 @@ rt_explore_plot_boxplot <- function(dataset,
 rt_explore_plot_histogram <- function(dataset,
                                       variable,
                                       comparison_variable=NULL,
-                                      density=FALSE,
                                       num_bins=30,
                                       x_zoom_min=NULL,
                                       x_zoom_max=NULL,
@@ -1768,7 +1766,7 @@ rt_explore_plot_histogram <- function(dataset,
         } else {
             histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
                 geom_histogram(binwidth = bin_width) +
-                geom_density(aes(y = bin_width * ..count..), col='red')
+                geom_density(aes(y = bin_width * ..count.., fill=NULL), col='red')
         }
 
     } else {
@@ -1812,7 +1810,7 @@ rt_explore_plot_histogram <- function(dataset,
 
             histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable, fill=!!sym(comparison_variable))) +
                 geom_histogram(binwidth = bin_width) +
-                geom_density(aes(y = bin_width * ..count..), col='red')
+                geom_density(aes(y = bin_width * ..count.., fill=NULL), col='red')
         }
 
         histogram_plot <- histogram_plot +

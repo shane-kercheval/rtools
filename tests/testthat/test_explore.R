@@ -3112,7 +3112,7 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
                    plot=rt_explore_plot_histogram(dataset=dataset,
                                                   variable=variable,
                                                   comparison_variable=comparison_variable,
-                                                  density = TRUE,
+                                                  #density = TRUE,
                                                   x_zoom_min=NULL,
                                                   x_zoom_max=NULL,
                                                   base_size=11))
