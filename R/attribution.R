@@ -319,13 +319,13 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
             ggplot(aes(x=channel_name, y=removal_value, fill=removal_type)) +
             geom_col(position = position_dodge(0.9),
                      alpha=0.75) +
-            geom_text(aes(label=rt_pretty_percent(removal_value)),
+            geom_text(aes(label=rt_pretty_axes_percent(removal_value)),
                       position = position_dodge(0.9),
                       size=3.3) +
             coord_flip() +
             scale_fill_manual(values=fill_colors) +
             scale_y_continuous(breaks=pretty_breaks(10),
-                               labels=rt_pretty_percent) +
+                               labels=rt_pretty_axes_percent) +
 
             theme_light() +
             #expand_limits(y=1) +
@@ -352,13 +352,13 @@ rt_plot_markov_removal_effects <- function(.markov_attribution, .channel_categor
             ggplot(aes(x=channel_name, y=removal_value, fill=category)) +
             geom_col(position = position_dodge(0.9),
                      alpha=0.75) +
-            geom_text(aes(label=rt_pretty_percent(removal_value)),
+            geom_text(aes(label=rt_pretty_axes_percent(removal_value)),
                       position = position_dodge(0.9),
                       size=3.3) +
             coord_flip() +
             scale_fill_manual(values=rt_colors()) +
             scale_y_continuous(breaks=pretty_breaks(10),
-                               labels=rt_pretty_percent) +
+                               labels=rt_pretty_axes_percent) +
 
             theme_light() +
             labs(title="Markov Removal Effects",
@@ -475,7 +475,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             round_values_by <- 0
             channel_plot <- channel_plot +
                 geom_text(aes(label=ifelse(attribution_value < 1,
-                                           rt_pretty_percent(attribution_value),
+                                           rt_pretty_axes_percent(attribution_value),
                                            round(attribution_value))),
                           position = position_dodge(width = 0.9),
                           angle=90,

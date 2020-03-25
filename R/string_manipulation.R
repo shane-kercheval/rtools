@@ -126,36 +126,36 @@ rt_prettyNum <- function(values, use_na=TRUE) {
 #' @export
 rt_pretty_numbers_short <- function(values) {
 
-    if(max(abs(values), na.rm = TRUE) > 1000000000) {
+    if(max(abs(values), na.rm = TRUE) >= 1000000000) {
 
         values <- rt_prettyNum(round(values / 1000000000, 2))
         values <- ifelse(values == "0", "0", paste0(values, 'B'))
 
-    } else if(max(abs(values), na.rm = TRUE) > 1000000) {
+    } else if(max(abs(values), na.rm = TRUE) >= 1000000) {
 
         values <- rt_prettyNum(round(values / 1000000, 2))
         values <- ifelse(values == "0", "0", paste0(values, 'M'))
 
-    } else if(max(abs(values), na.rm = TRUE) > 100000) {
+    } else if(max(abs(values), na.rm = TRUE) >= 100000) {
 
         values <- rt_prettyNum(round(values / 1000, 1))
         values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
-    } else if(max(abs(values), na.rm = TRUE) > 10000) {
+    } else if(max(abs(values), na.rm = TRUE) >= 10000) {
 
         values <- rt_prettyNum(round(values / 1000, 1))
         values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
-    } else if(max(abs(values), na.rm = TRUE) > 1000) {
+    } else if(max(abs(values), na.rm = TRUE) >= 1000) {
 
         values <- rt_prettyNum(round(values / 1000, 2))
         values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
-    } else if(max(abs(values), na.rm = TRUE) > 100) {
+    } else if(max(abs(values), na.rm = TRUE) >= 100) {
 
         values <- rt_prettyNum(round(values, 0))
 
-    } else if(max(abs(values), na.rm = TRUE) > 1) {
+    } else if(max(abs(values), na.rm = TRUE) >= 1) {
 
         any_has_decimal <- any(values%%1 != 0, na.rm = TRUE)
 
@@ -167,15 +167,15 @@ rt_pretty_numbers_short <- function(values) {
 
             values <- as.character(values)
         }
-    } else if(max(abs(values), na.rm = TRUE) > 0.1) {
+    } else if(max(abs(values), na.rm = TRUE) >= 0.1) {
 
         values <- rt_prettyNum(round(values, 2))
 
-    } else if(max(abs(values), na.rm = TRUE) > 0.01) {
+    } else if(max(abs(values), na.rm = TRUE) >= 0.01) {
 
         values <- rt_prettyNum(round(values, 3))
 
-    } else if(max(abs(values), na.rm = TRUE) > 0.001) {
+    } else if(max(abs(values), na.rm = TRUE) >= 0.001) {
 
         values <- rt_prettyNum(round(values, 4))
 
@@ -231,3 +231,19 @@ rt_pretty_percent <- function(values, use_na=TRUE) {
 
     return (values)
 }
+
+#' format for axes
+#'
+#' @param x numeric values
+#'
+#' @importFrom purrr map_chr
+#' @export
+rt_pretty_axes <- function(x) { map_chr(x, ~ ifelse(is.na(.), "0", rt_pretty_numbers_short(.))) }
+
+#' format for axes
+#'
+#' @param x numeric values
+#'
+#' @importFrom purrr map_chr
+#' @export
+rt_pretty_axes_percent <- function(x) { map_chr(x, ~ paste0(ifelse(is.na(.), "0", rt_pretty_numbers_long(. * 100)), "%")) }

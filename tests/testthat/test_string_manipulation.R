@@ -311,3 +311,12 @@ test_that('rt_pretty_numbers_short__long', {
     expect_identical(rt_pretty_numbers_long(values),
                      c("-1,137,095,845", "-943,530,183", "-1,036,312,841", "-1,063,286,260", "-1,040,426,832", "-989,387,548", "-1,151,152,200", "-990,534,096", "-1,201,842,371", "-993,728,590", "0"))
 })
+
+test_that('rt_pretty_axes', {
+
+    rt_pretty_axes <- function(x) { map_chr(x, ~ ifelse(is.na(.), "0", rt_pretty_numbers_short(.))) }
+    rt_pretty_axes_percent <- function(x) { map_chr(x, ~ paste0(ifelse(is.na(.), "0", rt_pretty_numbers_long(. * 100)), "%")) }
+
+    rt_pretty_axes(c(NA, 0, 0.0001, 0.001, 0.01, 0.1, 10^(0:10)))
+    rt_pretty_axes_percent(c(NA, 0, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000))
+})

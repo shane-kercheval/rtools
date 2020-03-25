@@ -977,7 +977,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 
         xy_heatmap <- xy_heatmap +
             geom_text(aes(label = count), color=text_color, size=3, vjust=-0.25) +
-            geom_text(aes(label = rt_pretty_percent(percent)), color=text_color, size=3, vjust=1.25)
+            geom_text(aes(label = rt_pretty_axes_percent(percent)), color=text_color, size=3, vjust=1.25)
 
     } else {
 
@@ -1010,7 +1010,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
         geom_text(aes(label=x_var, y=max(count)), hjust = 1, angle=90) +
         scale_x_discrete(position = "top") +
         scale_y_continuous(breaks=pretty_breaks(5),
-                           labels = rt_pretty_numbers_short) +
+                           labels = rt_pretty_axes) +
         labs(y=y_label,
              x=x_variable) +
         #scale_fill_gradient(low=colors_low_high[1], high=colors_low_high[2], limits=c(0, max(totals$count))) +
@@ -1058,7 +1058,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
               panel.background = element_blank()) +
         coord_flip() +
         scale_y_reverse(breaks=pretty_breaks(5),
-                        labels = rt_pretty_numbers_short,
+                        labels = rt_pretty_axes,
                         position = "right")
 
     if(!is.null(sum_by_variable)) {
@@ -1277,7 +1277,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
         unique_values_plot <- aggregated_data %>%
             ggplot(aes(x=!!symbol_categoric, y=mean_value, fill=!!symbol_color)) +
             geom_bar(stat = 'identity', alpha=0.75, position = position_dodge(0.9)) +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1430,7 +1430,7 @@ rt_explore_plot_categoric_numeric_aggregation <- function(dataset,
             geom_point(position=position_dodge(0.9),) +
             geom_errorbar(aes(ymin = percentile_5th, ymax = percentile_95th),
                           position=position_dodge(0.9),) +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short) +
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes) +
             labs(title=plot_title,
                  y=plot_y,
                  x=categoric_variable,
@@ -1699,12 +1699,12 @@ rt_explore_plot_boxplot <- function(dataset,
     if(log_scale_y) {
 
         boxplot_plot <- boxplot_plot +
-            scale_y_log10(breaks=custom_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
+            scale_y_log10(breaks=custom_breaks(num_pretty_breaks), labels = rt_pretty_axes)
 
     } else {
 
         boxplot_plot <- boxplot_plot +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes)
     }
 
     # zoom in on graph is parameters are set
@@ -1762,7 +1762,7 @@ rt_explore_plot_histogram <- function(dataset,
 
             histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
                 geom_histogram(bins=num_bins) +
-                scale_x_log10(labels = rt_pretty_numbers_short)
+                scale_x_log10(labels = rt_pretty_axes)
         } else {
             histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable)) +
                 geom_histogram(binwidth = bin_width) +
@@ -1804,7 +1804,7 @@ rt_explore_plot_histogram <- function(dataset,
 
             histogram_plot <- ggplot(dataset, aes(x=!!symbol_variable, fill=!!sym(comparison_variable))) +
                 geom_histogram(bins=num_bins) +
-                scale_x_log10(labels = rt_pretty_numbers_short)
+                scale_x_log10(labels = rt_pretty_axes)
 
         } else {
 
@@ -1821,7 +1821,7 @@ rt_explore_plot_histogram <- function(dataset,
     }
 
     histogram_plot <- histogram_plot +
-        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes) +
         labs(title=paste0('Histogram of `', variable, '`'),
              x=variable) +
         theme_light(base_size = base_size) +
@@ -1839,7 +1839,7 @@ rt_explore_plot_histogram <- function(dataset,
         }
 
         histogram_plot <- histogram_plot +
-            scale_x_continuous(breaks=pretty_breaks(num_breaks), labels = rt_pretty_numbers_short)
+            scale_x_continuous(breaks=pretty_breaks(num_breaks), labels = rt_pretty_axes)
     }
 
     # zoom in on graph is parameters are set
@@ -1975,23 +1975,23 @@ rt_explore_plot_scatter <- function(dataset,
     if(log_scale_x) {
 
         scatter_plot <- scatter_plot +
-            scale_x_log10(breaks=custom_breaks(10), labels = rt_pretty_numbers_short)
+            scale_x_log10(breaks=custom_breaks(10), labels = rt_pretty_axes)
 
     } else {
 
         scatter_plot <- scatter_plot +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes)
     }
 
     if(log_scale_y) {
 
         scatter_plot <- scatter_plot +
-            scale_y_log10(breaks=custom_breaks(10), labels = rt_pretty_numbers_short)
+            scale_y_log10(breaks=custom_breaks(10), labels = rt_pretty_axes)
 
     } else {
 
         scatter_plot <- scatter_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes)
     }
 
     scatter_plot <- scatter_plot +
@@ -2011,7 +2011,7 @@ rt_explore_plot_scatter <- function(dataset,
     if(!is.null(size_variable) && is.numeric(dataset[[size_variable]])) {
 
         scatter_plot <- scatter_plot +
-            scale_size_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_size_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes)
     }
 
     x_zooms <- NULL
@@ -2212,7 +2212,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
     } else {
 
         aggregate_plot <- aggregate_plot +
-            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_x_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes)
     }
 
     if(log_scale_y) {
@@ -2223,7 +2223,7 @@ rt_explore_plot_aggregate_2_numerics <- function(dataset,
     } else {
 
         aggregate_plot <- aggregate_plot +
-            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes)
     }
 
     aggregate_plot <- aggregate_plot +
@@ -2531,12 +2531,12 @@ rt_explore_plot_time_series <- function(dataset,
     if(format_as_percent) {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_percent)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes_percent)
 
     } else {
 
         ggplot_object <- ggplot_object +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels=rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels=rt_pretty_axes)
     }
 
     if(include_zero_y_axis) {
@@ -2554,7 +2554,7 @@ rt_explore_plot_time_series <- function(dataset,
         if(format_as_percent) {
 
             ggplot_object <- ggplot_object +
-                geom_text(aes(label = rt_pretty_percent(total)),
+                geom_text(aes(label = rt_pretty_axes_percent(total)),
                               check_overlap = TRUE,
                               vjust=-0.5)
         } else {
@@ -2707,7 +2707,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 
     df <- cbind(df, df_steps)
     df <- df %>%
-        mutate(conversion_rate = rt_pretty_percent(value / step_values[1]),
+        mutate(conversion_rate = rt_pretty_axes_percent(value / step_values[1]),
                value = rt_pretty_numbers_long(value)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
@@ -3072,8 +3072,8 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
         filter(cohort %in% tail(sort(unique(adoption_df$cohort)), n = last_n_cohorts)) %>%
         ggplot(aes(x=day, y=converted_within_threshold, color=cohort)) +
         geom_line() +
-        scale_x_continuous(breaks=pretty_breaks(10), labels=rt_pretty_numbers_short) +
-        scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_percent) +
+        scale_x_continuous(breaks=pretty_breaks(10), labels=rt_pretty_axes) +
+        scale_y_continuous(breaks=pretty_breaks(10), labels=rt_pretty_axes_percent) +
         theme_light(base_size=base_size) +
         labs(title=paste0("Adoption from `", first_date, "` to `", second_date, "`"),
              y="Conversion Rate",
@@ -3099,7 +3099,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
     if(show_labels) {
 
         ggplot_object <- ggplot_object +
-            geom_text(aes(label = rt_pretty_percent(converted_within_threshold)),
+            geom_text(aes(label = rt_pretty_axes_percent(converted_within_threshold)),
                       check_overlap = TRUE,
                       vjust=-0.5)
     }
@@ -3220,21 +3220,21 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
     if(show_dual_axes && view_type != "Stack" && view_type != "Stack Percent" && is.null(count_distinct_variable)) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short,
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(num_pretty_breaks),
-                                                   labels = rt_pretty_percent,
+                                                   labels = rt_pretty_axes_percent,
                                                    name=plot_y_second_axis_label))
 
     } else if(view_type == "Stack Percent") {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_percent)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes_percent)
 
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes)
     }
 
     # we will only show variable totals if show_variable_totals and the variable values aren't filled
@@ -3259,7 +3259,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_variable,
                               aes(x=!!symbol_variable,
-                                  label = rt_pretty_percent(percent),
+                                  label = rt_pretty_axes_percent(percent),
                                   y = total),
                               vjust=-1.5, check_overlap=TRUE)
 
@@ -3310,7 +3310,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                               aes(x = !!symbol_variable,
                                   y = 0.5 * total,
-                                  label = rt_pretty_percent(group_percent),
+                                  label = rt_pretty_axes_percent(group_percent),
                                   group = !!symbol_comparison_variable),
                               position = comparison_position,
                               vjust=1.25, check_overlap=TRUE)
@@ -3322,7 +3322,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                       aes(x = !!symbol_variable,
                           y = group_percent,
-                          label = rt_pretty_percent(group_percent),
+                          label = rt_pretty_axes_percent(group_percent),
                           group = !!symbol_comparison_variable),
                       position = position_fill(reverse=reverse_stack, vjust = .5),
                       check_overlap=TRUE)
@@ -3377,15 +3377,15 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
     if(show_dual_axes) {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short,
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes,
                                sec.axis = sec_axis(~./sum(groups_by_variable$total),
                                                    breaks=pretty_breaks(num_pretty_breaks),
-                                                   labels = rt_pretty_percent,
+                                                   labels = rt_pretty_axes_percent,
                                                    name=plot_y_second_axis_label))
     } else {
 
         unique_values_plot <- unique_values_plot +
-            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_numbers_short)
+            scale_y_continuous(breaks=pretty_breaks(num_pretty_breaks), labels = rt_pretty_axes)
     }
 
     if(show_variable_totals) {
@@ -3396,7 +3396,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 
         if(!simple_mode) {
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = rt_pretty_percent(percent), y = total), vjust=-0.25, check_overlap=TRUE)
+                geom_text(aes(label = rt_pretty_axes_percent(percent), y = total), vjust=-0.25, check_overlap=TRUE)
         }
     }
 
