@@ -262,4 +262,4 @@ rt_pretty_axes <- function(x, increase_precision_delta=0) { map_chr(x, ~ ifelse(
 #'
 #' @importFrom purrr map_chr
 #' @export
-rt_pretty_axes_percent <- function(x, increase_precision_delta=0) { map_chr(x, ~ paste0(ifelse(is.na(.), "0", rt_pretty_numbers_long(. * 100, increase_precision_delta=increase_precision_delta)), "%")) }
+rt_pretty_axes_percent <- function(x, increase_precision_delta=1) { map_chr(x, ~ paste0(ifelse(is.na(.), "0", rt_pretty_numbers_long(. * 100, increase_precision_delta=increase_precision_delta)), "%")) }

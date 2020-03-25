@@ -977,7 +977,7 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
 
         xy_heatmap <- xy_heatmap +
             geom_text(aes(label = count), color=text_color, size=3, vjust=-0.25) +
-            geom_text(aes(label = rt_pretty_axes_percent(percent)), color=text_color, size=3, vjust=1.25)
+            geom_text(aes(label = rt_pretty_axes_percent(percent, increase_precision_delta = 0)), color=text_color, size=3, vjust=1.25)
 
     } else {
 
@@ -2554,7 +2554,7 @@ rt_explore_plot_time_series <- function(dataset,
         if(format_as_percent) {
 
             ggplot_object <- ggplot_object +
-                geom_text(aes(label = rt_pretty_axes_percent(total)),
+                geom_text(aes(label = rt_pretty_axes_percent(total, increase_precision_delta = 0)),
                               check_overlap = TRUE,
                               vjust=-0.5)
         } else {
@@ -2707,7 +2707,7 @@ rt_funnel_plot <- function(step_names, step_values, title="", subtitle="", capti
 
     df <- cbind(df, df_steps)
     df <- df %>%
-        mutate(conversion_rate = rt_pretty_axes_percent(value / step_values[1]),
+        mutate(conversion_rate = rt_pretty_axes_percent(value / step_values[1], increase_precision_delta = 0),
                value = rt_pretty_numbers_long(value)) %>%
         group_by(Step) %>%
         mutate(label_y = mean(y)) %>%
@@ -3099,7 +3099,7 @@ rt_explore_plot_cohorted_adoption <- function(dataset,
     if(show_labels) {
 
         ggplot_object <- ggplot_object +
-            geom_text(aes(label = rt_pretty_axes_percent(converted_within_threshold)),
+            geom_text(aes(label = rt_pretty_axes_percent(converted_within_threshold, increase_precision_delta = 0)),
                       check_overlap = TRUE,
                       vjust=-0.5)
     }
@@ -3259,7 +3259,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                 unique_values_plot <- unique_values_plot +
                     geom_text(data = groups_by_variable,
                               aes(x=!!symbol_variable,
-                                  label = rt_pretty_axes_percent(percent),
+                                  label = rt_pretty_axes_percent(percent, increase_precision_delta = 0),
                                   y = total),
                               vjust=-1.5, check_overlap=TRUE)
 
@@ -3310,7 +3310,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
                     geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                               aes(x = !!symbol_variable,
                                   y = 0.5 * total,
-                                  label = rt_pretty_axes_percent(group_percent),
+                                  label = rt_pretty_axes_percent(group_percent, increase_precision_delta = 0),
                                   group = !!symbol_comparison_variable),
                               position = comparison_position,
                               vjust=1.25, check_overlap=TRUE)
@@ -3322,7 +3322,7 @@ private__create_bar_chart_comparison_var <- function(groups_by_variable,
             geom_text(data = groups_by_both %>% filter(!is.nan(group_percent)),
                       aes(x = !!symbol_variable,
                           y = group_percent,
-                          label = rt_pretty_axes_percent(group_percent),
+                          label = rt_pretty_axes_percent(group_percent, increase_precision_delta = 0),
                           group = !!symbol_comparison_variable),
                       position = position_fill(reverse=reverse_stack, vjust = .5),
                       check_overlap=TRUE)
@@ -3396,7 +3396,7 @@ private__create_bar_chart_single_var <- function(groups_by_variable,
 
         if(!simple_mode) {
             unique_values_plot <- unique_values_plot +
-                geom_text(aes(label = rt_pretty_axes_percent(percent), y = total), vjust=-0.25, check_overlap=TRUE)
+                geom_text(aes(label = rt_pretty_axes_percent(percent, increase_precision_delta = 0), y = total), vjust=-0.25, check_overlap=TRUE)
         }
     }
 

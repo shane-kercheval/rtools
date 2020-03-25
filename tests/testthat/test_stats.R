@@ -455,6 +455,27 @@ test_that('rt_plot_2_proportions_test', {
                                               title=NULL,
                                               caption=NULL
                    ))
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__small_proportions.png',
+                   rt_plot_2_proportions_test(c(531, 492130),
+                                              c(540, 489650),
+                                              c('A', 'B'),
+                                              confidence_level = 0.90)
+                   )
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__small_proportions2.png',
+                   rt_plot_2_proportions_test(c(531, 49213),
+                                              c(540, 48965),
+                                              c('A', 'B'),
+                                              confidence_level = 0.90)
+    )
+
+    test_save_plot(file_name='data/rt_plot_2_proportions_test__small_proportions3.png',
+                   rt_plot_2_proportions_test(c(531, 4921),
+                                              c(540, 4896),
+                                              c('A', 'B'),
+                                              confidence_level = 0.90)
+    )
 })
 
 test_that('rt_plot_multinom_cis', {

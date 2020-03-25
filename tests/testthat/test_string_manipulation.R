@@ -619,5 +619,6 @@ test_that('rt_pretty_axes', {
 
     expect_equal(rt_pretty_axes_percent(1.500), "150%")
     expect_equal(rt_pretty_axes_percent(1.555), "156%")
-    expect_equal(rt_pretty_axes_percent(0.1555), "15.6%")
+    expect_equal(rt_pretty_axes_percent(0.1555), "15.55%")
+    expect_equal(rt_pretty_axes_percent(0.1555, increase_precision_delta = 0), "15.6%")
 })

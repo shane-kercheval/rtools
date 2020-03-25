@@ -438,7 +438,7 @@ rt_plot_multinom_cis <- function(values,
         plot_object <- ggplot(estimates, aes(x=categories, y=proportions, color=categories)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
-            geom_text(aes(label=rt_pretty_axes_percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            geom_text(aes(label=rt_pretty_axes_percent(proportions, increase_precision_delta = 0)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes_percent) +
             scale_color_manual(values=custom_colors, na.value = '#2A3132') +
             theme_light(base_size = base_size) +
@@ -457,7 +457,7 @@ rt_plot_multinom_cis <- function(values,
                           position=position_dodge(width=0.9),
                           size=line_size) +
             geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
-            geom_text(aes(label=rt_pretty_axes_percent(proportions)),
+            geom_text(aes(label=rt_pretty_axes_percent(proportions, increase_precision_delta = 0)),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes_percent) +
@@ -506,10 +506,10 @@ rt_plot_multinom_cis <- function(values,
         }
 
         plot_object <- plot_object +
-            geom_text(aes(label=rt_pretty_axes_percent(conf_low), y=conf_low),
+            geom_text(aes(label=rt_pretty_axes_percent(conf_low, increase_precision_delta = 0), y=conf_low),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[1], check_overlap = TRUE) +
-            geom_text(aes(label=rt_pretty_axes_percent(conf_high), y=conf_high),
+            geom_text(aes(label=rt_pretty_axes_percent(conf_high, increase_precision_delta = 0), y=conf_high),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[2], check_overlap = TRUE)
     }
@@ -592,7 +592,7 @@ rt_plot_proportions <- function(numerators,
         plot_object <- ggplot(df, aes(x=categories, y=proportions, color=categories)) +
             geom_errorbar(aes(x=categories, min=conf_low, max=conf_high, color=categories), size=line_size) +
             geom_point(size=line_size*2) +
-            geom_text(aes(label=rt_pretty_axes_percent(proportions)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
+            geom_text(aes(label=rt_pretty_axes_percent(proportions, increase_precision_delta = 0)), size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes_percent) +
             scale_color_manual(values=rt_get_colors_from_values(df$categories), na.value = '#2A3132') +
             theme_light(base_size = base_size) +
@@ -613,7 +613,7 @@ rt_plot_proportions <- function(numerators,
                           position=position_dodge(width=0.9),
                           size=line_size) +
             geom_point(size=line_size*2, position=position_dodge(width=0.9)) +
-            geom_text(aes(label=rt_pretty_axes_percent(proportions)),
+            geom_text(aes(label=rt_pretty_axes_percent(proportions, increase_precision_delta = 0)),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=-0.5, check_overlap = TRUE) +
             scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes_percent) +
@@ -653,10 +653,10 @@ rt_plot_proportions <- function(numerators,
         }
 
         plot_object <- plot_object +
-            geom_text(aes(label=rt_pretty_axes_percent(conf_low), y=conf_low),
+            geom_text(aes(label=rt_pretty_axes_percent(conf_low, increase_precision_delta = 0), y=conf_low),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[1], check_overlap = TRUE) +
-            geom_text(aes(label=rt_pretty_axes_percent(conf_high), y=conf_high),
+            geom_text(aes(label=rt_pretty_axes_percent(conf_high, increase_precision_delta = 0), y=conf_high),
                       position=position_dodge(width=0.9),
                       size=text_size, vjust=vjust_values[2], check_overlap = TRUE)
     }

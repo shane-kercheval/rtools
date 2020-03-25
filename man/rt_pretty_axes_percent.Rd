@@ -4,7 +4,7 @@
 \alias{rt_pretty_axes_percent}
 \title{format for axes}
 \usage{
-rt_pretty_axes_percent(x, increase_precision_delta = 0)
+rt_pretty_axes_percent(x, increase_precision_delta = 1)
 }
 \arguments{
 \item{x}{numeric values}
