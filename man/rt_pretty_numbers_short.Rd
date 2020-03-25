@@ -4,10 +4,12 @@
 \alias{rt_pretty_numbers_short}
 \title{Formats numeric values}
 \usage{
-rt_pretty_numbers_short(values)
+rt_pretty_numbers_short(values, increase_precision_delta = 0)
 }
 \arguments{
 \item{values}{a numeric vector}
+
+\item{increase_precision_delta}{number of decimal places to increase or decrease from standard implementation}
 }
 \description{
 Formats numeric values

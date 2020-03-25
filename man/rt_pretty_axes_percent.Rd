@@ -4,10 +4,12 @@
 \alias{rt_pretty_axes_percent}
 \title{format for axes}
 \usage{
-rt_pretty_axes_percent(x)
+rt_pretty_axes_percent(x, increase_precision_delta = 0)
 }
 \arguments{
 \item{x}{numeric values}
+
+\item{increase_precision_delta}{number of decimal places to increase or decrease from standard implementation}
 }
 \description{
 format for axes

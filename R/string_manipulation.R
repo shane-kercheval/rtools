@@ -117,6 +117,7 @@ rt_prettyNum <- function(values, use_na=TRUE) {
 #' Formats numeric values
 #'
 #' @param values a numeric vector
+#' @param increase_precision_delta number of decimal places to increase or decrease from standard implementation
 #'
 #' @examples
 #'
@@ -124,44 +125,44 @@ rt_prettyNum <- function(values, use_na=TRUE) {
 #' rt_pretty_numbers_short(rnorm(n=10, mean=1000000, sd=100000))
 #'
 #' @export
-rt_pretty_numbers_short <- function(values) {
+rt_pretty_numbers_short <- function(values, increase_precision_delta=0) {
 
     if(max(abs(values), na.rm = TRUE) >= 1000000000) {
 
-        values <- rt_prettyNum(round(values / 1000000000, 2))
+        values <- rt_prettyNum(round(values / 1000000000, 2 + increase_precision_delta))
         values <- ifelse(values == "0", "0", paste0(values, 'B'))
 
     } else if(max(abs(values), na.rm = TRUE) >= 1000000) {
 
-        values <- rt_prettyNum(round(values / 1000000, 2))
+        values <- rt_prettyNum(round(values / 1000000, 2 + increase_precision_delta))
         values <- ifelse(values == "0", "0", paste0(values, 'M'))
 
     } else if(max(abs(values), na.rm = TRUE) >= 100000) {
 
-        values <- rt_prettyNum(round(values / 1000, 1))
+        values <- rt_prettyNum(round(values / 1000, 1 + increase_precision_delta))
         values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
     } else if(max(abs(values), na.rm = TRUE) >= 10000) {
 
-        values <- rt_prettyNum(round(values / 1000, 1))
+        values <- rt_prettyNum(round(values / 1000, 1 + increase_precision_delta))
         values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
     } else if(max(abs(values), na.rm = TRUE) >= 1000) {
 
-        values <- rt_prettyNum(round(values / 1000, 2))
+        values <- rt_prettyNum(round(values / 1000, 2 + increase_precision_delta))
         values <- ifelse(values == "0", "0", paste0(values, 'K'))
 
     } else if(max(abs(values), na.rm = TRUE) >= 100) {
 
-        values <- rt_prettyNum(round(values, 0))
+        values <- rt_prettyNum(round(values, 0 + increase_precision_delta))
 
     } else if(max(abs(values), na.rm = TRUE) >= 1) {
 
-        any_has_decimal <- any(values%%1 != 0, na.rm = TRUE)
+        any_has_decimal <- any(values %% 1 != 0, na.rm = TRUE)
 
         if(any_has_decimal) {
 
-            values <- rt_prettyNum(round(values, 1))
+            values <- rt_prettyNum(round(values, 1 + increase_precision_delta))
 
         } else {
 
@@ -169,15 +170,27 @@ rt_pretty_numbers_short <- function(values) {
         }
     } else if(max(abs(values), na.rm = TRUE) >= 0.1) {
 
-        values <- rt_prettyNum(round(values, 2))
+        values <- rt_prettyNum(round(values, 2 + increase_precision_delta))
 
     } else if(max(abs(values), na.rm = TRUE) >= 0.01) {
 
-        values <- rt_prettyNum(round(values, 3))
+        values <- rt_prettyNum(round(values, 3 + increase_precision_delta))
 
     } else if(max(abs(values), na.rm = TRUE) >= 0.001) {
 
-        values <- rt_prettyNum(round(values, 4))
+        values <- rt_prettyNum(round(values, 4 + increase_precision_delta))
+
+    } else if(max(abs(values), na.rm = TRUE) >= 0.0001) {
+
+        values <- rt_prettyNum(round(values, 5 + increase_precision_delta))
+
+    } else if(max(abs(values), na.rm = TRUE) >= 0.00001) {
+
+        values <- rt_prettyNum(round(values, 6 + increase_precision_delta))
+
+    } else if(max(abs(values), na.rm = TRUE) >= 0.000001) {
+
+        values <- rt_prettyNum(round(values, 7 + increase_precision_delta))
 
     } else if(all(values == 0, na.rm = TRUE)) {
 
@@ -194,10 +207,11 @@ rt_pretty_numbers_short <- function(values) {
 #' Formats numeric values
 #'
 #' @param values a numeric vector
+#' @param increase_precision_delta number of decimal places to increase or decrease from standard implementation
 #'
 #' @importFrom scales label_comma
 #' @export
-rt_pretty_numbers_long <- function(values) {
+rt_pretty_numbers_long <- function(values, increase_precision_delta=0) {
 
     if(max(abs(values), na.rm = TRUE) > 100) {
 
@@ -205,7 +219,7 @@ rt_pretty_numbers_long <- function(values) {
 
     } else {
 
-        values <- rt_pretty_numbers_short(values)
+        values <- rt_pretty_numbers_short(values, increase_precision_delta)
     }
 
     return (values)
@@ -235,15 +249,17 @@ rt_pretty_percent <- function(values, use_na=TRUE) {
 #' format for axes
 #'
 #' @param x numeric values
+#' @param increase_precision_delta number of decimal places to increase or decrease from standard implementation
 #'
 #' @importFrom purrr map_chr
 #' @export
-rt_pretty_axes <- function(x) { map_chr(x, ~ ifelse(is.na(.), "0", rt_pretty_numbers_short(.))) }
+rt_pretty_axes <- function(x, increase_precision_delta=0) { map_chr(x, ~ ifelse(is.na(.), "0", rt_pretty_numbers_short(., increase_precision_delta=increase_precision_delta))) }
 
 #' format for axes
 #'
 #' @param x numeric values
+#' @param increase_precision_delta number of decimal places to increase or decrease from standard implementation
 #'
 #' @importFrom purrr map_chr
 #' @export
-rt_pretty_axes_percent <- function(x) { map_chr(x, ~ paste0(ifelse(is.na(.), "0", rt_pretty_numbers_long(. * 100)), "%")) }
+rt_pretty_axes_percent <- function(x, increase_precision_delta=0) { map_chr(x, ~ paste0(ifelse(is.na(.), "0", rt_pretty_numbers_long(. * 100, increase_precision_delta=increase_precision_delta)), "%")) }
