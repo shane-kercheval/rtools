@@ -807,7 +807,7 @@ test_that("rt_get_any_touch_attribution2", {
 test_that("TODO", {
     skip("sandbox")
 
-    ampaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions()
 
     steps <- campaign_data %>%
