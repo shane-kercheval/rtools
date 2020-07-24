@@ -4,10 +4,18 @@
 \alias{rt_explore_plot_numeric_heatmap}
 \title{returns a heat map with histogram on top/side showing distribution of both features.}
 \usage{
-rt_explore_plot_numeric_heatmap(dataset, x_variable, y_variable,
-  n_cuts = 6, x_cut_sequence = NULL, y_cut_sequence = NULL,
-  sum_by_variable = NULL, count_distinct_variable = NULL,
-  multi_value_delimiter = NULL, base_size = 11)
+rt_explore_plot_numeric_heatmap(
+  dataset,
+  x_variable,
+  y_variable,
+  n_cuts = 6,
+  x_cut_sequence = NULL,
+  y_cut_sequence = NULL,
+  sum_by_variable = NULL,
+  count_distinct_variable = NULL,
+  multi_value_delimiter = NULL,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

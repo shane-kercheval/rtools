@@ -4,11 +4,25 @@
 \alias{rt_plot_2_proportions_test}
 \title{plots the proportions with confidence intervals according to prop.test}
 \usage{
-rt_plot_2_proportions_test(prop_1, prop_2, categories, groups = NULL,
-  confidence_level = 0.95, show_confidence_values = TRUE,
-  axes_flip = FALSE, axis_limits = NULL, text_size = 4,
-  line_size = 0.35, base_size = 11, x_label = "", y_label = "",
-  group_name = "", title = "", subtitle = NULL, caption = NULL)
+rt_plot_2_proportions_test(
+  prop_1,
+  prop_2,
+  categories,
+  groups = NULL,
+  confidence_level = 0.95,
+  show_confidence_values = TRUE,
+  axes_flip = FALSE,
+  axis_limits = NULL,
+  text_size = 4,
+  line_size = 0.35,
+  base_size = 11,
+  x_label = "",
+  y_label = "",
+  group_name = "",
+  title = "",
+  subtitle = NULL,
+  caption = NULL
+)
 }
 \arguments{
 \item{prop_1}{vector with two values c(numerator, denominator)}

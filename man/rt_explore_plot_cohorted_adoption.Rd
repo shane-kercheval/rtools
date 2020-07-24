@@ -4,12 +4,24 @@
 \alias{rt_explore_plot_cohorted_adoption}
 \title{creates a cohorted option graph that e.g. shows the adoption/conversion rate over time (e.g. days)}
 \usage{
-rt_explore_plot_cohorted_adoption(dataset, first_date, second_date,
-  reference_date, last_n_cohorts = 10, n_units_after_first_date = 30,
-  units = "days", date_floor = "month", separated_colors = TRUE,
-  y_zoom_min = NULL, y_zoom_max = NULL, include_zero_y_axis = TRUE,
-  show_points = FALSE, show_labels = FALSE, date_break_format = NULL,
-  base_size = 11)
+rt_explore_plot_cohorted_adoption(
+  dataset,
+  first_date,
+  second_date,
+  reference_date,
+  last_n_cohorts = 10,
+  n_units_after_first_date = 30,
+  units = "days",
+  date_floor = "month",
+  separated_colors = TRUE,
+  y_zoom_min = NULL,
+  y_zoom_max = NULL,
+  include_zero_y_axis = TRUE,
+  show_points = FALSE,
+  show_labels = FALSE,
+  date_break_format = NULL,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe}

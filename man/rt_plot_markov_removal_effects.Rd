@@ -4,8 +4,7 @@
 \alias{rt_plot_markov_removal_effects}
 \title{graphs removal effects returned by rt_markov_model (i.e. ChannelAttribution::markov_model)}
 \usage{
-rt_plot_markov_removal_effects(.markov_attribution,
-  .channel_categories = NULL)
+rt_plot_markov_removal_effects(.markov_attribution, .channel_categories = NULL)
 }
 \arguments{
 \item{.markov_attribution}{results from rt_markov_model}

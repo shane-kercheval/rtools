@@ -5,9 +5,15 @@
 \title{returns either a *count* of the unique values of `variable` if `sum_by_variable` is NULL, otherwise it *sums* the
 variable represented by `sum_by_variable` across (i.e. grouped by) `variable`}
 \usage{
-rt_explore_value_totals(dataset, variable, second_variable = NULL,
-  facet_variable = NULL, count_distinct = NULL,
-  sum_by_variable = NULL, multi_value_delimiter = NULL)
+rt_explore_value_totals(
+  dataset,
+  variable,
+  second_variable = NULL,
+  facet_variable = NULL,
+  count_distinct = NULL,
+  sum_by_variable = NULL,
+  multi_value_delimiter = NULL
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

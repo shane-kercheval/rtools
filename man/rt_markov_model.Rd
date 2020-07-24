@@ -4,11 +4,16 @@
 \alias{rt_markov_model}
 \title{wrapper around ChannelAttribution::markov_model}
 \usage{
-rt_markov_model(.path_data, .path_sequence = "path_sequence",
+rt_markov_model(
+  .path_data,
+  .path_sequence = "path_sequence",
   .num_conversions = "num_conversions",
   .conversion_value = "conversion_value",
-  .null_conversions = "null_conversions", .order = 1, .symbol = ">",
-  .seed = 42)
+  .null_conversions = "null_conversions",
+  .order = 1,
+  .symbol = ">",
+  .seed = 42
+)
 }
 \arguments{
 \item{.path_data}{dataframe expected by ChannelAttribution::markov_model}

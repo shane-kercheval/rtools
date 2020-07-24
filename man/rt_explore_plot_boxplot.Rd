@@ -4,10 +4,18 @@
 \alias{rt_explore_plot_boxplot}
 \title{returns a boxplot of `variable`, potentally grouped by `comparison_variable`}
 \usage{
-rt_explore_plot_boxplot(dataset, variable, comparison_variable = NULL,
-  color_variable = NULL, facet_variable = NULL, simple_mode = FALSE,
-  y_zoom_min = NULL, y_zoom_max = NULL, log_scale_y = FALSE,
-  base_size = 11)
+rt_explore_plot_boxplot(
+  dataset,
+  variable,
+  comparison_variable = NULL,
+  color_variable = NULL,
+  facet_variable = NULL,
+  simple_mode = FALSE,
+  y_zoom_min = NULL,
+  y_zoom_max = NULL,
+  log_scale_y = FALSE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

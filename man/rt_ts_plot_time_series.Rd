@@ -4,12 +4,23 @@
 \alias{rt_ts_plot_time_series}
 \title{plots a time-series dataset}
 \usage{
-rt_ts_plot_time_series(dataset, show_values = FALSE,
-  show_points = FALSE, show_dates = FALSE, include_last_point = TRUE,
-  fitted_dataset = NULL, show_fit_points_values = FALSE,
-  forecasted_dataset = NULL, show_forecasted_points_values = TRUE,
-  y_zoom_min = NA, y_zoom_max = NA, facet_multi_variables = FALSE,
-  line_colors = NULL, text_size = 4, base_size = 11)
+rt_ts_plot_time_series(
+  dataset,
+  show_values = FALSE,
+  show_points = FALSE,
+  show_dates = FALSE,
+  include_last_point = TRUE,
+  fitted_dataset = NULL,
+  show_fit_points_values = FALSE,
+  forecasted_dataset = NULL,
+  show_forecasted_points_values = TRUE,
+  y_zoom_min = NA,
+  y_zoom_max = NA,
+  facet_multi_variables = FALSE,
+  line_colors = NULL,
+  text_size = 4,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{ts dataset}

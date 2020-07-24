@@ -4,8 +4,12 @@
 \alias{rt_ts_lm_build_formula}
 \title{returns a forumla string to pass `tslm()``}
 \usage{
-rt_ts_lm_build_formula(dependent_variable, independent_variables = NULL,
-  interaction_variables = NULL, ex_ante_forecast_horizon = NULL)
+rt_ts_lm_build_formula(
+  dependent_variable,
+  independent_variables = NULL,
+  interaction_variables = NULL,
+  ex_ante_forecast_horizon = NULL
+)
 }
 \arguments{
 \item{dependent_variable}{name of the depedent variable in the dataset}

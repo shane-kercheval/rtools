@@ -4,9 +4,16 @@
 \alias{rt_get_cohorted_conversion_rates}
 \title{shows conversion rates (y-axis) of a particular cohort based on various 'snapshots' in time (a line is a snapshot in time).}
 \usage{
-rt_get_cohorted_conversion_rates(dataset, first_date, second_date,
-  reference_date, group_variable = NULL, snapshots = c(1, 7, 14),
-  snapshot_units = "days", date_floor = "month")
+rt_get_cohorted_conversion_rates(
+  dataset,
+  first_date,
+  second_date,
+  reference_date,
+  group_variable = NULL,
+  snapshots = c(1, 7, 14),
+  snapshot_units = "days",
+  date_floor = "month"
+)
 }
 \arguments{
 \item{dataset}{dataframe}

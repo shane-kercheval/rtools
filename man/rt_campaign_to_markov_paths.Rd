@@ -4,11 +4,18 @@
 \alias{rt_campaign_to_markov_paths}
 \title{adds converts campaign data to path data in the format expected by ChannelAttribution::markov_model & ChannelAttribution::heuristic_models}
 \usage{
-rt_campaign_to_markov_paths(.campaign_data, .id = "id",
-  .path_id = ".path_id", .step = "step", .timestamp = "timestamp",
+rt_campaign_to_markov_paths(
+  .campaign_data,
+  .id = "id",
+  .path_id = ".path_id",
+  .step = "step",
+  .timestamp = "timestamp",
   .num_conversions = "num_conversions",
-  .conversion_value = "conversion_value", .separate_paths_ids = TRUE,
-  .sort = TRUE, .symbol = " > ")
+  .conversion_value = "conversion_value",
+  .separate_paths_ids = TRUE,
+  .sort = TRUE,
+  .symbol = " > "
+)
 }
 \arguments{
 \item{.campaign_data}{dataframe with columns `id | timestamp | step | num_conversions | conversion_value`}

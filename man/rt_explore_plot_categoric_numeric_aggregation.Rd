@@ -4,10 +4,18 @@
 \alias{rt_explore_plot_categoric_numeric_aggregation}
 \title{returns a graph for categoric/numeric variables based on the aggregation_type}
 \usage{
-rt_explore_plot_categoric_numeric_aggregation(dataset, categoric_variable,
-  numeric_variable, aggregation_type, color_variable = NULL,
-  facet_variable = NULL, show_variable_totals = TRUE,
-  show_comparison_totals = TRUE, simple_mode = FALSE, base_size = 11)
+rt_explore_plot_categoric_numeric_aggregation(
+  dataset,
+  categoric_variable,
+  numeric_variable,
+  aggregation_type,
+  color_variable = NULL,
+  facet_variable = NULL,
+  show_variable_totals = TRUE,
+  show_comparison_totals = TRUE,
+  simple_mode = FALSE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

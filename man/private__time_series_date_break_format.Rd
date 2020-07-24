@@ -4,8 +4,11 @@
 \alias{private__time_series_date_break_format}
 \title{returns date break format based on date floor}
 \usage{
-private__time_series_date_break_format(date_break_format, date_floor,
-  year_over_year = FALSE)
+private__time_series_date_break_format(
+  date_break_format,
+  date_floor,
+  year_over_year = FALSE
+)
 }
 \arguments{
 \item{date_break_format}{date_break_format}

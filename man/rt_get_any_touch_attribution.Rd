@@ -4,8 +4,12 @@
 \alias{rt_get_any_touch_attribution}
 \title{gives each step credit for the number of conversions that resulted from the corresponding path conversions}
 \usage{
-rt_get_any_touch_attribution(.campaign_data, .conversion_column,
-  .path_id = ".path_id", .step = "step")
+rt_get_any_touch_attribution(
+  .campaign_data,
+  .conversion_column,
+  .path_id = ".path_id",
+  .step = "step"
+)
 }
 \arguments{
 \item{.campaign_data}{dataframe with columns `id | timestamp | step | num_conversions | conversion_value`}

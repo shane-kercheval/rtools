@@ -4,10 +4,15 @@
 \alias{rt_campaign_add_path_id}
 \title{adds `.path_id` column to dataframe. Each conversion step triggers a new path-id for subsequent steps}
 \usage{
-rt_campaign_add_path_id(.campaign_data, .id = "id",
-  .timestamp = "timestamp", .num_conversions = "num_conversions",
-  .conversion_value = "conversion_value", .use_first_conversion = TRUE,
-  .sort = TRUE)
+rt_campaign_add_path_id(
+  .campaign_data,
+  .id = "id",
+  .timestamp = "timestamp",
+  .num_conversions = "num_conversions",
+  .conversion_value = "conversion_value",
+  .use_first_conversion = TRUE,
+  .sort = TRUE
+)
 }
 \arguments{
 \item{.campaign_data}{dataframe with columns: `id | timestamp | step | num_conversions | conversion_value`}

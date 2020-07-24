@@ -4,10 +4,17 @@
 \alias{rt_explore_plot_categoric_heatmap}
 \title{returns a heat map with histogram on top/side showing distribution of both features.}
 \usage{
-rt_explore_plot_categoric_heatmap(dataset, x_variable, y_variable,
-  sum_by_variable = NULL, count_distinct_variable = NULL,
-  multi_value_delimiter = NULL, rev_na_factor_y = FALSE,
-  include_percentages = TRUE, base_size = 11)
+rt_explore_plot_categoric_heatmap(
+  dataset,
+  x_variable,
+  y_variable,
+  sum_by_variable = NULL,
+  count_distinct_variable = NULL,
+  multi_value_delimiter = NULL,
+  rev_na_factor_y = FALSE,
+  include_percentages = TRUE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

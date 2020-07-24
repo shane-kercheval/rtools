@@ -4,12 +4,19 @@
 \alias{rt_ts_auto_regression}
 \title{adds lag variables, performs regrssion & forecasting, produces a plot}
 \usage{
-rt_ts_auto_regression(dataset, dependent_variable = NULL,
-  independent_variables = NULL, ignore_last_x_periods = NULL,
-  lambda = NULL, num_lags = NULL,
+rt_ts_auto_regression(
+  dataset,
+  dependent_variable = NULL,
+  independent_variables = NULL,
+  ignore_last_x_periods = NULL,
+  lambda = NULL,
+  num_lags = NULL,
   include_dependent_variable_lag = TRUE,
-  ex_ante_forecast_horizon = NULL, build_graphs = TRUE,
-  show_dataset_labels = FALSE, show_forecast_labels = TRUE)
+  ex_ante_forecast_horizon = NULL,
+  build_graphs = TRUE,
+  show_dataset_labels = FALSE,
+  show_forecast_labels = TRUE
+)
 }
 \arguments{
 \item{dataset}{a time-series dataset (single- or multi-variable)}

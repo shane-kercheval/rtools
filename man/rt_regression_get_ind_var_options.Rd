@@ -4,8 +4,11 @@
 \alias{rt_regression_get_ind_var_options}
 \title{Residual vs. Predicted plot}
 \usage{
-rt_regression_get_ind_var_options(model, dependent_variable,
-  independent_variables)
+rt_regression_get_ind_var_options(
+  model,
+  dependent_variable,
+  independent_variables
+)
 }
 \arguments{
 \item{model}{model}

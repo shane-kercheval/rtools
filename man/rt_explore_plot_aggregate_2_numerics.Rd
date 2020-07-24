@@ -4,13 +4,24 @@
 \alias{rt_explore_plot_aggregate_2_numerics}
 \title{returns a eih}
 \usage{
-rt_explore_plot_aggregate_2_numerics(dataset, variable,
-  comparison_variable, aggregation_function = NULL,
-  aggregation_function_name = NULL, aggregation_count_minimum = 30,
-  show_resampled_confidence_interval = FALSE, show_points = FALSE,
-  show_labels = FALSE, x_zoom_min = NULL, x_zoom_max = NULL,
-  y_zoom_min = NULL, y_zoom_max = NULL, log_scale_x = FALSE,
-  log_scale_y = FALSE, base_size = 11)
+rt_explore_plot_aggregate_2_numerics(
+  dataset,
+  variable,
+  comparison_variable,
+  aggregation_function = NULL,
+  aggregation_function_name = NULL,
+  aggregation_count_minimum = 30,
+  show_resampled_confidence_interval = FALSE,
+  show_points = FALSE,
+  show_labels = FALSE,
+  x_zoom_min = NULL,
+  x_zoom_max = NULL,
+  y_zoom_min = NULL,
+  y_zoom_max = NULL,
+  log_scale_x = FALSE,
+  log_scale_y = FALSE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe}

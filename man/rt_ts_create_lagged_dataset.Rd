@@ -4,8 +4,12 @@
 \alias{rt_ts_create_lagged_dataset}
 \title{returns a new dataset containing the lagged values for specified variables}
 \usage{
-rt_ts_create_lagged_dataset(dataset, num_lags = 1,
-  lag_variables = NULL, keep_variables = NULL)
+rt_ts_create_lagged_dataset(
+  dataset,
+  num_lags = 1,
+  lag_variables = NULL,
+  keep_variables = NULL
+)
 }
 \arguments{
 \item{dataset}{a time-series dataset (single- or multi-variable)}

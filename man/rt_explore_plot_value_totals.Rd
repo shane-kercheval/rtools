@@ -4,13 +4,23 @@
 \alias{rt_explore_plot_value_totals}
 \title{returns a barchart of the unique value counts for a given dataset/variable, grouped by an additional variable}
 \usage{
-rt_explore_plot_value_totals(dataset, variable,
-  comparison_variable = NULL, facet_variable = NULL,
-  sum_by_variable = NULL, count_distinct_variable = NULL,
-  order_by_count = TRUE, show_variable_totals = TRUE,
-  show_comparison_totals = TRUE, show_dual_axes = FALSE,
-  view_type = "Bar", multi_value_delimiter = NULL,
-  reverse_stack = TRUE, simple_mode = FALSE, base_size = 11)
+rt_explore_plot_value_totals(
+  dataset,
+  variable,
+  comparison_variable = NULL,
+  facet_variable = NULL,
+  sum_by_variable = NULL,
+  count_distinct_variable = NULL,
+  order_by_count = TRUE,
+  show_variable_totals = TRUE,
+  show_comparison_totals = TRUE,
+  show_dual_axes = FALSE,
+  view_type = "Bar",
+  multi_value_delimiter = NULL,
+  reverse_stack = TRUE,
+  simple_mode = FALSE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

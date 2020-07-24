@@ -4,8 +4,12 @@
 \alias{rt_regression}
 \title{Builds a (string) formula to pass to lm}
 \usage{
-rt_regression(dataset, dependent_variable, independent_variables,
-  interaction_variables = NULL)
+rt_regression(
+  dataset,
+  dependent_variable,
+  independent_variables,
+  interaction_variables = NULL
+)
 }
 \arguments{
 \item{dataset}{dataset}

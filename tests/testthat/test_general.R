@@ -2,6 +2,7 @@ context('General')
 library(testthat)
 library(lubridate)
 library(dplyr)
+options(dplyr.summarise.inform=F)
 
 test_that("rt_get_date_fields_lubridate", {
 

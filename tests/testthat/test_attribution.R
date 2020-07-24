@@ -1,6 +1,7 @@
 context('Attribution')
 library(testthat)
 library(dplyr)
+options(dplyr.summarise.inform=F)
 library(ggplot2)
 library(scales)
 source('test_helpers.R')
@@ -26,7 +27,8 @@ test_that("rt__mock__attribution_to_clickstream", {
         select(id, timestamp, num_conversions, conversion_value) %>%
         # the timestamp will either be the same 1 or second after as the corresponding step (won't work if
         # of the timestamps that is incremenented by a second is midnight)
-        mutate(timestamp=floor_date(timestamp, unit = 'day'))
+        mutate(timestamp=floor_date(timestamp, unit = 'day')) %>%
+        arrange(id, timestamp)
 
     actual_df <- clickstream_data %>%
         filter(num_conversions > 0) %>%
@@ -41,6 +43,7 @@ test_that("rt__mock__attribution_to_clickstream", {
     # make sure non-conversion events in clickstream_data match expected values
     ####
     expected_df <- campaign_data %>%
+        arrange(id, timestamp) %>%
         # the clickstream data should have all of the original events, but non of them will have
         # num_conversions or conversion_value values
         mutate(num_conversions = 0,
@@ -50,14 +53,13 @@ test_that("rt__mock__attribution_to_clickstream", {
         filter(num_conversions == 0)
 
     expect_true(rt_are_dataframes_equal(expected_df, actual_df))
-
 })
 
 test_that("rt_clickstream_to_attribution", {
 
     campaign_data_original <- readRDS('data/campaign_data__small.RDS') %>%
         arrange(id, timestamp, step)
-    clickstream_data <- rt__mock__attribution_to_clickstream(campaign_data_original)
+    clickstream_data <- rt__mock__attribution_to_clickstream(.campaign_data= campaign_data_original)
     campaign_data_new <- rt_clickstream_to_attribution(clickstream_data) %>%
         arrange(id, timestamp, step)
     expect_true(rt_are_dataframes_equal(campaign_data_original %>% arrange(id, timestamp, step),
@@ -411,19 +413,16 @@ test_that("rt_get_channel_attribution", {
                     values_from = 'attribution_value') %>%
         select_if(is.numeric) %>%
         colSums() %>%
-        unique()
-    expect_equal(length(found_conversions), 1)
-    expect_equal(found_conversions, sum(campaign_paths$num_conversions))
+        round(10)
+    expect_true(all(found_conversions == sum(campaign_paths$num_conversions)))
 
     found_conversions <- channel_attribution %>%
         filter(attribution_type == 'Conversion Value') %>%
         pivot_wider(names_from = 'attribution_name',
                     values_from = 'attribution_value') %>%
         select_if(is.numeric) %>%
-        colSums() %>%
-        unique()
-    expect_equal(length(found_conversions), 1)
-    expect_equal(found_conversions, sum(campaign_paths$conversion_value))
+        colSums()
+    expect_true(all(found_conversions == sum(campaign_paths$conversion_value)))
 
     expected_campaign_conversions <- campaign_data %>%
         test_helper__campaign_filter_first_conversions() %>%
@@ -505,9 +504,8 @@ test_that("rt_get_channel_attribution", {
                     values_from = 'attribution_value') %>%
         select_if(is.numeric) %>%
         colSums() %>%
-        unique()
-    expect_equal(length(found_conversions), 1)
-    expect_equal(found_conversions, sum(campaign_paths$num_conversions))
+        round(10)
+    expect_true(all(found_conversions == sum(campaign_paths$num_conversions)))
 
     found_conversions <- channel_attribution %>%
         filter(attribution_type == 'Conversion Value') %>%
@@ -515,11 +513,9 @@ test_that("rt_get_channel_attribution", {
                     values_from = 'attribution_value') %>%
         select_if(is.numeric) %>%
         colSums() %>%
-        round(6) %>%
-        unique()
+        round(6)
 
-    expect_equal(length(found_conversions), 1)
-    expect_equal(found_conversions, sum(campaign_paths$conversion_value))
+    expect_true(all(found_conversions == sum(campaign_paths$conversion_value)))
 
     expected_campaign_conversions <- campaign_data %>%
         group_by(id) %>%
@@ -600,9 +596,8 @@ test_that("rt_get_channel_attribution", {
                     values_from = 'attribution_value') %>%
         select_if(is.numeric) %>%
         colSums() %>%
-        unique()
-    expect_equal(length(found_conversions), 1)
-    expect_equal(found_conversions, sum(campaign_paths$num_conversions))
+        round(10)
+    expect_true(all(found_conversions == sum(campaign_paths$num_conversions)))
 
     found_conversions <- channel_attribution %>%
         filter(attribution_type == 'Conversion Value') %>%
@@ -610,11 +605,9 @@ test_that("rt_get_channel_attribution", {
                     values_from = 'attribution_value') %>%
         select_if(is.numeric) %>%
         colSums() %>%
-        round(6) %>%
-        unique()
+        round(6)
 
-    expect_equal(length(found_conversions), 1)
-    expect_equal(found_conversions, sum(campaign_paths$conversion_value))
+    expect_true(all(found_conversions == sum(campaign_paths$conversion_value)))
 
     conversions_paths <- campaign_paths %>% filter(num_conversions > 0)
 
@@ -1059,9 +1052,9 @@ test_that("TODO", {
             filter(channel_name != 'converted') %>%
             ggplot(aes(x=total_touches, y =percent_conversions)) +
             geom_text(aes(label = channel_name), vjust=-1) +
-            scale_y_continuous(expand=expand_scale(mult=expand_scale_multiplier),
+            scale_y_continuous(expand=expansion(mult=expand_scale_multiplier),
                                breaks = pretty_breaks(10), labels = percent_format()) +
-            scale_x_continuous(expand=expand_scale(mult=expand_scale_multiplier),
+            scale_x_continuous(expand=expansion(mult=expand_scale_multiplier),
                                breaks = pretty_breaks(10), labels = rt_pretty_numbers_short) +
             #expand_limits(y=c(0, 1), x=0) +
             theme_light()

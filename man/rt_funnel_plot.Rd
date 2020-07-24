@@ -4,8 +4,14 @@
 \alias{rt_funnel_plot}
 \title{returns a funnel plot}
 \usage{
-rt_funnel_plot(step_names, step_values, title = "", subtitle = "",
-  caption = "", proportionate = FALSE)
+rt_funnel_plot(
+  step_names,
+  step_values,
+  title = "",
+  subtitle = "",
+  caption = "",
+  proportionate = FALSE
+)
 }
 \arguments{
 \item{step_names}{the names of the steps, top down}

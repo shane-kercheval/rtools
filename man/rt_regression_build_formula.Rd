@@ -4,8 +4,11 @@
 \alias{rt_regression_build_formula}
 \title{Builds a (string) formula to pass to lm}
 \usage{
-rt_regression_build_formula(dependent_variable,
-  independent_variables = NULL, interaction_variables = NULL)
+rt_regression_build_formula(
+  dependent_variable,
+  independent_variables = NULL,
+  interaction_variables = NULL
+)
 }
 \arguments{
 \item{dependent_variable}{dependent_variable}

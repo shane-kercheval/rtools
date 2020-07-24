@@ -4,13 +4,27 @@
 \alias{rt_explore_plot_conversion_rates}
 \title{shows conversion rates (y-axis) of a particular cohort based on various 'snapshots' in time (a line is a snapshot in time).}
 \usage{
-rt_explore_plot_conversion_rates(dataset, first_date, second_date,
-  reference_date, group_variable = NULL, snapshots = c(1, 7, 14),
-  snapshot_units = "days", date_floor = "month",
-  color_or_facet = "color", year_over_year = FALSE,
-  y_zoom_min = NULL, y_zoom_max = NULL, include_zero_y_axis = TRUE,
-  show_points = FALSE, show_labels = FALSE, date_break_format = NULL,
-  date_breaks_width = NULL, date_limits = NULL, base_size = 11)
+rt_explore_plot_conversion_rates(
+  dataset,
+  first_date,
+  second_date,
+  reference_date,
+  group_variable = NULL,
+  snapshots = c(1, 7, 14),
+  snapshot_units = "days",
+  date_floor = "month",
+  color_or_facet = "color",
+  year_over_year = FALSE,
+  y_zoom_min = NULL,
+  y_zoom_max = NULL,
+  include_zero_y_axis = TRUE,
+  show_points = FALSE,
+  show_labels = FALSE,
+  date_break_format = NULL,
+  date_breaks_width = NULL,
+  date_limits = NULL,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe}

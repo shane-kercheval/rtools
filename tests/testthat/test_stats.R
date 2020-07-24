@@ -1,6 +1,7 @@
 context('Stats')
 library(testthat)
 library(dplyr)
+options(dplyr.summarise.inform=F)
 library(ggplot2)
 source('test_helpers.R')
 

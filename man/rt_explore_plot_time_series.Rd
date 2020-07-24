@@ -4,14 +4,27 @@
 \alias{rt_explore_plot_time_series}
 \title{returns a time-series plot}
 \usage{
-rt_explore_plot_time_series(dataset, variable,
-  comparison_variable = NULL, comparison_function = NULL,
-  comparison_function_name = NULL, color_variable = NULL,
-  facet_variable = NULL, year_over_year = FALSE, y_zoom_min = NULL,
-  y_zoom_max = NULL, include_zero_y_axis = TRUE, show_points = FALSE,
-  show_labels = FALSE, date_floor = NULL, date_break_format = NULL,
-  date_breaks_width = NULL, date_limits = NULL,
-  format_as_percent = FALSE, base_size = 11)
+rt_explore_plot_time_series(
+  dataset,
+  variable,
+  comparison_variable = NULL,
+  comparison_function = NULL,
+  comparison_function_name = NULL,
+  color_variable = NULL,
+  facet_variable = NULL,
+  year_over_year = FALSE,
+  y_zoom_min = NULL,
+  y_zoom_max = NULL,
+  include_zero_y_axis = TRUE,
+  show_points = FALSE,
+  show_labels = FALSE,
+  date_floor = NULL,
+  date_break_format = NULL,
+  date_breaks_width = NULL,
+  date_limits = NULL,
+  format_as_percent = FALSE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe}

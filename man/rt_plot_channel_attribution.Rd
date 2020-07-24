@@ -4,8 +4,11 @@
 \alias{rt_plot_channel_attribution}
 \title{wrapper around ChannelAttribution::markov_model & ChannelAttribution::heuristic_models}
 \usage{
-rt_plot_channel_attribution(.channel_attribution,
-  .channel_categories = NULL, .show_values = TRUE)
+rt_plot_channel_attribution(
+  .channel_attribution,
+  .channel_categories = NULL,
+  .show_values = TRUE
+)
 }
 \arguments{
 \item{.channel_attribution}{dataframe returned by rt_get_channel_attribution()}

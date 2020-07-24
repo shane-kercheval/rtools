@@ -4,12 +4,24 @@
 \alias{rt_explore_plot_scatter}
 \title{returns a scatterplot of `variable` (numeric, x-axis) compared against `comparison_variable` (y-axis)}
 \usage{
-rt_explore_plot_scatter(dataset, variable, comparison_variable,
-  color_variable = NULL, size_variable = NULL,
-  label_variables = NULL, label_size = 4, alpha = 0.3,
-  jitter = FALSE, x_zoom_min = NULL, x_zoom_max = NULL,
-  y_zoom_min = NULL, y_zoom_max = NULL, log_scale_x = FALSE,
-  log_scale_y = FALSE, base_size = 11)
+rt_explore_plot_scatter(
+  dataset,
+  variable,
+  comparison_variable,
+  color_variable = NULL,
+  size_variable = NULL,
+  label_variables = NULL,
+  label_size = 4,
+  alpha = 0.3,
+  jitter = FALSE,
+  x_zoom_min = NULL,
+  x_zoom_max = NULL,
+  y_zoom_min = NULL,
+  y_zoom_max = NULL,
+  log_scale_x = FALSE,
+  log_scale_y = FALSE,
+  base_size = 11
+)
 }
 \arguments{
 \item{dataset}{dataframe}

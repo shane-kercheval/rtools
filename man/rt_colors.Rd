@@ -4,8 +4,7 @@
 \alias{rt_colors}
 \title{Hex colors vector}
 \usage{
-rt_colors(color_names = NULL, sets = NULL,
-  return_named_vector = FALSE)
+rt_colors(color_names = NULL, sets = NULL, return_named_vector = FALSE)
 }
 \arguments{
 \item{color_names}{filter by the names of the colors}

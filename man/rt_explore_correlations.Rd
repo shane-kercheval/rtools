@@ -4,9 +4,13 @@
 \alias{rt_explore_correlations}
 \title{returns a matrix containing of correlations}
 \usage{
-rt_explore_correlations(dataset, corr_threshold = 0,
-  p_value_threshold = 1, max_missing_column_perc = 0.25,
-  type = "pearson")
+rt_explore_correlations(
+  dataset,
+  corr_threshold = 0,
+  p_value_threshold = 1,
+  max_missing_column_perc = 0.25,
+  type = "pearson"
+)
 }
 \arguments{
 \item{dataset}{dataframe containing numberic columns}

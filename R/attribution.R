@@ -21,7 +21,6 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
         filter(num_conversions > 0)
     # need to make the current step worth 0 (because it isn't the conversion event, just where the conversion happened)
     # then create a conversion event with a timestamp that is the same
-
     conversion_clickstream <- bind_rows(conversion_clickstream %>%
                                             mutate(num_conversions = 0, conversion_value = 0),
                                         conversion_clickstream %>%
@@ -32,7 +31,7 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
                                                    # happen in the click-stream data
                                                    # the dataset i'm working with, this id has another event 1
                                                    # second after, so ensure the conversion event has the same timestamp for this particular id
-                                                   timestamp = if_else(str_ends(id, 'f') | id == '00F7EkFhfiA7fFA73E0niiBfn', timestamp, timestamp + seconds(1)))
+                                                   timestamp = if_else(str_ends(id, 'f') | id == 'fbd2f972542f5b6a9dfa602f4cac4d5c', timestamp, timestamp + seconds(1)))
     )
 
     click_stream_data <- bind_rows(.campaign_data %>% filter(num_conversions == 0),
@@ -265,6 +264,7 @@ rt_markov_model <- function(.path_data,
                                        var_null = .null_conversions,
                                        order = .order, # higher order markov chain
                                        out_more = TRUE,
+                                       verbose = FALSE,
                                        sep=.symbol,
                                        seed = .seed)
 
