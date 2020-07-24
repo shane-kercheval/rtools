@@ -62,7 +62,7 @@ test_that("rt_explore_categoric_summary", {
 })
 
 test_that("rt_explore_correlations_credit", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # make sure it handles NAs
     credit_data[1, 'months_loan_duration'] <- NA
 
@@ -102,7 +102,7 @@ test_that("rt_explore_correlations_credit", {
 })
 
 test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # only include cols that have <= x% missing values
     max_missing_perc <- 0.05
 
@@ -143,7 +143,7 @@ test_that("rt_explore_correlations_credit_min_missing_nas_in_column", {
 })
 
 test_that("rt_explore_value_totals", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # make sure all col names have spaces
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
@@ -635,7 +635,7 @@ test_that("rt_explore_value_totals", {
 })
 
 test_that("rt_explore_value_totals__facet", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # make sure all col names have spaces
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
@@ -795,7 +795,7 @@ test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
     # when using a second categoric variable and sum_by, and all the second categorical has a value of zero
     # for all sum-by values ina particular primary categorical value, then we try to divide by zero and get
     # NAN
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # make sure all col names have spaces
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
@@ -911,7 +911,7 @@ test_that("rt_explore_value_totals - bug: sum_by_all_zeros", {
 })
 
 test_that("rt_explore_plot_value_totals__distinct_variable", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # make sure all col names have spaces
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
@@ -1170,7 +1170,7 @@ test_that("rt_get_colors_from_values", {
 })
 
 test_that("rt_explore_plot_value_counts", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
     variable <- 'Checking Balance Col'
 
@@ -1281,7 +1281,7 @@ test_that("rt_explore_plot_value_counts", {
 })
 
 test_that("rt_explore_plot_value_counts__facet", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     # make sure all col names have spaces
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
@@ -1501,7 +1501,7 @@ test_that("rt_explore_plot_value_counts__facet", {
 })
 
 test_that("rt_explore_plot_value_counts: logical", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     credit_data[1, 'Default Col'] <- NA
@@ -1521,7 +1521,7 @@ test_that("rt_explore_plot_value_counts: logical", {
 })
 
 test_that("rt_explore_plot_boxplot: logical", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     credit_data[1, 'Default Col'] <- NA
@@ -1541,7 +1541,7 @@ test_that("rt_explore_plot_boxplot: logical", {
 })
 
 test_that("rt_explore_plot_scatter: logical", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     credit_data_logical <- credit_data %>%
@@ -1567,7 +1567,7 @@ test_that("rt_explore_plot_scatter: logical", {
 })
 
 test_that("rt_explore_plot_value_counts_against_categorical", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     ##########################################################################################################
@@ -1830,7 +1830,7 @@ test_that("rt_explore_plot_value_totals__daul_axes", {
 })
 
 test_that("rt_explore_plot_value_totals__conf_intervals", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
     ##########################################################################################################
     # test with factor
@@ -2079,7 +2079,7 @@ test_that("rt_explore_plot_value_totals__conf_intervals", {
 })
 
 test_that("rt_explore_plot_value_counts_against_categorical_fill", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # make sure it handles NAs
@@ -2108,7 +2108,7 @@ test_that("rt_explore_plot_value_counts_against_categorical_fill", {
 })
 
 test_that("rt_explore_plot_value_totals_sums", {
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # make sure it handles NAs
@@ -2157,7 +2157,7 @@ test_that("rt_explore_plot_value_totals_sums", {
     # Make sure it handles all NAs for the SUM_BY, or entire categories of NAs
     ##########################################################################################################
 
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
     # make sure it handles NAs
     credit_data[1, 'Checking Balance Col'] <- NA
@@ -2206,7 +2206,7 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      facet_variable = facet_variable,
                                                      sum_by_variable=sum_by_variable))
 
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     # make sure it handles NAs
@@ -2227,7 +2227,7 @@ test_that("rt_explore_plot_value_totals_sums", {
 
 
     # make sure it handles NAs
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
     credit_data[1, 'Checking Balance Col'] <- NA
     variable <- 'Checking Balance Col'
@@ -2246,7 +2246,7 @@ test_that("rt_explore_plot_value_totals_sums", {
                                                      sum_by_variable=sum_by_variable))
 
     # make sure it handles NAs
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
     credit_data[1, 'Checking Balance Col'] <- NA
     variable <- 'Checking Balance Col'
@@ -2267,7 +2267,7 @@ test_that("rt_explore_plot_value_totals_sums", {
 
 test_that("rt_explore_plot_value_totals_multivalue_column", {
 
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     expected_totals <- rt_explore_value_totals(dataset=credit_data,
@@ -2320,7 +2320,7 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
     ##########################################################################################################
     # CREATE THE DATASET
     ##########################################################################################################
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     credit_data$`Id Col` <- 1:nrow(credit_data)
@@ -2416,7 +2416,7 @@ test_that("rt_explore_plot_value_totals_multivalue_bug", {
 
 test_that("rt_explore_plot_categoric_heatmap", {
 
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(credit_data) <- test_helper__column_names(credit_data)
 
     credit_data$`Id Col` <- 1:nrow(credit_data)
@@ -2573,7 +2573,7 @@ test_that("rt_explore_plot_categoric_heatmap_NAs", {
 
 test_that("rt_explore_plot_numeric_heatmap", {
 
-    credit_data <- read.csv("data/credit.csv", header=TRUE)
+    credit_data <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     credit_data[1, 'age'] <- NA
     credit_data[2, 'age'] <- NA
     credit_data[2, 'amount'] <- NA
@@ -2628,7 +2628,7 @@ test_that("rt_explore_plot_numeric_heatmap", {
 })
 
 test_that("rt_explore_plot_boxplot", {
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     variable <- 'Months Loan Duration Col'
@@ -2823,7 +2823,7 @@ test_that("rt_explore_plot_boxplot", {
 })
 
 test_that("rt_explore_plot_boxplot_facet", {
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     variable <- 'Months Loan Duration Col'
@@ -2978,7 +2978,7 @@ test_that("rt_explore_plot_boxplot_facet", {
 test_that("rt_explore_plot_boxplot - NA numeric values", {
     # there's a bug where the count of the records (below the median line) shows the number of total records
     # in the group, but it should show the total number of non-na values for which the boxplot is based on
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     variable <- 'amount'
     comparison_variable <- 'checking_balance'
     color_variable <- 'default'
@@ -3038,7 +3038,7 @@ test_that("rt_explore_plot_boxplot - NA numeric values", {
 })
 
 test_that("rt_explore_plot_histogram", {
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     variable <- 'Months Loan Duration Col'
@@ -3123,7 +3123,7 @@ test_that("rt_explore_plot_histogram", {
 })
 
 test_that("rt_explore_plot_histogram_with_categoric_comparison", {
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     variable <- 'Months Loan Duration Col'
@@ -3203,7 +3203,7 @@ test_that("rt_explore_plot_histogram_with_categoric_comparison", {
 })
 
 test_that("rt_explore_plot_scatterplot", {
-    dataset <- read.csv("data/housing.csv", header=TRUE)
+    dataset <- read.csv("data/housing.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     variable <- 'Median House Value Col'
@@ -3382,7 +3382,7 @@ test_that("rt_explore_plot_scatterplot", {
 })
 
 test_that('rt_explore_plot_scatterplot_size_color', {
-    dataset <- read.csv("data/housing.csv", header=TRUE)
+    dataset <- read.csv("data/housing.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     variable <- 'Median House Value Col'
@@ -3466,7 +3466,7 @@ test_that("rt_explore_plot_scatterplot_jitter", {
 })
 
 test_that("rt_explore_plot_aggregate_2_numerics", {
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     # make sure it handles NAs
@@ -3658,7 +3658,7 @@ test_that("rt_explore_plot_aggregate_2_numerics", {
 
 test_that("rt_explore_plot_categoric_numeric_aggregation", {
 
-    dataset <- read.csv("data/credit.csv", header=TRUE)
+    dataset <- read.csv("data/credit.csv", header=TRUE, stringsAsFactors=TRUE)
     colnames(dataset) <- test_helper__column_names(dataset)
 
     categoric_variable <- 'Checking Balance Col'
