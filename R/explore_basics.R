@@ -926,7 +926,13 @@ rt_explore_plot_categoric_heatmap <- function(dataset,
             if(rev_na_factor) {
                 new_levels <- c("<NA>", levels(dataset[[x]]))
             } else {
-                new_levels <- c(levels(dataset[[x]]), "<NA>")
+                if(is.factor(dataset[[x]])) {
+
+                    new_levels <- c(levels(dataset[[x]]), "<NA>")
+                } else {
+
+                    new_levels <- c(sort(unique(dataset[[x]])) %>% rt_remove_val(NA), "<NA>")
+                }
             }
             dataset[[x]] <- factor(dataset[[x]],
                                    levels = new_levels,
