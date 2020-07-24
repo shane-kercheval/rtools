@@ -318,7 +318,7 @@ rt_explore_value_totals <- function(dataset,
     } else {
         # FYI should include NA
         symbol_facet_variable <- sym(facet_variable)
-        unique_facet_values <- unique(dataset[[facet_variable]])
+        unique_facet_values <- as.character(unique(dataset[[facet_variable]]))
         results <- NULL
 
         for(facet_value in unique_facet_values) {
