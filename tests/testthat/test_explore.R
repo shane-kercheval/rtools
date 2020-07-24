@@ -666,7 +666,7 @@ test_that("rt_explore_value_totals__facet", {
         rt_explore_value_totals(variable = 'Checking Balance Col',
                                 facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Col`))
+    default_na <- value_counts %>% filter(`Default Col` == 'Default Col - NA')
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$count, 1)
     expect_equal(default_na$percent, 1)
@@ -695,7 +695,7 @@ test_that("rt_explore_value_totals__facet", {
                                 second_variable = 'Purpose Col',
                                 facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Col`))
+    default_na <- value_counts %>% filter(`Default Col` == 'Default Col - NA')
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$count, 1)
     expect_equal(default_na$percent, 1)
@@ -726,7 +726,7 @@ test_that("rt_explore_value_totals__facet", {
                                 sum_by_variable = 'Amount Col',
                                 facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Col`))
+    default_na <- value_counts %>% filter(`Default Col` == 'Default Col - NA')
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$sum, 5951)
     expect_equal(default_na$percent, 1)
@@ -762,7 +762,7 @@ test_that("rt_explore_value_totals__facet", {
                                 count_distinct = 'Id Col',
                                 facet_variable = 'Default Col')
 
-    default_na <- value_counts %>% filter(is.na(`Default Col`))
+    default_na <- value_counts %>% filter(`Default Col` == 'Default Col - NA')
     expect_equal(nrow(default_na), 1)
     expect_equal(default_na$count, 1)
     expect_equal(default_na$percent, 1)
