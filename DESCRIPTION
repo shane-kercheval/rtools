@@ -35,5 +35,7 @@ Imports:
     tidyverse,
     tibble,
     zoo,
-Suggests: testthat
+Suggests: 
+    testthat,
+    networkD3
 RoxygenNote: 7.1.1

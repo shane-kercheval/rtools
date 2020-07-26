@@ -607,3 +607,213 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 
     return (attribution_models)
 }
+
+#' transforms attribution dataframe to long format
+#'
+#' @param attribution_models dataframe with columns `channel_name | xxx_conversions | xxx_value`
+#'
+#' @importFrom magrittr "%>%"
+#' @importFrom forcats fct_lump
+#' @importFrom networkD3 sankeyNetwork
+#'
+#'
+#'
+#' @importFrom dplyr select group_by filter ungroup distinct bind_rows arrange unite mutate summarise desc count rename pull
+#' @importFrom stringr str_remove
+#'
+#' @export
+create_sankey <- function(.path_data,
+                          .id='entity_id',
+                          .path_column='touch_category',
+                          .visit_index='touch_index',
+                          .global_path_values=NULL,
+                          .ending_events=NULL,
+                          .ending_event_fill_name='End of Data',
+                          .order_by=c('size', 'optimize', 'both'),
+                          .depth_threshold=4,
+                          .proportion_threshold_other_category=0.01) {
+
+    ############################################################
+    # we want to lump categories together if they meet the threshold
+    # except we want to retain all .ending_events
+    ############################################################
+    if(!is.null(.ending_events)) {
+        original_path_values <- .path_data[[.path_column]]
+    }
+    .path_data[[.path_column]] <- as.character(fct_lump(.path_data[[.path_column]],
+                                                        prop = .proportion_threshold_other_category,
+                                                        ties.method = 'first', ))
+    if(!is.null(.ending_events)) {
+        # however, want to keep success/ending events
+        # so if the original value was an ending event, replace with that event, otherwise keep the
+        # post-lumped value
+        .path_data[[.path_column]] <- ifelse(original_path_values %in% .ending_events,
+                                             original_path_values,
+                                             .path_data[[.path_column]])
+
+    }
+    ############################################################
+
+    if(!is.null(.ending_events)) {
+
+        # if this isn't null, then
+        # 1) anyone who doesn't have a success event has "bounced"
+        # 2) anyone who doesn't have anything other than a success event needs an initial filler event
+        # 3) if we don't have this value, then the final event will show up multiple
+        # these 2 things will make sure everyone is represent from beginning to end.
+
+
+        # 1) bounced
+        bounced_path_data <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!any(!!sym(.path_column) %in% .ending_events)) %>%
+            ungroup() %>%
+            select(entity_id) %>%
+            distinct()
+        bounced_path_data[[.path_column]] <- .ending_event_fill_name
+        bounced_path_data[[.visit_index]] <- Inf
+        # nothing other than success event
+
+        only_success_data <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(n() == 1 & all(!!sym(.path_column) %in% .ending_events)) %>%
+            ungroup() %>%
+            select(entity_id) %>%
+            distinct()
+        only_success_data[[.path_column]] <- "No Prior Data"
+        only_success_data[[.visit_index]] <- -Inf
+
+        .path_data <- .path_data %>%
+            bind_rows(bounced_path_data) %>%
+            bind_rows(only_success_data) %>%
+            arrange(!!sym(.id), !!sym(.visit_index))
+    }
+
+    # convert dataset so that it has `source->target` pairs (e.g. visit1 -> visit2; visit2 -> visit3)
+    source_target_data <- .path_data %>%
+        unite(channel_source, c(!!sym(.path_column), !!sym(.visit_index)), sep = "~~") %>%
+        group_by(!!sym(.id)) %>%
+        mutate(channel_target = lead(channel_source)) %>%
+        ungroup() %>%
+        filter(!is.na(channel_target))
+
+    if(!is.null(.ending_events)) {
+
+        original_event_name <- str_remove(source_target_data$channel_target, pattern = "~~.*")
+        source_target_data$channel_target <- ifelse(original_event_name %in% .ending_events,
+                                                    original_event_name,
+                                                    source_target_data$channel_target)
+
+        # we should only check if the user provides us .ending_events value(s), otherwise, all bets are off
+        # e.g. might happen if the person only has 1 touch-point (e.g. bounced or converted without any prior touch-points)
+        stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
+    }
+
+    total_rows <- nrow(source_target_data)
+
+    source_target_data <- source_target_data %>%
+        unite(step, c(channel_source, channel_target), remove = FALSE, sep = " -> ") %>%
+        group_by(step, channel_source, channel_target) %>%
+        summarise(num_touch_points=n(),
+                  num_touch_points_distinct=n_distinct(!!sym(.id))) %>%
+        ungroup() %>%
+        arrange(desc(num_touch_points))
+    stop_if_not_identical(source_target_data$num_touch_points, source_target_data$num_touch_points_distinct)
+    stop_if_any_duplicated(source_target_data$step)
+    stop_if_any_duplicated(source_target_data %>% select(channel_source, channel_target))
+    stop_if_not_identical(total_rows, sum(source_target_data$num_touch_points))
+
+    source_target_data <- source_target_data %>% select(-num_touch_points_distinct)
+
+    # TODO: CAN WE CHECK TO MAKE SURE THE COUNT FOR THE ENTRY POINT IS THE SAME AS THE COUNT FOR THE EXIT POINT?
+    first_touch <- .path_data %>% filter(touch_index == 1)
+    stop_if_any_duplicated(first_touch[[.id]])
+    last_touch <- .path_data %>%
+        group_by(!!sym(.id)) %>%
+        filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
+        ungroup()
+    stop_if_any_duplicated(last_touch[[.id]])
+    stopifnot(nrow(first_touch) == nrow(last_touch))
+    # first_touch %>% count(!!sym(.path_column), sort = TRUE)
+    # last_touch %>% count(!!sym(.path_column), sort = TRUE)
+
+    if(!is.null(.ending_events)) {
+        stopifnot(all(last_touch[[.path_column]] %in% c(.ending_event_fill_name, .ending_events)))
+    }
+
+    rt_stopif(nrow(source_target_data) > 200)
+    unique_nodes <- bind_rows(source_target_data %>%
+                                  count(channel_source, wt=num_touch_points, name = 'num_touch_points') %>%
+                                  arrange(num_touch_points) %>%
+                                  select(channel_source, num_touch_points) %>%
+                                  rename(channel_name=channel_source),
+                              source_target_data %>%
+                                  count(channel_target, wt=num_touch_points, name = 'num_touch_points') %>%
+                                  arrange(num_touch_points) %>%
+                                  select(channel_target, num_touch_points) %>%
+                                  rename(channel_name=channel_target)) %>%
+        count(channel_name, wt=num_touch_points, name = 'num_touch_points') %>%
+        arrange(desc(num_touch_points)) %>%
+        pull(channel_name)
+
+    source_indexes <- match(source_target_data$channel_source, unique_nodes) - 1
+    target_indexes <- match(source_target_data$channel_target, unique_nodes) - 1
+
+    source_target_data$source <- source_indexes
+    source_target_data$target <- target_indexes
+
+    unique_nodes <- str_remove(string=unique_nodes, pattern = "~~.*")
+    sankey_nodes_df <- data.frame(name=c(unique_nodes))
+
+    #stopifnot(all(unique_nodes %in% names(color_dictionary)))
+    # color_dictionary <- c(color_dictionary,
+    #                       c("Joined Experiment"=rt_colors_good_bad()[1], "No Further Visits"=rt_colors_good_bad()[2],
+    #                         "Other"=rt_colors(color_names = 'dove_gray')))
+    color_dictionary <- rt_colors()[1:length(.global_path_values)]
+    names(color_dictionary) <- .global_path_values
+    rt_stopif(any(duplicated(names(color_dictionary))))
+    rt_stopif(any(duplicated(as.character(color_dictionary))))
+
+    selected_colors <- as.character(color_dictionary[unique_nodes])
+
+    color_string <- rt_str_collapse(unique(selected_colors),.surround = '"', .separate = ", ")
+    ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
+    rt_stopif(nrow(source_target_data) > 200)
+
+
+    stopifnot(all(.order_by %in% c('size', 'optimize', 'both')))
+    .order_by <- .order_by[1]
+    sankey_plots <- list()
+    if(.order_by %in% c('size', 'both')) {
+
+        sankey_plot <- sankeyNetwork(Links = source_target_data %>% as.data.frame(),
+                                                Nodes = sankey_nodes_df %>% as.data.frame(),
+                                                Source = 'source',
+                                                Target = 'target',
+                                                Value = 'num_touch_points',
+                                                NodeID = 'name',
+                                                iterations=0,  # forces the cells in the diagram to appear in order of size
+                                                colourScale = ColourScal,
+                                                #units = 'TWh',
+                                                fontSize = 12, nodeWidth = 30)
+        sankey_plots <- append_list(sankey_plots, sankey_plot)
+    }
+
+    if(.order_by %in% c('optimize', 'both')) {
+
+        # save an alternative image where we do not force the order of the items
+        sankey_plot <- sankeyNetwork(Links = source_target_data %>% as.data.frame(),
+                                                Nodes = sankey_nodes_df %>% as.data.frame(),
+                                                Source = 'source',
+                                                Target = 'target',
+                                                Value = 'num_touch_points',
+                                                NodeID = 'name',
+                                                #iterations=0,
+                                                colourScale = ColourScal,
+                                                #units = 'TWh',
+                                                fontSize = 12, nodeWidth = 30)
+        sankey_plots <- append_list(sankey_plots, sankey_plot)
+    }
+
+    return (sankey_plots[!is.na(sankey_plots)])
+}
