@@ -658,7 +658,6 @@ rt_plot_sankey <- function(.path_data,
         .path_data[[.path_column]] <- ifelse(original_path_values %in% .ending_events,
                                              original_path_values,
                                              .path_data[[.path_column]])
-
     }
     ############################################################
 
@@ -702,6 +701,33 @@ rt_plot_sankey <- function(.path_data,
             bind_rows(only_success_data) %>%
             arrange(!!sym(.id), !!sym(.visit_index))
     }
+
+    .path_data <- .path_data %>%
+        group_by(!!sym(.id)) %>%
+        mutate(custom__touch_index = row_number(!!sym(.visit_index)),
+               custom__touch_index_rev = rev(custom__touch_index)) %>%
+        ungroup()
+
+    # -1 because we want to exclude the last event from this filter e.g. if .depth_threshold is 1 we still want to include the event
+    # before the last event (we want to see the final touch before the "conversion")
+    .path_data[[.path_column]] <- ifelse(.path_data$custom__touch_index >.depth_threshold & .path_data$custom__touch_index_rev - 1 > .depth_threshold,
+                                         '<Not Shown>',
+                                         .path_data[[.path_column]])
+    .path_data$custom__touch_index <- NULL
+    .path_data$custom__touch_index_rev <- NULL
+
+
+    # now we have to remove multiple not showns
+    # but we can't remove "other", which also might appear multiple times
+    .path_data <- .path_data %>%
+        group_by(!!sym(.id), !!sym(.path_column)) %>%
+        # either the column is not <Not Shown> or (if it is) it has to be the first occurance
+        filter(!!sym(.path_column) != '<Not Shown>' | row_number(!!sym(.visit_index)) == 1) %>%
+        ungroup()# %>%
+#filter(!!sym(.path_column) == '<Not Shown>') %>%
+#View()
+    stopifnot(all(.path_data %>% filter(!!sym(.path_column) == '<Not Shown>') %>% pull(!!sym(.visit_index)) == .depth_threshold + 1))
+
 
     # convert dataset so that it has `source->target` pairs (e.g. visit1 -> visit2; visit2 -> visit3)
     source_target_data <- .path_data %>%

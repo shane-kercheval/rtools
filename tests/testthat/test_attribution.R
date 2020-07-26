@@ -885,6 +885,21 @@ test_that("rt_plot_sankey", {
 
 
 
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .add_final_missing_event = FALSE,
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'),
+                                  .depth_threshold=1,
+                                  .top_n_categories = 2)
+
+
+
+
+
     # TEST:
     # instances where the entity/person does not have a success metric
     # instances where the entity/person only has a success metric but no prior activity
