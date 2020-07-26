@@ -1051,12 +1051,10 @@ test_that("rt_plot_sankey_no_prior", {
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
-
     # TEST:
     # instances where the entity/person does not have a success metric
     # instances where the entity/person only has a success metric but no prior activity
     # instances where everyone has a success metric
-
 })
 
 
