@@ -11,10 +11,11 @@ rt_plot_sankey(
   .visit_index = "touch_index",
   .global_path_values = NULL,
   .ending_events = NULL,
+  .add_final_missing_event = TRUE,
   .ending_event_fill_name = "End of Data",
   .order_by = c("size", "optimize", "both"),
   .depth_threshold = 4,
-  .proportion_threshold_other_category = 0.01
+  .top_n_categories = 10
 )
 }
 \arguments{
@@ -36,7 +37,7 @@ rt_plot_sankey(
 
 \item{.depth_threshold}{description}
 
-\item{.proportion_threshold_other_category}{description}
+\item{.top_n_categories}{description}
 }
 \description{
 TBD
