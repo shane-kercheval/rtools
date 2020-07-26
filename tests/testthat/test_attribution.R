@@ -876,11 +876,6 @@ test_that("rt_plot_sankey", {
     stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
-
-
-
-
-
 })
 
 test_that("TODO", {
