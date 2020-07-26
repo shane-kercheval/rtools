@@ -608,9 +608,18 @@ rt_attribution_pivot_longer <- function(attribution_models) {
     return (attribution_models)
 }
 
-#' transforms attribution dataframe to long format
+#' TBD
 #'
-#' @param attribution_models dataframe with columns `channel_name | xxx_conversions | xxx_value`
+#' @param .path_data description
+#' @param .id description
+#' @param .path_column description
+#' @param .visit_index description
+#' @param .global_path_values description
+#' @param .ending_events description
+#' @param .ending_event_fill_name description
+#' @param .order_by description
+#' @param .depth_threshold description
+#' @param .proportion_threshold_other_category description
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom forcats fct_lump
