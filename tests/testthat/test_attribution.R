@@ -807,17 +807,6 @@ test_that("rt_plot_sankey", {
         rt_campaign_add_path_id(.use_first_conversion=TRUE,
                                 .sort=TRUE)
 
-    # create a scenario where someone has a single conversion event but no other events
-    campaign_data <- bind_rows(
-        data.frame(id='madeupid',
-                   timestamp=Sys.time(),
-                   step='My Conversion',
-                   step_type='Conversion',
-                   num_conversions=1,
-                   conversion_value=2,
-                   .path_id='madeupid'),
-        campaign_data)
-
     .ending_events <- campaign_data %>% filter(step_type == 'Conversion') %>% select(step_type, step) %>% distinct() %>% pull(step)
 
     .path_data <- campaign_data %>%
@@ -933,6 +922,143 @@ test_that("rt_plot_sankey", {
     # instances where everyone has a success metric
 
 })
+
+test_that("rt_plot_sankey_no_prior", {
+
+    # use campaign data
+    # this dataset returns touch-points (e.g. A -> B -> C -> Converted) up until the first conversion
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt__mock__attribution_to_clickstream() %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE,
+                                .sort=TRUE)
+
+    # create a scenario where someone has a single conversion event but no other events
+    campaign_data <- bind_rows(
+        data.frame(id='madeupid',
+                   timestamp=Sys.time(),
+                   step='My Conversion',
+                   step_type='Conversion',
+                   num_conversions=1,
+                   conversion_value=2,
+                   .path_id='madeupid'),
+        campaign_data)
+
+    .ending_events <- campaign_data %>% filter(step_type == 'Conversion') %>% select(step_type, step) %>% distinct() %>% pull(step)
+    .path_data <- campaign_data %>%
+        group_by(id, step) %>%
+        filter(row_number(timestamp) == 1) %>%
+        ungroup() %>%
+        group_by(id) %>%
+        mutate(touch_index = row_number(timestamp)) %>%
+        ungroup() %>%
+        rename(entity_id = id,
+               touch_category=step) %>%
+        select(entity_id, touch_category, touch_index)
+
+    save_sankey_plot <- function(.sankey_plot, .file_name) {
+
+        networkD3::saveNetwork(sankey_plot, paste0(.file_name, ".html"))
+        # note you have to install the package and run "install_phantomjs()"
+        #install.packages('webshot')
+        #webshot::install_phantomjs()
+        #library(webshot)
+        webshot::webshot(url = paste0(.file_name, ".html"), file=paste0(.file_name, ".png"))
+    }
+
+    sankey_plot <- rt_plot_sankey(.path_data %>%
+                                      rename(my_id = entity_id,
+                                             my_cat = touch_category,
+                                             my_index = touch_index),
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events)
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_size__no_prior'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'))
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize__no_prior'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+
+
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .add_final_missing_event = FALSE,
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'),
+                                  .top_n_categories = 2)
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE__no_prior'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .add_final_missing_event = FALSE,
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'),
+                                  .depth_threshold=1,
+                                  .top_n_categories = 2)
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1__no_prior'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .add_final_missing_event = TRUE,
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'),
+                                  .depth_threshold=1,
+                                  .top_n_categories = 2)
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final__no_prior'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+
+    # TEST:
+    # instances where the entity/person does not have a success metric
+    # instances where the entity/person only has a success metric but no prior activity
+    # instances where everyone has a success metric
+
+})
+
 
 test_that("TODO", {
     skip("sandbox")
