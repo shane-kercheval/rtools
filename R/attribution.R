@@ -619,7 +619,7 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #' @param .ending_event_fill_name description
 #' @param .order_by description
 #' @param .depth_threshold description
-#' @param .proportion_threshold_other_category description
+#' @param .top_n_categories description
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom forcats fct_lump
@@ -635,10 +635,11 @@ rt_plot_sankey <- function(.path_data,
                            .visit_index='touch_index',
                            .global_path_values=NULL,
                            .ending_events=NULL,
+                           .add_final_missing_event=TRUE,
                            .ending_event_fill_name='End of Data',
                            .order_by=c('size', 'optimize', 'both'),
                            .depth_threshold=4,
-                           .proportion_threshold_other_category=0.01) {
+                           .top_n_categories=10) {
 
     ############################################################
     # we want to lump categories together if they meet the threshold
@@ -648,8 +649,8 @@ rt_plot_sankey <- function(.path_data,
         original_path_values <- .path_data[[.path_column]]
     }
     .path_data[[.path_column]] <- as.character(fct_lump(.path_data[[.path_column]],
-                                                        prop = .proportion_threshold_other_category,
-                                                        ties.method = 'first', ))
+                                                        n = .top_n_categories,
+                                                        ties.method = 'first'))
     if(!is.null(.ending_events)) {
         # however, want to keep success/ending events
         # so if the original value was an ending event, replace with that event, otherwise keep the
@@ -669,18 +670,24 @@ rt_plot_sankey <- function(.path_data,
         # 3) if we don't have this value, then the final event will show up multiple
         # these 2 things will make sure everyone is represent from beginning to end.
 
-
         # 1) bounced
-        bounced_path_data <- .path_data %>%
-            group_by(!!sym(.id)) %>%
-            filter(!any(!!sym(.path_column) %in% .ending_events)) %>%
-            ungroup() %>%
-            select(entity_id) %>%
-            distinct()
-        bounced_path_data[[.path_column]] <- .ending_event_fill_name
-        bounced_path_data[[.visit_index]] <- Inf
-        # nothing other than success event
+        if(.add_final_missing_event) {
 
+            bounced_path_data <- .path_data %>%
+                group_by(!!sym(.id)) %>%
+                filter(!any(!!sym(.path_column) %in% .ending_events)) %>%
+                ungroup() %>%
+                select(entity_id) %>%
+                distinct()
+            bounced_path_data[[.path_column]] <- .ending_event_fill_name
+            bounced_path_data[[.visit_index]] <- Inf
+
+        } else {
+
+            bounced_path_data <- NULL
+        }
+
+        # nothing other than success event
         only_success_data <- .path_data %>%
             group_by(!!sym(.id)) %>%
             filter(n() == 1 & all(!!sym(.path_column) %in% .ending_events)) %>%
@@ -713,7 +720,10 @@ rt_plot_sankey <- function(.path_data,
 
         # we should only check if the user provides us .ending_events value(s), otherwise, all bets are off
         # e.g. might happen if the person only has 1 touch-point (e.g. bounced or converted without any prior touch-points)
-        stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
+        if(.add_final_missing_event) {
+
+            stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
+        }
     }
 
     total_rows <- nrow(source_target_data)
@@ -733,18 +743,20 @@ rt_plot_sankey <- function(.path_data,
     source_target_data <- source_target_data %>% select(-num_touch_points_distinct)
 
     # TODO: CAN WE CHECK TO MAKE SURE THE COUNT FOR THE ENTRY POINT IS THE SAME AS THE COUNT FOR THE EXIT POINT?
-    first_touch <- .path_data %>% filter(touch_index == 1)
-    stop_if_any_duplicated(first_touch[[.id]])
-    last_touch <- .path_data %>%
-        group_by(!!sym(.id)) %>%
-        filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
-        ungroup()
-    stop_if_any_duplicated(last_touch[[.id]])
-    stopifnot(nrow(first_touch) == nrow(last_touch))
-    # first_touch %>% count(!!sym(.path_column), sort = TRUE)
-    # last_touch %>% count(!!sym(.path_column), sort = TRUE)
-
-    if(!is.null(.ending_events)) {
+    if(.add_final_missing_event & !is.null(.ending_events)) {
+        # check to make sure the same count of people who enter the funnel also exit the funnel
+        # only makes sense if we add "End of Data" touchpoint for those who don't "convert"
+        first_touch <- .path_data %>% filter(touch_index == 1)
+        stop_if_any_duplicated(first_touch[[.id]])
+        last_touch <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
+            ungroup()
+        stop_if_any_duplicated(last_touch[[.id]])
+        stopifnot(nrow(first_touch) == nrow(last_touch))
+        stop_if_not_identical(sort(first_touch[[.id]]), sort(last_touch[[.id]]))
+        # first_touch %>% count(!!sym(.path_column), sort = TRUE)
+        # last_touch %>% count(!!sym(.path_column), sort = TRUE)
         stopifnot(all(last_touch[[.path_column]] %in% c(.ending_event_fill_name, .ending_events)))
     }
 

@@ -799,13 +799,15 @@ test_that("rt_get_any_touch_attribution2", {
 
 test_that("rt_plot_sankey", {
 
+    # use campaign data
+    # this dataset returns touch-points (e.g. A -> B -> C -> Converted) up until the first conversion
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         rt__mock__attribution_to_clickstream() %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE,
                                 .sort=TRUE)
 
-    # create a scenario where someone has a conversion event but no other events
+    # create a scenario where someone has a single conversion event but no other events
     campaign_data <- bind_rows(
         data.frame(id='madeupid',
                    timestamp=Sys.time(),
@@ -828,15 +830,6 @@ test_that("rt_plot_sankey", {
         rename(entity_id = id,
                touch_category=step) %>%
         select(entity_id, touch_category, touch_index)
-
-    .id='entity_id'
-    .path_column='touch_category'
-    .visit_index='touch_index'
-    # used for assigning specific colors to specific values, across function calls
-    .global_path_values <- unique(.path_data$touch_category)
-    # TEST:
-    # instances where the entity/person does not have a success metric
-    # instances where the entity/person only has a success metric but no prior activity
 
     save_sankey_plot <- function(.sankey_plot, .file_name) {
 
@@ -876,6 +869,26 @@ test_that("rt_plot_sankey", {
     stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+
+
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .add_final_missing_event = FALSE,
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'),
+                                  .top_n_categories = 2)
+
+
+
+    # TEST:
+    # instances where the entity/person does not have a success metric
+    # instances where the entity/person only has a success metric but no prior activity
+
 })
 
 test_that("TODO", {
