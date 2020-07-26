@@ -37,3 +37,13 @@ test_helper__campaign_add_conversions <- function(.campaign_data) {
 
     return (.campaign_data)
 }
+
+test_helper__save_sankey_plot <- function(.sankey_plot, .file_name) {
+
+    networkD3::saveNetwork(sankey_plot, paste0(.file_name, ".html"))
+    # note you have to install the package and run "install_phantomjs()"
+    #install.packages('webshot')
+    #webshot::install_phantomjs()
+    #library(webshot)
+    webshot::webshot(url = paste0(.file_name, ".html"), file=paste0(.file_name, ".png"))
+}

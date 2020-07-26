@@ -608,18 +608,41 @@ rt_attribution_pivot_longer <- function(attribution_models) {
     return (attribution_models)
 }
 
-#' TBD
+#' creates a sankey diagram based on a data-frame containing touch-points in the form of
 #'
-#' @param .path_data description
+#'     entity_id | touch_category | touch_index
+#'     ========================================
+#'     personA   | Home Page      | 1
+#'     personA   | Pricing Page   | 2
+#'     personA   | Conversion     | 3
+#'     personB   | Home Page      | 1
+#'     personB   | Bounced        | 2
+#'     personC   | Pricing        | 1
+#'
+#' where the column names are specified as parameters.
+#'
+#' @param .path_data data-frame of touch-points
 #' @param .id description
 #' @param .path_column description
 #' @param .visit_index description
 #' @param .global_path_values description
-#' @param .ending_events description
-#' @param .ending_event_fill_name description
-#' @param .order_by description
+
+#' @param .ensure_complete_funnel If TRUE, this makes sure that the number of people/entities in the first level
+#'         of the sankey plot equals the number of people/entities in the final level of the plot
+#'         Any path where the last touch-point is not one of the values in
+#'         `.valid_final_touch_points` is considered a "bounce" and an additional touch-point will be added.
+#'         The value of the new touch-point will be based on `.bounced_fill_value`
+#'         Any path that only 1 touch-point and the value is in `.valid_final_touch_points` will have an additional
+#'         touch-point added of "<No Prior Touch-Point>"
+#' @param .bounced_fill_value description
+#' @param .valid_final_touch_points specify what is considered the ending events.
+
+#' @param .global_path_values a list of all possible touch-categories, which the colors will be based on. This
+#'        ensures that the colors of graphs are consistent across multiple graphs even if the same categories
+#'        don't show up in each graph
+
 #' @param .depth_threshold description
-#' @param .top_n_categories description
+#' @param .order_by determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom forcats fct_lump
@@ -633,35 +656,37 @@ rt_plot_sankey <- function(.path_data,
                            .id='entity_id',
                            .path_column='touch_category',
                            .visit_index='touch_index',
+
+                           .valid_final_touch_points=NULL,
+
+                           .ensure_complete_funnel=TRUE,
+                           .bounced_fill_value='Bounced',
+                           .no_prior_data='<No Prior Touch-Point>',
+
                            .global_path_values=NULL,
-                           .ending_events=NULL,
-                           .add_final_missing_event=TRUE,
-                           .ending_event_fill_name='End of Data',
-                           .order_by=c('size', 'optimize', 'both'),
-                           .depth_threshold=4,
-                           .top_n_categories=10) {
 
-    ############################################################
-    # we want to lump categories together if they meet the threshold
-    # except we want to retain all .ending_events
-    ############################################################
-    if(!is.null(.ending_events)) {
-        original_path_values <- .path_data[[.path_column]]
-    }
-    .path_data[[.path_column]] <- as.character(fct_lump(.path_data[[.path_column]],
-                                                        n = .top_n_categories,
-                                                        ties.method = 'first'))
-    if(!is.null(.ending_events)) {
-        # however, want to keep success/ending events
-        # so if the original value was an ending event, replace with that event, otherwise keep the
-        # post-lumped value
-        .path_data[[.path_column]] <- ifelse(original_path_values %in% .ending_events,
-                                             original_path_values,
-                                             .path_data[[.path_column]])
-    }
-    ############################################################
+                           .depth_threshold=NULL,
+                           .order_by=c('size', 'optimize', 'both')) {
 
-    if(!is.null(.ending_events)) {
+    if(.ensure_complete_funnel) {
+        # if we are going to be adding in "Bounce" touch-points, we have to know what is considered a non-bounce
+        # otherwise, we can just get all of the final touch-points to merge at the end
+        rt_stopif(is.null(.valid_final_touch_points))
+    }
+
+    # we need this list so that at the end we can replace "Final Touch Point~~4" & "Final Touch Point~~5"
+    # with "Final Touch Point" to ensure there aren't duplicate ending touch-points
+    if(is.null(.valid_final_touch_points)) {
+
+        .valid_final_touch_points <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
+            ungroup() %>%
+            pull(!!sym(.path_column)) %>%
+            unique()
+    }
+
+    if(.ensure_complete_funnel) {
 
         # if this isn't null, then
         # 1) anyone who doesn't have a success event has "bounced"
@@ -670,64 +695,61 @@ rt_plot_sankey <- function(.path_data,
         # these 2 things will make sure everyone is represent from beginning to end.
 
         # 1) bounced
-        if(.add_final_missing_event) {
-
-            bounced_path_data <- .path_data %>%
-                group_by(!!sym(.id)) %>%
-                filter(!any(!!sym(.path_column) %in% .ending_events)) %>%
-                ungroup() %>%
-                select(!!sym(.id)) %>%
-                distinct()
-            bounced_path_data[[.path_column]] <- .ending_event_fill_name
-            bounced_path_data[[.visit_index]] <- Inf
-
-        } else {
-
-            bounced_path_data <- NULL
-        }
+        bounced_path_data <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!any(!!sym(.path_column) %in% .valid_final_touch_points)) %>%
+            ungroup() %>%
+            select(!!sym(.id)) %>%
+            distinct()
+        bounced_path_data[[.path_column]] <- .bounced_fill_value
+        bounced_path_data[[.visit_index]] <- Inf
 
         # nothing other than success event
         only_success_data <- .path_data %>%
             group_by(!!sym(.id)) %>%
-            filter(n() == 1 & all(!!sym(.path_column) %in% .ending_events)) %>%
+            filter(n() == 1 & all(!!sym(.path_column) %in% .valid_final_touch_points)) %>%
             ungroup() %>%
             select(!!sym(.id)) %>%
             distinct()
-        only_success_data[[.path_column]] <- "No Prior Data"
+        only_success_data[[.path_column]] <- .no_prior_data
         only_success_data[[.visit_index]] <- -Inf
 
         .path_data <- .path_data %>%
             bind_rows(bounced_path_data) %>%
             bind_rows(only_success_data) %>%
             arrange(!!sym(.id), !!sym(.visit_index))
+
+        stop_if_any_duplicated(.path_data)
     }
 
-    .path_data <- .path_data %>%
-        group_by(!!sym(.id)) %>%
-        mutate(custom__touch_index = row_number(!!sym(.visit_index)),
-               custom__touch_index_rev = rev(custom__touch_index)) %>%
-        ungroup()
+    if(!is.null(.depth_threshold)) {
 
-    # -1 because we want to exclude the last event from this filter e.g. if .depth_threshold is 1 we still want to include the event
-    # before the last event (we want to see the final touch before the "conversion")
-    .path_data[[.path_column]] <- ifelse(.path_data$custom__touch_index >.depth_threshold & .path_data$custom__touch_index_rev - 1 > .depth_threshold,
-                                         '<Not Shown>',
-                                         .path_data[[.path_column]])
-    .path_data$custom__touch_index <- NULL
-    .path_data$custom__touch_index_rev <- NULL
+        .path_data <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            mutate(custom__touch_index = row_number(!!sym(.visit_index)),
+                   custom__touch_index_rev = rev(custom__touch_index)) %>%
+            ungroup()
+
+        # -1 because we want to exclude the last event from this filter e.g. if .depth_threshold is 1 we still want to include the event
+        # before the last event (we want to see the final touch before the "conversion")
+        .path_data[[.path_column]] <- ifelse(.path_data$custom__touch_index >.depth_threshold & .path_data$custom__touch_index_rev - 1 > .depth_threshold,
+                                             '<Not Shown>',
+                                             .path_data[[.path_column]])
+        .path_data$custom__touch_index <- NULL
+        .path_data$custom__touch_index_rev <- NULL
 
 
-    # now we have to remove multiple not showns
-    # but we can't remove "other", which also might appear multiple times
-    .path_data <- .path_data %>%
-        group_by(!!sym(.id), !!sym(.path_column)) %>%
-        # either the column is not <Not Shown> or (if it is) it has to be the first occurance
-        filter(!!sym(.path_column) != '<Not Shown>' | row_number(!!sym(.visit_index)) == 1) %>%
-        ungroup()# %>%
-#filter(!!sym(.path_column) == '<Not Shown>') %>%
-#View()
-    stopifnot(all(.path_data %>% filter(!!sym(.path_column) == '<Not Shown>') %>% pull(!!sym(.visit_index)) == .depth_threshold + 1))
-
+        # now we have to remove multiple not showns
+        # but we can't remove "other", which also might appear multiple times
+        .path_data <- .path_data %>%
+            group_by(!!sym(.id), !!sym(.path_column)) %>%
+            # either the column is not <Not Shown> or (if it is) it has to be the first occurance
+            filter(!!sym(.path_column) != '<Not Shown>' | row_number(!!sym(.visit_index)) == 1) %>%
+            ungroup()# %>%
+        #filter(!!sym(.path_column) == '<Not Shown>') %>%
+        #View()
+        stopifnot(all(.path_data %>% filter(!!sym(.path_column) == '<Not Shown>') %>% pull(!!sym(.visit_index)) == .depth_threshold + 1))
+    }
 
     # convert dataset so that it has `source->target` pairs (e.g. visit1 -> visit2; visit2 -> visit3)
     source_target_data <- .path_data %>%
@@ -737,19 +759,57 @@ rt_plot_sankey <- function(.path_data,
         ungroup() %>%
         filter(!is.na(channel_target))
 
-    if(!is.null(.ending_events)) {
+    rt_stopif(is.null(.valid_final_touch_points))
+    rt_stopif(length(.valid_final_touch_points) == 0)
 
-        original_event_name <- str_remove(source_target_data$channel_target, pattern = "~~.*")
-        source_target_data$channel_target <- ifelse(original_event_name %in% .ending_events,
-                                                    original_event_name,
-                                                    source_target_data$channel_target)
+    original_event_name <- str_remove(source_target_data$channel_target, pattern = "~~.*")
 
-        # we should only check if the user provides us .ending_events value(s), otherwise, all bets are off
-        # e.g. might happen if the person only has 1 touch-point (e.g. bounced or converted without any prior touch-points)
-        if(.add_final_missing_event) {
+    source_target_data$channel_target <- ifelse(original_event_name %in% .valid_final_touch_points,
+                                                original_event_name,
+                                                source_target_data$channel_target)
 
-            stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
-        }
+    # we should only check if the user provides us .valid_final_touch_points value(s), otherwise, all bets are off
+    # e.g. might happen if the person only has 1 touch-point (e.g. bounced or converted without any prior touch-points)
+    if(.ensure_complete_funnel) {
+
+        stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
+
+        num_entities <- length(unique(.path_data[[.id]]))
+        first_touch_expected <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!!sym(.visit_index) == min(!!sym(.visit_index))) %>%
+            ungroup() %>%
+            count(!!sym(.path_column), sort = TRUE) %>%
+            rename(channel_source = !!sym(.path_column))
+
+        first_touch_calculated <- source_target_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(row_number() == 1) %>%
+            ungroup() %>%
+
+            #filter(str_detect(channel_source, pattern = '~~1$')) %>%
+            mutate(channel_source = str_remove(channel_source, pattern = '~~.*')) %>%
+            count(channel_source, sort=TRUE)
+        stopifnot(num_entities == sum(first_touch_calculated$n))
+        stopifnot(rt_are_dataframes_equal(first_touch_expected, first_touch_calculated))
+
+        last_touch_expected <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
+            ungroup() %>%
+            count(!!sym(.path_column), sort = TRUE) %>%
+            rename(channel_target = !!sym(.path_column))
+
+        last_touch_calculated <- source_target_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(row_number() == max(row_number())) %>%
+            ungroup() %>%
+            #filter(str_detect(channel_target, pattern = '~~1$')) %>%
+            mutate(channel_target = str_remove(channel_target, pattern = '~~.*')) %>%
+            count(channel_target, sort=TRUE)
+        stopifnot(num_entities == sum(last_touch_calculated$n))
+        stopifnot(rt_are_dataframes_equal(last_touch_expected, last_touch_calculated))
+        stopifnot(all(last_touch_calculated$channel_target %in% c(.bounced_fill_value, .valid_final_touch_points)))
     }
 
     total_rows <- nrow(source_target_data)
@@ -767,24 +827,6 @@ rt_plot_sankey <- function(.path_data,
     stop_if_not_identical(total_rows, sum(source_target_data$num_touch_points))
 
     source_target_data <- source_target_data %>% select(-num_touch_points_distinct)
-
-    # TODO: CAN WE CHECK TO MAKE SURE THE COUNT FOR THE ENTRY POINT IS THE SAME AS THE COUNT FOR THE EXIT POINT?
-    if(.add_final_missing_event & !is.null(.ending_events)) {
-        # check to make sure the same count of people who enter the funnel also exit the funnel
-        # only makes sense if we add "End of Data" touchpoint for those who don't "convert"
-        first_touch <- .path_data %>% filter(!!sym(.visit_index) == 1)
-        stop_if_any_duplicated(first_touch[[.id]])
-        last_touch <- .path_data %>%
-            group_by(!!sym(.id)) %>%
-            filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
-            ungroup()
-        stop_if_any_duplicated(last_touch[[.id]])
-        stopifnot(nrow(first_touch) == nrow(last_touch))
-        stop_if_not_identical(sort(first_touch[[.id]]), sort(last_touch[[.id]]))
-        # first_touch %>% count(!!sym(.path_column), sort = TRUE)
-        # last_touch %>% count(!!sym(.path_column), sort = TRUE)
-        stopifnot(all(last_touch[[.path_column]] %in% c(.ending_event_fill_name, .ending_events)))
-    }
 
     rt_stopif(nrow(source_target_data) > 200)
     unique_nodes <- bind_rows(source_target_data %>%
@@ -814,13 +856,21 @@ rt_plot_sankey <- function(.path_data,
     # color_dictionary <- c(color_dictionary,
     #                       c("Joined Experiment"=rt_colors_good_bad()[1], "No Further Visits"=rt_colors_good_bad()[2],
     #                         "Other"=rt_colors(color_names = 'dove_gray')))
-    color_dictionary <- rt_colors()[1:length(.global_path_values)]
+
+    if(is.null(.global_path_values)) {
+
+        .global_path_values <- sort(unique(.path_data[[.path_column]]))
+    }
+
+
+    rt_stopif(is.null(.global_path_values))
+    color_dictionary <- rep(rt_colors(), 20)[1:length(.global_path_values)]
     names(color_dictionary) <- .global_path_values
+
     rt_stopif(any(duplicated(names(color_dictionary))))
-    rt_stopif(any(duplicated(as.character(color_dictionary))))
+    #rt_stopif(any(duplicated(as.character(color_dictionary))))
 
     selected_colors <- as.character(color_dictionary[unique_nodes])
-
     color_string <- rt_str_collapse(unique(selected_colors),.surround = '"', .separate = ", ")
     ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
     rt_stopif(nrow(source_target_data) > 200)
