@@ -625,7 +625,7 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #' @importFrom forcats fct_lump
 #' @importFrom networkD3 sankeyNetwork
 #' @importFrom tidyr unite
-#' @importFrom dplyr select group_by filter ungroup distinct bind_rows arrange unite mutate summarise desc count rename pull
+#' @importFrom dplyr select group_by filter ungroup distinct bind_rows arrange mutate summarise desc count rename pull
 #' @importFrom stringr str_remove
 #'
 #' @export
