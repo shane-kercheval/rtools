@@ -841,10 +841,13 @@ test_that("rt_plot_sankey", {
         webshot::webshot(url = paste0(.file_name, ".html"), file=paste0(.file_name, ".png"))
     }
 
-    sankey_plot <- rt_plot_sankey(.path_data,
-                                  .id='entity_id',
-                                  .path_column='touch_category',
-                                  .visit_index='touch_index',
+    sankey_plot <- rt_plot_sankey(.path_data %>%
+                                      rename(my_id = entity_id,
+                                             my_cat = touch_category,
+                                             my_index = touch_index),
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
                                   .global_path_values=.global_path_values,
                                   .ending_events=.ending_events)
 

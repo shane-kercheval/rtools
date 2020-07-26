@@ -676,7 +676,7 @@ rt_plot_sankey <- function(.path_data,
                 group_by(!!sym(.id)) %>%
                 filter(!any(!!sym(.path_column) %in% .ending_events)) %>%
                 ungroup() %>%
-                select(entity_id) %>%
+                select(!!sym(.id)) %>%
                 distinct()
             bounced_path_data[[.path_column]] <- .ending_event_fill_name
             bounced_path_data[[.visit_index]] <- Inf
@@ -691,7 +691,7 @@ rt_plot_sankey <- function(.path_data,
             group_by(!!sym(.id)) %>%
             filter(n() == 1 & all(!!sym(.path_column) %in% .ending_events)) %>%
             ungroup() %>%
-            select(entity_id) %>%
+            select(!!sym(.id)) %>%
             distinct()
         only_success_data[[.path_column]] <- "No Prior Data"
         only_success_data[[.visit_index]] <- -Inf
@@ -772,7 +772,7 @@ rt_plot_sankey <- function(.path_data,
     if(.add_final_missing_event & !is.null(.ending_events)) {
         # check to make sure the same count of people who enter the funnel also exit the funnel
         # only makes sense if we add "End of Data" touchpoint for those who don't "convert"
-        first_touch <- .path_data %>% filter(touch_index == 1)
+        first_touch <- .path_data %>% filter(!!sym(.visit_index) == 1)
         stop_if_any_duplicated(first_touch[[.id]])
         last_touch <- .path_data %>%
             group_by(!!sym(.id)) %>%
