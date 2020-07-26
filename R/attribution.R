@@ -622,16 +622,16 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #' @importFrom stringr str_remove
 #'
 #' @export
-create_sankey <- function(.path_data,
-                          .id='entity_id',
-                          .path_column='touch_category',
-                          .visit_index='touch_index',
-                          .global_path_values=NULL,
-                          .ending_events=NULL,
-                          .ending_event_fill_name='End of Data',
-                          .order_by=c('size', 'optimize', 'both'),
-                          .depth_threshold=4,
-                          .proportion_threshold_other_category=0.01) {
+rt_plot_sankey <- function(.path_data,
+                           .id='entity_id',
+                           .path_column='touch_category',
+                           .visit_index='touch_index',
+                           .global_path_values=NULL,
+                           .ending_events=NULL,
+                           .ending_event_fill_name='End of Data',
+                           .order_by=c('size', 'optimize', 'both'),
+                           .depth_threshold=4,
+                           .proportion_threshold_other_category=0.01) {
 
     ############################################################
     # we want to lump categories together if they meet the threshold
@@ -815,5 +815,10 @@ create_sankey <- function(.path_data,
         sankey_plots <- append_list(sankey_plots, sankey_plot)
     }
 
-    return (sankey_plots[!is.na(sankey_plots)])
+    sankey_plots <- sankey_plots[!is.na(sankey_plots)]
+    if(length(sankey_plots) == 1) {
+        sankey_plots <- sankey_plots[[1]]
+    }
+
+    return (sankey_plots)
 }
