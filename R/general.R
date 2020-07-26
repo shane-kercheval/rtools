@@ -530,14 +530,14 @@ rt_peak <- function(.df, .n=25) {
 rt_get_year_month_factors <- function(.date_vector, .abbreviate=FALSE) {
 
     if(.abbreviate) {
-    
+
         month_names <- month.abb
 
     } else {
 
         month_names <- month.name
     }
-    
+
     return(list(
         year_factor=as.factor(as.character(year(.date_vector))),
         month_factor=factor(months(.date_vector, abbreviate = .abbreviate), levels=month_names)
@@ -558,6 +558,116 @@ rt_add_year_month_factors <- function(.data, .column, .abbreviate=FALSE) {
     year_month_factors <- rt_get_year_month_factors(.data[[.column]], .abbreviate)
     .data[[paste0(.column, '_year')]] <- year_month_factors$year_factor
     .data[[paste0(.column, '_month')]] <- year_month_factors$month_factor
-    
+
     return (.data)
+}
+
+#' `append` appears not to work with dates any longer... in 4.0.2.. perhaps they will fix
+#' e.g.:
+#'     selections <- list()
+#'     append(selections, Sys.Date())  # do not know how to convert 'e' to class “Date”
+#'     selections <- list(Sys.Date())
+#'     append(selections, Sys.Date())  # adds date as numeric.. this use to work
+#'
+#' @param .list_a list to append to
+#' @param .values any value or set of values to append to the list
+#'
+#' @export
+append_list <- function(.list_a, .values) {
+    # `append` appears not to work with dates any longer... in 4.0.2.. perhaps they will fix
+    # selections <- list()
+    # append(selections, Sys.Date())  # do not know how to convert 'e' to class “Date”
+    # selections <- list(Sys.Date())
+    # append(selections, Sys.Date())  # adds date as numeric.. this use to work
+
+    return (c(.list_a, list(.values)))
+}
+
+#' wrapper arround `any(duplicated(.x))`
+#'
+#' @param .x vector of e.g. characters
+#'
+#' @export
+any_duplicated <- function(.x) {
+    any(duplicated(.x))
+}
+
+#' wrapper arround `stop_if(any(is.na(.x)))`. If `.empty_string_as_missing` is set to TRUE, it also treats
+#'    empty strings as missing values. Otherwise, is just checks for NA values.
+#'
+#' @param .x vector of e.g. characters
+#' @param .empty_string_as_missing if TRUE, empty strings are treated as missing. If TRUE, .x must be a character or factor vector
+#'
+#' @export
+any_missing <- function(.x, .empty_string_as_missing=FALSE) {
+
+    if(.empty_string_as_missing) {
+
+        if(is.null(.x) || any(is.na(.x))) {
+
+            return (TRUE)
+
+        } else {
+
+            stopifnot(is.character(.x) || is.factor(.x))
+            return (any(.x == ''))
+        }
+
+    } else {
+
+        return (is.null(.x) || any(is.na(.x)))
+    }
+}
+
+#' If any of the expressions are TRUE, `stop` is called
+#'
+#' @param .expression any number of R expressions which should each evaluatoe to a logical vector
+#'
+#' @export
+stop_if <- function(.expression) {
+    stopifnot(!.expression)
+}
+
+#' wrapper arround `stop_if(any(duplicated(.x)))`
+#'
+#' @param .x vector of e.g. characters
+#'
+#' @export
+stop_if_any <- function(.x) {
+    stop_if(any(.x))
+}
+
+#' wrapper arround `stop_if(any(duplicated(.x)))`
+#'
+#' @param .x vector of e.g. characters
+#'
+#' @export
+stop_if_any_duplicated <- function(.x) {
+    stop_if_any(duplicated(.x))
+}
+
+#' Wrapper around `stop_if(any_missing(.x, .empty_string_as_missing))`
+#'
+#' @param .x vector of e.g. characters
+#' @param .empty_string_as_missing if TRUE, empty strings are treated as missing
+#'
+#' @export
+stop_if_any_missing <- function(.x, .empty_string_as_missing=FALSE) {
+
+    stop_if(any_missing(.x, .empty_string_as_missing))
+}
+
+#' Wrapper around `stopifnot(identical(.x, .y))`
+#'
+#' Mainly, this is here so that I remember not to do `stopifnot(all(.x == .y))` because if one of .x or .y has
+#' zero length all() still evaluates to TRUE and the program is not stopped, even though .x and .y do not have
+#' the same values
+#'
+#' @param .x vector of e.g. characters
+#' @param .y vector of e.g. characters
+#'
+#' @export
+stop_if_not_identical <- function(.x, .y) {
+
+    stopifnot(identical(.x, .y))
 }

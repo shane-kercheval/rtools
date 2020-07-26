@@ -604,3 +604,172 @@ test_that("rt_add_year_month_factors", {
     expect_identical(levels(date_df$date_column_month), month.abb)
     expect_identical(as.character(date_df$date_column_month), rep(month.abb, 2))
 })
+
+test_that("append_list", {
+    current_date <- Sys.Date()
+
+    my_list <- list()
+    my_list <- append_list(my_list, c(current_date, current_date + days(1)))
+    my_list <- append_list(my_list, c(1, 2))
+    my_list <- append_list(my_list, c('a', 'b'))
+    my_list <- append_list(my_list, c(TRUE, FALSE))
+    my_list <- append_list(my_list, as.POSIXct(current_date))
+    my_list <- append_list(my_list, 1)
+    my_list <- append_list(my_list, 'a')
+    my_list <- append_list(my_list, FALSE)
+    my_list <- append_list(my_list, NA)
+
+    my_list <- append_list(my_list, c(TRUE, NA))
+    my_list <- append_list(my_list, c(current_date, NA))
+
+    expect_identical(my_list[[1]], c(current_date, current_date + days(1)))
+    expect_identical(my_list[[2]], c(1, 2))
+    expect_identical(my_list[[3]], c('a', 'b'))
+    expect_identical(my_list[[4]], c(TRUE, FALSE))
+    expect_equal(my_list[[5]], as.POSIXct(current_date))
+    expect_equal(my_list[[6]], 1)
+    expect_equal(my_list[[7]], 'a')
+    expect_equal(my_list[[8]], FALSE)
+    expect_true(is.na(my_list[[9]]))
+
+    expect_identical(my_list[[10]], c(TRUE, NA))
+    expect_identical(my_list[[11]], c(current_date, NA))
+})
+
+test_that('any_duplicated', {
+    expect_true(any_duplicated(c(1, 2, 1)))
+    expect_true(any_duplicated(c(TRUE, FALSE, TRUE)))
+    expect_true(any_duplicated(c('a', 'b', 'a')))
+
+    expect_false(any_duplicated(c(1, 2)))
+    expect_false(any_duplicated(c(TRUE, FALSE)))
+    expect_false(any_duplicated(c('a', 'b')))
+})
+
+test_that('stop_if', {
+    expect_error(stop_if(TRUE))
+})
+
+test_that('stop_if_any', {
+    expect_error(stop_if_any(c(TRUE, FALSE, FALSE)))
+    stop_if_any(c(FALSE, FALSE, FALSE))
+})
+
+test_that('stop_if_any_duplicated', {
+    expect_error(stop_if_any_duplicated(c(1, 2, 1)))
+    expect_error(stop_if_any_duplicated(c(TRUE, FALSE, TRUE)))
+    expect_error(stop_if_any_duplicated(c('a', 'b', 'a')))
+
+    stop_if_any_duplicated(c(1, 2))
+    stop_if_any_duplicated(c(TRUE, FALSE))
+    stop_if_any_duplicated(c('a', 'b'))
+})
+
+test_that('any_missing', {
+
+    # .empty_string_as_missing == TRUE
+    expect_true(any_missing(NA, .empty_string_as_missing=TRUE))
+    expect_true(any_missing('', .empty_string_as_missing=TRUE))
+    expect_true(any_missing(NULL, .empty_string_as_missing=TRUE))
+
+    expect_true(any_missing(c(NA), .empty_string_as_missing=TRUE))
+    expect_true(any_missing(c(''), .empty_string_as_missing=TRUE))
+    expect_true(any_missing(c(NULL), .empty_string_as_missing=TRUE))
+
+    expect_true(any_missing(c(1, 2, 3, NA), .empty_string_as_missing=TRUE))
+    expect_true(any_missing(c('a', 'b', 'c', NA), .empty_string_as_missing=TRUE))
+    expect_true(any_missing(c('a', 'b', 'c', ''), .empty_string_as_missing=TRUE))
+    expect_true(any_missing(factor(c('a', 'b', 'c', '')), .empty_string_as_missing=TRUE))
+
+    expect_false(any_missing(c(' '), .empty_string_as_missing=TRUE))
+    expect_error(any_missing(c(1), .empty_string_as_missing=TRUE))
+    expect_false(any_missing(c('a'), .empty_string_as_missing=TRUE))
+    expect_false(any_missing(c('a', 'b', 'c', ' '), .empty_string_as_missing=TRUE))
+    expect_false(any_missing(factor(c('a', 'b', 'c', ' ')), .empty_string_as_missing=TRUE))
+
+    # .empty_string_as_missing == FALSE
+    expect_true(any_missing(NA, .empty_string_as_missing=FALSE))
+    expect_false(any_missing('', .empty_string_as_missing=FALSE))
+    expect_true(any_missing(NULL, .empty_string_as_missing=FALSE))
+
+    expect_true(any_missing(c(NA), .empty_string_as_missing=FALSE))
+    expect_false(any_missing(c(''), .empty_string_as_missing=FALSE))
+    expect_true(any_missing(c(NULL), .empty_string_as_missing=FALSE))
+
+    expect_true(any_missing(c(1, 2, 3, NA), .empty_string_as_missing=FALSE))
+    expect_true(any_missing(c('a', 'b', 'c', NA), .empty_string_as_missing=FALSE))
+    expect_false(any_missing(c('a', 'b', 'c', ''), .empty_string_as_missing=FALSE))
+    expect_false(any_missing(factor(c('a', 'b', 'c', '')), .empty_string_as_missing=FALSE))
+
+    expect_false(any_missing(c(' '), .empty_string_as_missing=FALSE))
+    expect_false(any_missing(c(1), .empty_string_as_missing=FALSE))
+    expect_false(any_missing(c('a'), .empty_string_as_missing=FALSE))
+    expect_false(any_missing(c('a', 'b', 'c', ' '), .empty_string_as_missing=FALSE))
+
+    # test stop_if_any_missing
+    # .empty_string_as_missing == TRUE
+    expect_error(stop_if_any_missing(NA, .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing('', .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing(NULL, .empty_string_as_missing=TRUE))
+
+    expect_error(stop_if_any_missing(c(NA), .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing(c(''), .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing(c(NULL), .empty_string_as_missing=TRUE))
+
+    expect_error(stop_if_any_missing(c(1, 2, 3, NA), .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing(c('a', 'b', 'c', NA), .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing(c('a', 'b', 'c', ''), .empty_string_as_missing=TRUE))
+    expect_error(stop_if_any_missing(factor(c('a', 'b', 'c', '')), .empty_string_as_missing=TRUE))
+
+    stop_if_any_missing(c(' '), .empty_string_as_missing=TRUE)
+    expect_error(stop_if_any_missing(c(1), .empty_string_as_missing=TRUE))
+    stop_if_any_missing(c('a'), .empty_string_as_missing=TRUE)
+    stop_if_any_missing(c('a', 'b', 'c', ' '), .empty_string_as_missing=TRUE)
+
+    # .empty_string_as_missing == FALSE
+    expect_error(stop_if_any_missing(NA, .empty_string_as_missing=FALSE))
+    stop_if_any_missing('', .empty_string_as_missing=FALSE)
+    expect_error(stop_if_any_missing(NULL, .empty_string_as_missing=FALSE))
+
+    expect_error(stop_if_any_missing(c(NA), .empty_string_as_missing=FALSE))
+    stop_if_any_missing(c(''), .empty_string_as_missing=FALSE)
+    expect_error(stop_if_any_missing(c(NULL), .empty_string_as_missing=FALSE))
+
+    expect_error(stop_if_any_missing(c(1, 2, 3, NA), .empty_string_as_missing=FALSE))
+    expect_error(stop_if_any_missing(c('a', 'b', 'c', NA), .empty_string_as_missing=FALSE))
+    stop_if_any_missing(c('a', 'b', 'c', ''), .empty_string_as_missing=FALSE)
+    stop_if_any_missing(factor(c('a', 'b', 'c', '')), .empty_string_as_missing=FALSE)
+
+    stop_if_any_missing(c(' '), .empty_string_as_missing=FALSE)
+    stop_if_any_missing(c(1), .empty_string_as_missing=FALSE)
+    stop_if_any_missing(c('a'), .empty_string_as_missing=FALSE)
+    stop_if_any_missing(c('a', 'b', 'c', ' '), .empty_string_as_missing=FALSE)
+    stop_if_any_missing(factor(c('a', 'b', 'c', ' ')), .empty_string_as_missing=FALSE)
+})
+
+test_that('any_missing - non-characters', {
+
+    test_values <- data.frame(col1=c(1, NA, 3, 4), col2=c('a', 'b', NA, 'd'), col3=c(Sys.Date(), Sys.Date(), Sys.Date(), NA))
+    expect_true(any_missing(.x=test_values, .empty_string_as_missing = TRUE))
+    expect_true(any_missing(.x=test_values, .empty_string_as_missing = FALSE))
+
+    test_values <- data.frame(col1=c(1, 2, 3, 4), col2=c('a', 'b', 'c', 'd'), col3=c(Sys.Date(), Sys.Date(), Sys.Date(), Sys.Date()))
+    expect_false(any_missing(.x=test_values, .empty_string_as_missing = FALSE))
+
+    test_values <- data.frame(col2=c('a', 'b', '', 'd'))
+    expect_error(any_missing(.x=test_values, .empty_string_as_missing = TRUE))
+    expect_false(any_missing(.x=test_values, .empty_string_as_missing = FALSE))
+})
+
+test_that('stop_if_not_identical', {
+
+    stop_if_not_identical(c(1, 2, 2), c(1, 2, 2))
+    stop_if_not_identical(c(1, NA, 2), c(1, NA, 2))
+    stop_if_not_identical(NULL, NULL)
+    stop_if_not_identical(NULL, c())
+    stop_if_not_identical(c(), c())
+
+    expect_error(stop_if_not_identical(c(), NA))
+    expect_error(stop_if_not_identical(c(1, NA, 2), c()))
+    expect_error(stop_if_not_identical(c(1, NA, 2), NULL))
+})
