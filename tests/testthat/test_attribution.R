@@ -838,18 +838,6 @@ test_that("rt_", {
     # instances where the entity/person does not have a success metric
     # instances where the entity/person only has a success metric but no prior activity
 
-
-
-    append_list <- function(.list_a, .values) {
-        # `append` appears not to work with dates any longer... in 4.0.2.. perhaps they will fix
-        # selections <- list()
-        # append(selections, Sys.Date())  # do not know how to convert 'e' to class “Date”
-        # selections <- list(Sys.Date())
-        # append(selections, Sys.Date())  # adds date as numeric.. this use to work
-
-        return (c(.list_a, list(.values)))
-    }
-
     #' @param experiment_page the page the experiment is shown on; we won't include these page visits and need to
     #'        filter them out sense they might randomly be sent before/after the ab:viewed events
     #' @param visit_depth_threshold contorls the number of subsequent pages that are shown in the sankey plot
