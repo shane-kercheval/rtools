@@ -885,8 +885,12 @@ test_that("rt_plot_sankey", {
                                   .ending_events=.ending_events,
                                   .order_by=c('optimize'),
                                   .top_n_categories = 2)
-
-
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='entity_id',
@@ -898,14 +902,35 @@ test_that("rt_plot_sankey", {
                                   .order_by=c('optimize'),
                                   .depth_threshold=1,
                                   .top_n_categories = 2)
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
-
-
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='entity_id',
+                                  .path_column='touch_category',
+                                  .visit_index='touch_index',
+                                  .add_final_missing_event = TRUE,
+                                  .global_path_values=.global_path_values,
+                                  .ending_events=.ending_events,
+                                  .order_by=c('optimize'),
+                                  .depth_threshold=1,
+                                  .top_n_categories = 2)
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final'
+    save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
 
     # TEST:
     # instances where the entity/person does not have a success metric
     # instances where the entity/person only has a success metric but no prior activity
+    # instances where everyone has a success metric
 
 })
 
