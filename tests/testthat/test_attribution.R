@@ -859,7 +859,7 @@ test_that("rt_", {
                               .visit_index='touch_index',
                               .global_path_values=NULL,
                               .ending_events=NULL,
-                              .ending_event_fill_name='Bounced',
+                              .ending_event_fill_name='End of Data',
                               .order_by=c('size', 'optimize', 'both'),
                               .depth_threshold=4,
                               .proportion_threshold_other_category=0.01) {
@@ -969,7 +969,7 @@ test_that("rt_", {
         # last_touch %>% count(!!sym(.path_column), sort = TRUE)
 
         if(!is.null(.ending_events)) {
-            stopifnot(all(last_touch[[.path_column]] %in% c("Bounced", .ending_events)))
+            stopifnot(all(last_touch[[.path_column]] %in% c(.ending_event_fill_name, .ending_events)))
         }
 
         rt_stopif(nrow(source_target_data) > 200)
