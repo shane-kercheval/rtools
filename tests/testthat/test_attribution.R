@@ -957,7 +957,20 @@ test_that("rt_", {
         source_target_data <- source_target_data %>% select(-num_touch_points_distinct)
 
         # TODO: CAN WE CHECK TO MAKE SURE THE COUNT FOR THE ENTRY POINT IS THE SAME AS THE COUNT FOR THE EXIT POINT?
+        first_touch <- .path_data %>% filter(touch_index == 1)
+        stop_if_any_duplicated(first_touch[[.id]])
+        last_touch <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
+            ungroup()
+        stop_if_any_duplicated(last_touch[[.id]])
+        stopifnot(nrow(first_touch) == nrow(last_touch))
+        # first_touch %>% count(!!sym(.path_column), sort = TRUE)
+        # last_touch %>% count(!!sym(.path_column), sort = TRUE)
 
+        if(!is.null(.ending_events)) {
+            stopifnot(all(last_touch[[.path_column]] %in% c("Bounced", .ending_events)))
+        }
 
         rt_stopif(nrow(source_target_data) > 200)
         unique_nodes <- bind_rows(source_target_data %>%
@@ -999,9 +1012,8 @@ test_that("rt_", {
         rt_stopif(nrow(source_target_data) > 200)
 
 
-        .order_by=c('size', 'optimize', 'both')
+        stopifnot(all(.order_by %in% c('size', 'optimize', 'both')))
         .order_by <- .order_by[1]
-
         sankey_plots <- list()
         if(.order_by %in% c('size', 'both')) {
 
