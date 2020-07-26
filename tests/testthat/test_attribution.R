@@ -837,6 +837,22 @@ test_that("rt_", {
     # TEST:
     # instances where the entity/person does not have a success metric
     # instances where the entity/person only has a success metric but no prior activity
+    create_sankey(.path_data,
+                  .id='entity_id',
+                  .path_column='touch_category',
+                  .visit_index='touch_index',
+                  .global_path_values=.global_path_values,
+                  .ending_events=.ending_events)
+
+
+    create_sankey(.path_data,
+                  .id='entity_id',
+                  .path_column='touch_category',
+                  .visit_index='touch_index',
+                  .global_path_values=.global_path_values,
+                  .ending_events=.ending_events,
+                  .order_by=c('optimize'))
+
 
     #' @param experiment_page the page the experiment is shown on; we won't include these page visits and need to
     #'        filter them out sense they might randomly be sent before/after the ab:viewed events
@@ -1031,7 +1047,7 @@ test_that("rt_", {
                                                     colourScale = ColourScal,
                                                     #units = 'TWh',
                                                     fontSize = 12, nodeWidth = 30)
-            sankey_plots <- append_list(sankey_plot)
+            sankey_plots <- append_list(sankey_plots, sankey_plot)
         }
 
         return (sankey_plots[!is.na(sankey_plots)])
