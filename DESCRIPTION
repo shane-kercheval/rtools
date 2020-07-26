@@ -23,6 +23,7 @@ Imports:
     magrittr,
     modelr,
     moments,
+    networkD3,
     nycflights13,
     purrr,
     reshape2,
@@ -35,7 +36,5 @@ Imports:
     tidyverse,
     tibble,
     zoo,
-Suggests: 
-    testthat,
-    networkD3
+Suggests: testthat
 RoxygenNote: 7.1.1
