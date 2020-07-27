@@ -976,7 +976,6 @@ test_that("asdfadsfadsf", {
                my_cat = step,
                my_index = touch_index)
 
-
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
                                   .path_column='my_cat',
