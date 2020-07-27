@@ -2,24 +2,24 @@
 % Please edit documentation in R/attribution.R
 \name{rt_plot_sankey}
 \alias{rt_plot_sankey}
-\title{TBD}
+\title{creates a sankey diagram based on a data-frame containing touch-points in the form of}
 \usage{
 rt_plot_sankey(
   .path_data,
   .id = "entity_id",
   .path_column = "touch_category",
   .visit_index = "touch_index",
+  .valid_final_touch_points = NULL,
+  .ensure_complete_funnel = TRUE,
+  .bounced_fill_value = "Bounced",
+  .no_prior_data = "<No Prior Touch-Point>",
   .global_path_values = NULL,
-  .ending_events = NULL,
-  .add_final_missing_event = TRUE,
-  .ending_event_fill_name = "End of Data",
-  .order_by = c("size", "optimize", "both"),
-  .depth_threshold = 4,
-  .top_n_categories = 10
+  .depth_threshold = NULL,
+  .order_by = c("size", "optimize", "both")
 )
 }
 \arguments{
-\item{.path_data}{description}
+\item{.path_data}{data-frame of touch-points}
 
 \item{.id}{description}
 
@@ -27,18 +27,36 @@ rt_plot_sankey(
 
 \item{.visit_index}{description}
 
-\item{.global_path_values}{description}
+\item{.valid_final_touch_points}{specify what is considered the ending events.}
 
-\item{.ending_events}{description}
+\item{.ensure_complete_funnel}{If TRUE, this makes sure that the number of people/entities in the first level
+of the sankey plot equals the number of people/entities in the final level of the plot
+Any path where the last touch-point is not one of the values in
+`.valid_final_touch_points` is considered a "bounce" and an additional touch-point will be added.
+The value of the new touch-point will be based on `.bounced_fill_value`
+Any path that only 1 touch-point and the value is in `.valid_final_touch_points` will have an additional
+touch-point added of "<No Prior Touch-Point>"}
 
-\item{.ending_event_fill_name}{description}
+\item{.bounced_fill_value}{description}
 
-\item{.order_by}{description}
+\item{.global_path_values}{a list of all possible touch-categories, which the colors will be based on. This
+ensures that the colors of graphs are consistent across multiple graphs even if the same categories
+don't show up in each graph}
 
 \item{.depth_threshold}{description}
 
-\item{.top_n_categories}{description}
+\item{.order_by}{determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot}
 }
 \description{
-TBD
+entity_id | touch_category | touch_index
+    ========================================
+    personA   | Home Page      | 1
+    personA   | Pricing Page   | 2
+    personA   | Conversion     | 3
+    personB   | Home Page      | 1
+    personB   | Bounced        | 2
+    personC   | Pricing        | 1
+}
+\details{
+where the column names are specified as parameters.
 }
