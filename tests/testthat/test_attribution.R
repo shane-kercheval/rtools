@@ -993,58 +993,6 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 })
 
-test_that("asdfadsfadsf", {
-
-    ##########################################################################################################
-    # .ensure_complete_funnel is false without valid_final_touch_points
-    ##########################################################################################################
-
-    # use campaign data
-    # this dataset returns touch-points (e.g. A -> B -> C -> Converted) up until the first conversion
-    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
-        test_helper__campaign_add_conversions() %>%
-        rt__mock__attribution_to_clickstream() %>%
-        rt_campaign_add_path_id(.use_first_conversion=TRUE,
-                                .sort=TRUE)
-
-    .ending_events <- campaign_data %>% filter(step_type == 'Conversion') %>% select(step_type, step) %>% distinct() %>% pull(step)
-
-    .path_data <- campaign_data %>%
-        group_by(id, step) %>%
-        filter(row_number(timestamp) == 1) %>%
-        ungroup() %>%
-        group_by(id) %>%
-        mutate(touch_index = row_number(timestamp)) %>%
-        ungroup() %>%
-        select(id, step, touch_index) %>%
-        rename(my_id = id,
-               my_cat = step,
-               my_index = touch_index)
-
-    sankey_plot <- rt_plot_sankey(.path_data,
-                                  .id='my_id',
-                                  .path_column='my_cat',
-                                  .visit_index='my_index',
-
-                                  #.valid_final_touch_points=.ending_events,
-
-                                  .ensure_complete_funnel=FALSE,
-                                  #.bounced_fill_value='Bounced',
-                                  #.no_prior_data='<No Prior Touch-Point>',
-
-                                  .global_path_values=NULL,
-
-                                  .depth_threshold=NULL,
-                                  .order_by='optimize')
-
-    sankey_file_name <- 'rt_plot_sankey__no_final_not_ensure'
-    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
-})
-
 test_that("rt_plot_sankey_no_prior", {
 
     # use campaign data
