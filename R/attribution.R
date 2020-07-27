@@ -672,6 +672,17 @@ rt_plot_sankey <- function(.path_data,
 
     .path_data <- .path_data %>% arrange(!!sym(.id), !!sym(.visit_index))
 
+    # apparently there is a bug in networkD3 where colors seem to get messed up if touch-points have spaces in
+    # the names :(
+    # https://stackoverflow.com/questions/39647938/r-specify-colors-in-sankeynetwork
+    #  but even when I fixed it, I kept getting the same issue. I ended up putting an underscore between
+    # Natural and Gas (Natural Gas -> Natural_Gas) and that fixed it.
+    .path_data[[.path_column]] <- str_replace_all(.path_data[[.path_column]], pattern = ' ', replacement = '-')
+    .valid_final_touch_points <- str_replace_all(.valid_final_touch_points, pattern = ' ', replacement = '-')
+    if(!is.null(.global_path_values)) {
+        .global_path_values <- str_replace_all(.global_path_values, pattern = ' ', replacement = '-')
+    }
+
     if(.ensure_complete_funnel) {
         # if we are going to be adding in "Bounce" touch-points, we have to know what is considered a non-bounce
         # otherwise, we can just get all of the final touch-points to merge at the end
@@ -849,7 +860,6 @@ rt_plot_sankey <- function(.path_data,
         .global_path_values <- sort(unique(.path_data[[.path_column]]))
     }
 
-
     rt_stopif(is.null(.global_path_values))
     color_dictionary <- rep(rt_colors(), 20)[1:length(.global_path_values)]
     names(color_dictionary) <- .global_path_values
@@ -861,7 +871,6 @@ rt_plot_sankey <- function(.path_data,
     color_string <- rt_str_collapse(unique(selected_colors),.surround = '"', .separate = ", ")
     ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
     rt_stopif(nrow(source_target_data) > 200)
-
 
     stopifnot(all(.order_by %in% c('size', 'optimize', 'both')))
     .order_by <- .order_by[1]
