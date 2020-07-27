@@ -598,8 +598,15 @@ rt_explore_plot_value_totals <- function(dataset,
         }
 
         if(is.factor(unique_facet_values)) {
+
+            facet_value_levels <- levels(unique_facet_values)
+            if(any(is.na(unique_facet_values))) {
+
+                facet_value_levels <- c(facet_value_levels, NA)
+            }
+            facet_value_levels <- paste(facet_variable, '-', facet_value_levels)
             groups_by_variable[[facet_variable]] <- factor(groups_by_variable[[facet_variable]],
-                                                           levels= paste(facet_variable, '-', levels(unique_facet_values)),
+                                                           levels=facet_value_levels,
                                                            ordered=TRUE)
         }
     }
