@@ -861,7 +861,7 @@ rt_plot_sankey <- function(.path_data,
 
     } else {
 
-        .global_path_values <- sort(unique(.global_path_values))
+        .global_path_values <- sort(unique(c(.global_path_values, .bounced_fill_value, .no_prior_data)))
     }
 
     rt_stopif(is.null(.global_path_values))

@@ -866,7 +866,7 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
-    # global colors
+    # .global_path_values
     ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
