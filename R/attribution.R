@@ -561,7 +561,7 @@ rt_get_any_touch_attribution <- function(.campaign_data,
         select(!!sym(.path_id), temp___path_conversion) %>%
         distinct()
 
-    rt_stopif(any(duplicated(path_conversions$.path_id)))
+    rt_stopif(any(duplicated(path_conversions[[.path_id]])))
 
     stopifnot(all(rowSums(path_conversion_matrix) > 0))
     stopifnot(all.equal(apply(path_conversion_matrix, 1, max), path_conversions$temp___path_conversion))
