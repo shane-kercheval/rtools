@@ -622,11 +622,12 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #' where the column names are specified as parameters.
 #'
 #' @param .path_data data-frame of touch-points
-#' @param .id description
-#' @param .path_column description
-#' @param .visit_index description
-#' @param .global_path_values description
-
+#' @param .id entity id column
+#' @param .path_column column of the path or touch-points
+#' @param .visit_index numeric index touch-points
+#'
+#' @param .valid_final_touch_points specify what is considered the ending events.
+#'
 #' @param .ensure_complete_funnel If TRUE, this makes sure that the number of people/entities in the first level
 #'         of the sankey plot equals the number of people/entities in the final level of the plot
 #'         Any path where the last touch-point is not one of the values in
@@ -634,14 +635,14 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #'         The value of the new touch-point will be based on `.bounced_fill_value`
 #'         Any path that only 1 touch-point and the value is in `.valid_final_touch_points` will have an additional
 #'         touch-point added of "<No Prior Touch-Point>"
-#' @param .bounced_fill_value description
-#' @param .valid_final_touch_points specify what is considered the ending events.
-
+#' @param .bounced_fill_value the value to be inserted as a touch-point when an entity bounces (does not have a conversion touch-point)
+#' @param .no_prior_data the value to be inserted as a touch-point when an entity only has a conversion touch-point
+#'
 #' @param .global_path_values a list of all possible touch-categories, which the colors will be based on. This
 #'        ensures that the colors of graphs are consistent across multiple graphs even if the same categories
 #'        don't show up in each graph
-
-#' @param .depth_threshold description
+#'
+#' @param .depth_threshold the number of leves at the beginning and end of the journey/path
 #' @param .order_by determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot
 #'
 #' @importFrom magrittr "%>%"

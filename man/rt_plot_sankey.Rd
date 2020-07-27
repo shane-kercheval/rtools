@@ -21,11 +21,11 @@ rt_plot_sankey(
 \arguments{
 \item{.path_data}{data-frame of touch-points}
 
-\item{.id}{description}
+\item{.id}{entity id column}
 
-\item{.path_column}{description}
+\item{.path_column}{column of the path or touch-points}
 
-\item{.visit_index}{description}
+\item{.visit_index}{numeric index touch-points}
 
 \item{.valid_final_touch_points}{specify what is considered the ending events.}
 
@@ -37,13 +37,15 @@ The value of the new touch-point will be based on `.bounced_fill_value`
 Any path that only 1 touch-point and the value is in `.valid_final_touch_points` will have an additional
 touch-point added of "<No Prior Touch-Point>"}
 
-\item{.bounced_fill_value}{description}
+\item{.bounced_fill_value}{the value to be inserted as a touch-point when an entity bounces (does not have a conversion touch-point)}
+
+\item{.no_prior_data}{the value to be inserted as a touch-point when an entity only has a conversion touch-point}
 
 \item{.global_path_values}{a list of all possible touch-categories, which the colors will be based on. This
 ensures that the colors of graphs are consistent across multiple graphs even if the same categories
 don't show up in each graph}
 
-\item{.depth_threshold}{description}
+\item{.depth_threshold}{the number of leves at the beginning and end of the journey/path}
 
 \item{.order_by}{determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot}
 }
