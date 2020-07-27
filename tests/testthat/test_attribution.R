@@ -866,6 +866,31 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
+    # global colors
+    ##########################################################################################################
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=unique(.path_data$my_cat),
+
+                                  .depth_threshold=NULL,
+                                  .order_by=c('size', 'optimize', 'both'))
+
+    sankey_file_name <- 'rt_plot_sankey__global_colors'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+    ##########################################################################################################
     # Same but order_by=optimize
     ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
