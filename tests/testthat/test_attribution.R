@@ -1951,4 +1951,3 @@ test_that("TODO - sankey - 2", {
                   LinkGroup = 'energy_type', NodeGroup = NULL)
 
 })
-
