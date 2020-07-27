@@ -657,9 +657,8 @@ rt_plot_sankey <- function(.path_data,
                            .path_column='touch_category',
                            .visit_index='touch_index',
 
-                           .valid_final_touch_points=NULL,
-
                            .ensure_complete_funnel=TRUE,
+                           .valid_final_touch_points=NULL,
                            .bounced_fill_value='Bounced',
                            .no_prior_data='<No Prior Touch-Point>',
 
@@ -668,25 +667,11 @@ rt_plot_sankey <- function(.path_data,
                            .depth_threshold=NULL,
                            .order_by=c('size', 'optimize', 'both')) {
 
+    .path_data <- .path_data %>% arrange(!!sym(.id), !!sym(.visit_index))
     if(.ensure_complete_funnel) {
         # if we are going to be adding in "Bounce" touch-points, we have to know what is considered a non-bounce
         # otherwise, we can just get all of the final touch-points to merge at the end
         rt_stopif(is.null(.valid_final_touch_points))
-    }
-
-    # we need this list so that at the end we can replace "Final Touch Point~~4" & "Final Touch Point~~5"
-    # with "Final Touch Point" to ensure there aren't duplicate ending touch-points
-    if(is.null(.valid_final_touch_points)) {
-
-        .valid_final_touch_points <- .path_data %>%
-            group_by(!!sym(.id)) %>%
-            filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
-            ungroup() %>%
-            pull(!!sym(.path_column)) %>%
-            unique()
-    }
-
-    if(.ensure_complete_funnel) {
 
         # if this isn't null, then
         # 1) anyone who doesn't have a success event has "bounced"
@@ -753,7 +738,14 @@ rt_plot_sankey <- function(.path_data,
 
     # convert dataset so that it has `source->target` pairs (e.g. visit1 -> visit2; visit2 -> visit3)
     source_target_data <- .path_data %>%
-        unite(channel_source, c(!!sym(.path_column), !!sym(.visit_index)), sep = "~~") %>%
+        group_by(!!sym(.id)) %>%
+        mutate(custom__index = case_when (
+            !!sym(.visit_index) == min(!!sym(.visit_index)) ~ 'initial',
+            !!sym(.visit_index) == max(!!sym(.visit_index)) ~ 'final',
+            TRUE ~ as.character(!!sym(.visit_index))
+        )) %>%
+        ungroup() %>%
+        unite(channel_source, c(!!sym(.path_column), custom__index), sep = "~~") %>%
         group_by(!!sym(.id)) %>%
         mutate(channel_target = lead(channel_source)) %>%
         ungroup() %>%
@@ -762,11 +754,11 @@ rt_plot_sankey <- function(.path_data,
     rt_stopif(is.null(.valid_final_touch_points))
     rt_stopif(length(.valid_final_touch_points) == 0)
 
-    original_event_name <- str_remove(source_target_data$channel_target, pattern = "~~.*")
-
-    source_target_data$channel_target <- ifelse(original_event_name %in% .valid_final_touch_points,
-                                                original_event_name,
-                                                source_target_data$channel_target)
+    # original_event_name <- str_remove(source_target_data$channel_target, pattern = "~~.*")
+    #
+    # source_target_data$channel_target <- ifelse(original_event_name %in% .valid_final_touch_points,
+    #                                             original_event_name,
+    #                                             source_target_data$channel_target)
 
     # we should only check if the user provides us .valid_final_touch_points value(s), otherwise, all bets are off
     # e.g. might happen if the person only has 1 touch-point (e.g. bounced or converted without any prior touch-points)

@@ -821,15 +821,17 @@ test_that("rt_plot_sankey", {
                my_cat = step,
                my_index = touch_index)
 
+    ##########################################################################################################
     # if we are going to be adding in "Bounce" touch-points, we have to know what is considered a non-bounce
+    # via .valid_final_touch_points (i.e. can't be null)
+    ##########################################################################################################
     expect_error(rt_plot_sankey(.path_data,
                                 .id='my_id',
                                 .path_column='my_cat',
                                 .visit_index='my_index',
 
-                                .valid_final_touch_points=NULL,
-
                                 .ensure_complete_funnel=TRUE,
+                                .valid_final_touch_points=NULL,
                                 .bounced_fill_value='Bounced',
                                 .no_prior_data='<No Prior Touch-Point>',
 
@@ -838,15 +840,16 @@ test_that("rt_plot_sankey", {
                                 .depth_threshold=4,
                                 .order_by=c('size', 'optimize', 'both')))
 
-
+    ##########################################################################################################
+    # defaults
+    ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
                                   .path_column='my_cat',
                                   .visit_index='my_index',
 
-                                  .valid_final_touch_points=.ending_events,
-
                                   .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
                                   .bounced_fill_value='Bounced',
                                   .no_prior_data='<No Prior Touch-Point>',
 
@@ -862,15 +865,17 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
+    ##########################################################################################################
+    # Same but order_by=optimize
+    ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
                                   .path_column='my_cat',
                                   .visit_index='my_index',
 
-                                  .valid_final_touch_points=.ending_events,
-
                                   .ensure_complete_funnel=TRUE,
                                   .bounced_fill_value='Bounced',
+                                  .valid_final_touch_points=.ending_events,
                                   .no_prior_data='<No Prior Touch-Point>',
 
                                   .global_path_values=NULL,
@@ -885,6 +890,35 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
+    ##########################################################################################################
+    # randomize order of the data, ensure we get the same result
+    ##########################################################################################################
+    set.seed(42)
+    sankey_plot <- rt_plot_sankey(.path_data[sample(nrow(.path_data), replace = FALSE),],
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .bounced_fill_value='Bounced',
+                                  .valid_final_touch_points=.ending_events,
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .order_by='optimize')
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize__random_order'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
+    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+
+    ##########################################################################################################
+    # .ensure_complete_funnel=FALSE,
+    ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
                                   .path_column='my_cat',
@@ -908,6 +942,9 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
+    ##########################################################################################################
+    # depth threshold
+    ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
                                   .path_column='my_cat',
@@ -930,6 +967,9 @@ test_that("rt_plot_sankey", {
     stopifnot(file.remove(paste0(sankey_file_name, '.html')))
     stopifnot(file.remove(paste0(sankey_file_name, '.png')))
 
+    ##########################################################################################################
+    # depth threshold & .ensure_complete_funnel
+    ##########################################################################################################
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
                                   .path_column='my_cat',
@@ -954,6 +994,11 @@ test_that("rt_plot_sankey", {
 })
 
 test_that("asdfadsfadsf", {
+
+    ##########################################################################################################
+    # .ensure_complete_funnel is false without valid_final_touch_points
+    ##########################################################################################################
+
     # use campaign data
     # this dataset returns touch-points (e.g. A -> B -> C -> Converted) up until the first conversion
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
