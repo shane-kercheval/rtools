@@ -850,8 +850,26 @@ test_that("rt_get_any_touch_attribution2", {
 
     channel_attribution <- rt_get_channel_attribution(campaign_paths)
 
-    all_models <- any_touch_attribution %>%
-        bind_rows(channel_attribution)
+
+    found_values <- channel_attribution %>%
+        group_by(attribution_name, attribution_type) %>%
+        summarise(attribution_value = sum(attribution_value)) %>%
+        ungroup()
+
+    expect_true(all(round(found_values %>%
+                              filter(attribution_type == 'Conversion') %>%
+                              pull(attribution_value), 10) == sum(campaign_data$num_conversions)))
+    expect_true(all(round(found_values %>%
+                              filter(attribution_type == 'Conversion Value') %>%
+                              pull(attribution_value), 10) == sum(campaign_data$conversion_value)))
+
+    all_models <- any_touch_attribution %>% bind_rows(channel_attribution)
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__any_touch_any.png',
+                   plot=rt_plot_channel_attribution(any_touch_attribution))
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__any_touch_non_any.png',
+                   plot=rt_plot_channel_attribution(channel_attribution))
 
     test_save_plot(file_name='data/rt_plot_channel_attribution__any_touch_all_models.png',
                    plot=rt_plot_channel_attribution(all_models))

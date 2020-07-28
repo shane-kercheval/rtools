@@ -460,10 +460,19 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
 
     base_attribution_plot <- function(channel_plot, .show_values) {
 
+        known_models <- c("Any Touch", "First Touch", "Last Touch", "Linear Touch", "Markov")
+        found_models <- unique(channel_plot$data$attribution_name)
+        custom_colors <- rt_colors()
+        if(all(found_models %in% known_models)) {
+
+            custom_colors <- custom_colors[1:length(known_models)]
+            names(custom_colors) <- known_models
+            custom_colors <- custom_colors[found_models]
+        }
         channel_plot <- channel_plot +
             geom_col(position = position_dodge(width = 0.9),
                      alpha=0.75) +
-            scale_fill_manual(values=rt_colors()) +
+            scale_fill_manual(values=custom_colors) +
             theme_light() +
             theme(axis.text.x = element_text(angle=45, hjust=1)) +
             labs(y='Conversions',
