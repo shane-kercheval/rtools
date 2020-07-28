@@ -725,7 +725,7 @@ test_that("rt_plot_channel_attribution - numeric formatting", {
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         mutate(num_conversions = num_conversions * 10000,
-               conversion_value = conversion_value * 100000,)
+               conversion_value = conversion_value * 100000)
 
     steps <- campaign_data %>%
         select(step, step_type) %>%
