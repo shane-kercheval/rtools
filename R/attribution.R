@@ -463,7 +463,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
         if(channel_plot$labels$fill == 'attribution_name') {
 
             fill_value <- "Attribution Model"
-            known_models <- c("Any Touch", "First Touch", "Last Touch", "Linear Touch", "Markov")
+            known_models <- c("First Touch", "Last Touch", "Linear Touch", "Markov", "Any Touch")
             found_models <- unique(channel_plot$data$attribution_name)
             custom_colors <- rt_colors()
             if(all(found_models %in% known_models)) {
