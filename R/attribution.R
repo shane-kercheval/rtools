@@ -483,6 +483,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             geom_col(position = position_dodge(width = 0.9),
                      alpha=0.75) +
             scale_fill_manual(values=custom_colors) +
+            scale_y_continuous(breaks=pretty_breaks(10), labels = rt_pretty_axes) +
             theme_light() +
             theme(axis.text.x = element_text(angle=45, hjust=1)) +
             labs(y='Conversions',
@@ -495,7 +496,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             channel_plot <- channel_plot +
                 geom_text(aes(label=ifelse(attribution_value < 1,
                                            rt_pretty_axes_percent(attribution_value, increase_precision_delta = 0),
-                                           round(attribution_value))),
+                                           rt_pretty_numbers_long(attribution_value))),
                           position = position_dodge(width = 0.9),
                           angle=90,
                           hjust=1)

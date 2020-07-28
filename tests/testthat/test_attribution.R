@@ -721,6 +721,31 @@ test_that("rt_plot_channel_attribution", {
                                                     channel_categories))
 })
 
+test_that("rt_plot_channel_attribution - numeric formatting", {
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        mutate(num_conversions = num_conversions * 10000,
+               conversion_value = conversion_value * 100000,)
+
+    steps <- campaign_data %>%
+        select(step, step_type) %>%
+        distinct()
+    channel_categories <- steps$step_type
+    names(channel_categories) <- steps$step
+
+    ########
+    # first conversion: TRUE
+    # separate path_ids
+    ########
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+
+    test_save_plot(file_name='data/rt_plot_channel_attribution__number_formatting.png',
+                   plot=rt_plot_channel_attribution(channel_attribution))
+})
+
 test_that("rt_get_any_touch_attribution", {
 
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
