@@ -460,15 +460,25 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
 
     base_attribution_plot <- function(channel_plot, .show_values) {
 
-        known_models <- c("Any Touch", "First Touch", "Last Touch", "Linear Touch", "Markov")
-        found_models <- unique(channel_plot$data$attribution_name)
-        custom_colors <- rt_colors()
-        if(all(found_models %in% known_models)) {
+        if(channel_plot$labels$fill == 'attribution_name') {
 
-            custom_colors <- custom_colors[1:length(known_models)]
-            names(custom_colors) <- known_models
-            custom_colors <- custom_colors[found_models]
+            fill_value <- "Attribution Model"
+            known_models <- c("Any Touch", "First Touch", "Last Touch", "Linear Touch", "Markov")
+            found_models <- unique(channel_plot$data$attribution_name)
+            custom_colors <- rt_colors()
+            if(all(found_models %in% known_models)) {
+
+                custom_colors <- custom_colors[1:length(known_models)]
+                names(custom_colors) <- known_models
+                custom_colors <- custom_colors[found_models]
+            }
+        } else {
+
+            stopifnot(channel_plot$labels$fill == 'category')
+            fill_value <- "Category"
+            custom_colors <- rt_colors()
         }
+
         channel_plot <- channel_plot +
             geom_col(position = position_dodge(width = 0.9),
                      alpha=0.75) +
@@ -477,7 +487,7 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             theme(axis.text.x = element_text(angle=45, hjust=1)) +
             labs(y='Conversions',
                  x='Channel Name',
-                 fill="Attribution Model")
+                 fill=fill_value)
 
         if(.show_values) {
 
