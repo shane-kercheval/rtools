@@ -569,9 +569,8 @@ rt_get_any_touch_attribution <- function(.campaign_data,
     stopifnot(all(apply(path_conversion_matrix, 1, function(x) length(unique(x))) == 2))
 
     any_touch <- colSums(path_conversion_matrix)
-    any_touch <- any_touch / sum(any_touch)
-
-    stopifnot(sum(any_touch) == 1)
+    #any_touch <- any_touch / sum(any_touch)
+    #stopifnot(sum(any_touch) == 1)
 
     any_touch_df <- data.frame(channel_name=names(any_touch), any_touch=as.numeric(any_touch))
 

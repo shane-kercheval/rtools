@@ -727,41 +727,106 @@ test_that("rt_get_any_touch_attribution", {
         test_helper__campaign_add_conversions() %>%
         rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE)
 
+    # set the num_conversions & conversion_value values for each touch-point, grab only the touch-points
+    # associated with conversion
+    conversions <- campaign_data %>%
+        group_by(id) %>%
+        mutate(num_conversions = sum(num_conversions),
+               conversion_value = sum(conversion_value)) %>%
+        filter(sum(num_conversions) > 0) %>%
+        ungroup()
+
+    # only grab one touch-point per id
+    # so if Facebook -> Insta -> Facebook -> Conversion; then Facebook & Insta both get credit equally for the
+    # full conversion
+    expected_values <- conversions %>%
+        # grab the first occurance of the touch-point per id
+        group_by(id, step) %>%
+        filter(row_number(timestamp) == 1) %>%
+        ungroup() %>%
+        group_by(step) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value))
+
     # function has internal checks
-    conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions') %>%
+    conversion_matrix <- rt_get_any_touch_attribution(campaign_data,
+                                                      .conversion_column = 'num_conversions',
+                                                      .path_id='.path_id',
+                                                      .step='step') %>%
         arrange(channel_name)
-    expect_identical(as.character(conversion_matrix$channel_name),
-                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
-    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.2932551, 0.1700880, 0.1202346, 0.1524927, 0.2639296), 5)))
-    expect_true(sum(conversion_matrix$any_touch) == 1)
+
+    expected_values_num_conversions <- expected_values %>%
+        rename(channel_name = step,
+               any_touch = num_conversions) %>%
+        select(channel_name, any_touch) %>%
+        arrange(channel_name)
+    expect_true(rt_are_dataframes_equal(conversion_matrix, expected_values_num_conversions))
 
     # function has internal checks
     conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'conversion_value') %>%
         arrange(channel_name)
-    expect_identical(as.character(conversion_matrix$channel_name),
-                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
-    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.3014159, 0.1732661, 0.1187905, 0.1569474, 0.2495800), 5)))
-    expect_true(sum(conversion_matrix$any_touch) == 1)
+
+    expected_values_conversion_value <- expected_values %>%
+        rename(channel_name = step,
+               any_touch = conversion_value) %>%
+        select(channel_name, any_touch) %>%
+        arrange(channel_name)
+    expect_true(rt_are_dataframes_equal(conversion_matrix, expected_values_conversion_value))
+
 
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions() %>%
         rt_campaign_add_path_id(.use_first_conversion=FALSE, .sort=TRUE)
+    # now we aren't just using the first conversion
+    # the path id contains the unique conversion paths.
+    # some paths convert others do not
+    # basically, do the same as above but use the path-id rather than the id
+    # but
+    # set the num_conversions & conversion_value values for each touch-point, grab only the touch-points
+    # associated with conversion
+    conversions <- campaign_data %>%
+        group_by(.path_id) %>%
+        mutate(num_conversions = sum(num_conversions),
+               conversion_value = sum(conversion_value)) %>%
+        filter(sum(num_conversions) > 0) %>%
+        ungroup()
+
+    # only grab one touch-point per path-id
+    # so if Facebook -> Insta -> Facebook -> Conversion; then Facebook & Insta both get credit equally for the
+    # if the same person goes on to have another conversion, then because we are using path-id, it will count
+    # as a different conversion
+    # full conversion
+    expected_values <- conversions %>%
+        # grab the first occurance of the touch-point per id
+        group_by(.path_id, step) %>%
+        filter(row_number(timestamp) == 1) %>%
+        ungroup() %>%
+        group_by(step) %>%
+        summarise(num_conversions = sum(num_conversions),
+                  conversion_value = sum(conversion_value))
 
     # function has internal checks
-    conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'num_conversions') %>%
+    conversion_matrix <- rt_get_any_touch_attribution(campaign_data,
+                                                      .conversion_column = 'num_conversions') %>%
         arrange(channel_name)
-    expect_identical(as.character(conversion_matrix$channel_name),
-                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
-    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.2979275, 0.1735751, 0.1191710, 0.1450777, 0.2642487), 5)))
-    expect_true(sum(conversion_matrix$any_touch) == 1)
+
+    expected_values_num_conversions <- expected_values %>%
+        rename(channel_name = step,
+               any_touch = num_conversions) %>%
+        select(channel_name, any_touch) %>%
+        arrange(channel_name)
+    expect_true(rt_are_dataframes_equal(conversion_matrix, expected_values_num_conversions))
 
     # function has internal checks
     conversion_matrix <- rt_get_any_touch_attribution(campaign_data, .conversion_column = 'conversion_value') %>%
         arrange(channel_name)
-    expect_identical(as.character(conversion_matrix$channel_name),
-                     c("Facebook", "Instagram", "Online Display", "Online Video", "Paid Search"))
-    expect_true(all.equal(round(conversion_matrix$any_touch, 5), round(c(0.3109495, 0.1813516, 0.1146279, 0.1509837, 0.2420873), 5)))
-    expect_true(sum(conversion_matrix$any_touch) == 1)
+
+    expected_values_conversion_value <- expected_values %>%
+        rename(channel_name = step,
+               any_touch = conversion_value) %>%
+        select(channel_name, any_touch) %>%
+        arrange(channel_name)
+    expect_true(rt_are_dataframes_equal(conversion_matrix, expected_values_conversion_value))
 })
 
 test_that("rt_get_any_touch_attribution2", {
@@ -786,12 +851,7 @@ test_that("rt_get_any_touch_attribution2", {
     channel_attribution <- rt_get_channel_attribution(campaign_paths)
 
     all_models <- any_touch_attribution %>%
-        bind_rows(channel_attribution %>%
-                      group_by(attribution_name, attribution_type) %>%
-                      mutate(total_attribution = sum(attribution_value)) %>%
-                      ungroup() %>%
-                      mutate(attribution_value = attribution_value / total_attribution) %>%
-                      select(-total_attribution))
+        bind_rows(channel_attribution)
 
     test_save_plot(file_name='data/rt_plot_channel_attribution__any_touch_all_models.png',
                    plot=rt_plot_channel_attribution(all_models))
