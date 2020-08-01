@@ -499,8 +499,8 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             round_values_by <- 0
             channel_plot <- channel_plot +
                 geom_text(aes(label=ifelse(attribution_value < 1,
-                                           rt_pretty_axes_percent(attribution_value, increase_precision_delta = 0),
-                                           rt_pretty_numbers_long(attribution_value))),
+                                           map_chr(attribution_value, ~ rt_pretty_axes_percent(., increase_precision_delta = 0)),
+                                           map_chr(attribution_value, ~ rt_pretty_numbers_short(.)))),
                           position = position_dodge(width = 0.9),
                           angle=90,
                           hjust=1)

@@ -2,9 +2,7 @@
 % Please edit documentation in R/attribution.R
 \name{rt_clickstream_to_attribution}
 \alias{rt_clickstream_to_attribution}
-\title{transforms .clickstream_data into the expected format for attribution calculations
-different types of conversion events will be ignored, so the user is expected to filter out any
-conversion events they are not interested in.}
+\title{Transforms .clickstream_data into the expected format for attribution calculations.}
 \usage{
 rt_clickstream_to_attribution(.clickstream_data)
 }
@@ -21,6 +19,13 @@ should get the conversion event.
     The step that is before the conversion event (regardless of how much before) gets credit (last-touch) for the conversion.}
 }
 \description{
+Essentially it removes the conversion event, and gives the conversion and conversion value to the last
+touch-point before the conversion.
+}
+\details{
+Different types of conversion events will be ignored, so the user is expected to filter out any
+conversion events they are not interested in.
+
 This function does not handle the case when the there are multiple types of conversions that are
 triggered from a single step
 For example: Someone lands on the homepage and from that page does 2 conversions `Lead Form-Fill` & `Lead Sign-up`)
