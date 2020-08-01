@@ -386,6 +386,41 @@ test_that("rt_markov_model", {
                                                        .channel_categories = channel_categories))
 })
 
+test_that("rt_markov_model - removing non-conversions (doesn't run)", {
+    skip("sandbox")
+    # I want to compare the differences between markov-model with all data (non-conversions) vs
+    # model with only conversions
+    # I would expect there to be a difference, want to confirm.
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions()
+
+    #######################
+    ## ALL DATA
+    #######################
+    campaign_paths <- campaign_data %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE, .sort=TRUE) %>%
+        rt_campaign_to_markov_paths(.separate_paths_ids=TRUE)
+
+    markov_model_results <- rt_markov_model(campaign_paths)
+    rt_plot_markov_removal_effects(markov_model_results)
+
+    channel_attribution <- rt_get_channel_attribution(campaign_paths)
+    rt_plot_channel_attribution(channel_attribution)
+
+    #######################
+    ## ONLY CONVERSIONS
+    #######################
+    expect_true(all(ifelse(campaign_paths$num_conversions > 0,
+                           campaign_paths$null_conversions == 0,
+                           campaign_paths$null_conversions == 1)))
+    markov_model_results <- rt_markov_model(campaign_paths %>% filter(num_conversions > 0))
+
+    rt_plot_markov_removal_effects(markov_model_results)
+
+    channel_attribution <- rt_get_channel_attribution(campaign_paths %>% filter(num_conversions > 0))
+    rt_plot_channel_attribution(channel_attribution)
+})
+
 test_that("rt_get_channel_attribution", {
     campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
         test_helper__campaign_add_conversions()
