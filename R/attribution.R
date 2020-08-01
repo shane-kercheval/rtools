@@ -41,8 +41,12 @@ rt__mock__attribution_to_clickstream <- function(.campaign_data) {
     return (click_stream_data)
 }
 
-#' transforms .clickstream_data into the expected format for attribution calculations
-#' different types of conversion events will be ignored, so the user is expected to filter out any
+#' Transforms .clickstream_data into the expected format for attribution calculations.
+#'
+#' Essentially it removes the conversion event, and gives the conversion and conversion value to the last
+#' touch-point before the conversion.
+#'
+#' Different types of conversion events will be ignored, so the user is expected to filter out any
 #' conversion events they are not interested in.
 #'
 #' This function does not handle the case when the there are multiple types of conversions that are
