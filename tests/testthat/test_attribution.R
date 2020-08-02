@@ -1338,11 +1338,14 @@ test_that("rt_plot_sankey - weight", {
     # the weight will be based on a single id, and so (later) each touch-point will have that same weight
     # we'll use the conversion_value for people who have a conversion, but let's give a weight of 1
     # to anyone without a conversion
+    # weight_zero has a value of zero if the person did not convert
+    # weight_one has a value of one if the person did not convert
     campaign_data_weights <- campaign_data %>%
         group_by(id) %>%
         summarise(weight = sum(conversion_value)) %>%
         ungroup() %>%
-        mutate(weight = ifelse(weight == 0, 1, weight))
+        mutate(weight_one = ifelse(weight == 0, 1, weight)) %>%
+        rename(weight_zero = weight)
 
     .ending_events <- campaign_data %>% filter(step_type == 'Conversion') %>% select(step_type, step) %>% distinct() %>% pull(step)
 
@@ -1359,19 +1362,28 @@ test_that("rt_plot_sankey - weight", {
         # we'll use the conversion_value for people who have a conversion, but let's give a weight of 1
         # to anyone without a conversion
         add_count(id, wt=conversion_value, name='weight') %>%
-        mutate(weight = ifelse(weight == 0, 1, weight)) %>%
-        select(id, step, touch_index, weight) %>%
+        mutate(weight_one = ifelse(weight == 0, 1, weight)) %>%
+        rename(weight_zero = weight) %>%
+        select(id, step, touch_index, weight_zero, weight_one) %>%
         rename(my_id = id,
                my_cat = step,
                my_index = touch_index)
 
 
-    stopifnot(all.equal(sum(campaign_data_weights$weight),
+    stopifnot(all.equal(sum(campaign_data_weights$weight_zero),
                         .path_data %>%
                             group_by(my_id) %>%
-                            summarise(weight = min(weight)) %>%
+                            summarise(weight_zero = min(weight_zero)) %>%
                             ungroup() %>%
-                            pull(weight) %>%
+                            pull(weight_zero) %>%
+                            sum()))
+
+    stopifnot(all.equal(sum(campaign_data_weights$weight_one),
+                        .path_data %>%
+                            group_by(my_id) %>%
+                            summarise(weight_one = min(weight_one)) %>%
+                            ungroup() %>%
+                            pull(weight_one) %>%
                             sum()))
 
     sankey_plot <- rt_plot_sankey(.path_data,
@@ -1401,7 +1413,7 @@ test_that("rt_plot_sankey - weight", {
                                   .id='my_id',
                                   .path_column='my_cat',
                                   .visit_index='my_index',
-                                  .weight='weight',
+                                  .weight='weight_one',
 
                                   .ensure_complete_funnel=TRUE,
                                   .valid_final_touch_points=.ending_events,
@@ -1414,6 +1426,29 @@ test_that("rt_plot_sankey - weight", {
                                   .order_by=c('size'))
 
     sankey_file_name <- 'rt_plot_sankey__weight'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .weight='weight_zero',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .order_by=c('size'))
+
+    sankey_file_name <- 'rt_plot_sankey__weight_zero'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
     #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
     expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
