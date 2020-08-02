@@ -633,14 +633,14 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 
 #' creates a sankey diagram based on a data-frame containing touch-points in the form of
 #'
-#'     entity_id | touch_category | touch_index
-#'     ========================================
-#'     personA   | Home Page      | 1
-#'     personA   | Pricing Page   | 2
-#'     personA   | Conversion     | 3
-#'     personB   | Home Page      | 1
-#'     personB   | Bounced        | 2
-#'     personC   | Pricing        | 1
+#'     entity_id | touch_category | touch_index | weight (optional)
+#'     ============================================================
+#'     personA   | Home Page      | 1             0
+#'     personA   | Pricing Page   | 2             0
+#'     personA   | Conversion     | 3             0
+#'     personB   | Home Page      | 1             2
+#'     personB   | Bounced        | 2             2
+#'     personC   | Pricing        | 1             1
 #'
 #' where the column names are specified as parameters.
 #'
@@ -648,6 +648,7 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #' @param .id entity id column
 #' @param .path_column column of the path or touch-points
 #' @param .visit_index numeric index touch-points
+#' @param .weight column that gives a weight value, which should be the same for each touch-point for a given entity_id (basically the value of the entity)
 #'
 #' @param .valid_final_touch_points specify what is considered the ending events.
 #'
@@ -680,6 +681,7 @@ rt_plot_sankey <- function(.path_data,
                            .id='entity_id',
                            .path_column='touch_category',
                            .visit_index='touch_index',
+                           .weight=NULL,
 
                            .valid_final_touch_points=NULL,
 
@@ -695,6 +697,19 @@ rt_plot_sankey <- function(.path_data,
     rt_stopif(is.null(.valid_final_touch_points))
 
     .path_data <- .path_data %>% arrange(!!sym(.id), !!sym(.visit_index))
+
+    if(!is.null(.weight)) {
+        # if weight is given, let's make sure the same weight value is used for each touch-point per id
+        stopifnot(all(.path_data %>%
+                          group_by(!!sym(.id)) %>%
+                          summarise(num_unique_weights = n_distinct(!!sym(.weight))) %>%
+                          pull(num_unique_weights) == 1))
+
+        weight_per_id <- .path_data %>%
+            group_by(!!sym(.id)) %>%
+            summarise(weight = min(!!sym(.weight))) %>%
+            ungroup()
+    }
 
     # apparently there is a bug in networkD3 where colors seem to get messed up if touch-points have spaces in
     # the names :(
@@ -722,7 +737,7 @@ rt_plot_sankey <- function(.path_data,
             group_by(!!sym(.id)) %>%
             filter(!any(!!sym(.path_column) %in% .valid_final_touch_points)) %>%
             ungroup() %>%
-            select(!!sym(.id)) %>%
+            rt_select_all_of(.id, .weight) %>%
             distinct()
         bounced_path_data[[.path_column]] <- .bounced_fill_value
         bounced_path_data[[.visit_index]] <- Inf
@@ -732,7 +747,7 @@ rt_plot_sankey <- function(.path_data,
             group_by(!!sym(.id)) %>%
             filter(n() == 1 & all(!!sym(.path_column) %in% .valid_final_touch_points)) %>%
             ungroup() %>%
-            select(!!sym(.id)) %>%
+            rt_select_all_of(.id, .weight) %>%
             distinct()
         only_success_data[[.path_column]] <- .no_prior_data
         only_success_data[[.visit_index]] <- -Inf
@@ -782,6 +797,13 @@ rt_plot_sankey <- function(.path_data,
         ungroup() %>%
         filter(!is.na(channel_target))
 
+    if(!is.null(.weight)) {
+        stopifnot(all(source_target_data %>%
+                          group_by(!!sym(.id)) %>%
+                          summarise(num_unique_weights = n_distinct(!!sym(.weight))) %>%
+                          pull(num_unique_weights) == 1))
+    }
+
     rt_stopif(is.null(.valid_final_touch_points))
     rt_stopif(length(.valid_final_touch_points) == 0)
     original_event_name <- str_remove(source_target_data$channel_target, pattern = "~~.*")
@@ -790,36 +812,65 @@ rt_plot_sankey <- function(.path_data,
                                                 original_event_name,
                                                 source_target_data$channel_target)
 
-    # we should only check if the user provides us .valid_final_touch_points value(s), otherwise, all bets are off
+    # we should only check counts if the user provides us .valid_final_touch_points value(s), otherwise, all bets are off
     # e.g. might happen if the person only has 1 touch-point (e.g. bounced or converted without any prior touch-points)
     if(.ensure_complete_funnel) {
 
         stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
 
         num_entities <- length(unique(.path_data[[.id]]))
+
+        # create temp___weight so we ensure weight column exists so that we can use it in logic regardless
+        if(is.null(.weight)) {
+
+            total_weighting <- 0
+            .path_data$temp___weight <- 0
+            source_target_data$temp___weight <- 0
+
+        } else {
+
+            total_weighting <- sum(weight_per_id$weight)
+            .path_data$temp___weight <- .path_data[[.weight]]
+            source_target_data$temp___weight <- source_target_data[[.weight]]
+        }
+
         first_touch_expected <- .path_data %>%
+            # get the first visit for each id
             group_by(!!sym(.id)) %>%
             filter(!!sym(.visit_index) == min(!!sym(.visit_index))) %>%
             ungroup() %>%
-            count(!!sym(.path_column), sort = TRUE) %>%
+            # get count and weight by path
+            group_by(!!sym(.path_column)) %>%
+            summarise(n = n(),
+                      weight = sum(temp___weight)) %>%
+            ungroup() %>%
+            arrange(desc(n)) %>%
             rename(channel_source = !!sym(.path_column))
 
         first_touch_calculated <- source_target_data %>%
             group_by(!!sym(.id)) %>%
             filter(row_number() == 1) %>%
             ungroup() %>%
-
             #filter(str_detect(channel_source, pattern = '~~1$')) %>%
             mutate(channel_source = str_remove(channel_source, pattern = '~~.*')) %>%
-            count(channel_source, sort=TRUE)
-        stopifnot(num_entities == sum(first_touch_calculated$n))
+            group_by(channel_source) %>%
+            summarise(n = n(),
+                      weight = sum(temp___weight)) %>%
+            ungroup() %>%
+            arrange(desc(n))
+
         stopifnot(rt_are_dataframes_equal(first_touch_expected, first_touch_calculated))
 
         last_touch_expected <- .path_data %>%
             group_by(!!sym(.id)) %>%
             filter(!!sym(.visit_index) == max(!!sym(.visit_index))) %>%
             ungroup() %>%
-            count(!!sym(.path_column), sort = TRUE) %>%
+            # get count and weight by path
+            group_by(!!sym(.path_column)) %>%
+            summarise(n = n(),
+                      weight = sum(temp___weight)) %>%
+            ungroup() %>%
+            arrange(desc(n)) %>%
             rename(channel_target = !!sym(.path_column))
 
         last_touch_calculated <- source_target_data %>%
@@ -828,27 +879,54 @@ rt_plot_sankey <- function(.path_data,
             ungroup() %>%
             #filter(str_detect(channel_target, pattern = '~~1$')) %>%
             mutate(channel_target = str_remove(channel_target, pattern = '~~.*')) %>%
-            count(channel_target, sort=TRUE)
-        stopifnot(num_entities == sum(last_touch_calculated$n))
+            group_by(channel_target) %>%
+            summarise(n = n(),
+                      weight = sum(temp___weight)) %>%
+            ungroup() %>%
+            arrange(desc(n))
+
         stopifnot(rt_are_dataframes_equal(last_touch_expected, last_touch_calculated))
         stopifnot(all(last_touch_calculated$channel_target %in% c(.bounced_fill_value, .valid_final_touch_points)))
+
+        .path_data$temp___weight <- NULL
+        source_target_data$temp___weight <- NULL
     }
 
     total_rows <- nrow(source_target_data)
 
+    # create temp___weight so we ensure weight column exists so that we can use it in logic regardless
+    if(is.null(.weight)) {
+
+        source_target_data$temp___weight <- 0
+
+    } else {
+
+        source_target_data$temp___weight <- source_target_data[[.weight]]
+    }
     source_target_data <- source_target_data %>%
         unite(step, c(channel_source, channel_target), remove = FALSE, sep = " -> ") %>%
         group_by(step, channel_source, channel_target) %>%
         summarise(num_touch_points=n(),
-                  num_touch_points_distinct=n_distinct(!!sym(.id))) %>%
+                  num_touch_points_distinct=n_distinct(!!sym(.id)),
+                  weight = sum(temp___weight))%>%
         ungroup() %>%
         arrange(desc(num_touch_points))
+
     stop_if_not_identical(source_target_data$num_touch_points, source_target_data$num_touch_points_distinct)
     stop_if_any_duplicated(source_target_data$step)
     stop_if_any_duplicated(source_target_data %>% select(channel_source, channel_target))
     stop_if_not_identical(total_rows, sum(source_target_data$num_touch_points))
 
     source_target_data <- source_target_data %>% select(-num_touch_points_distinct)
+
+    if(is.null(.weight)) {
+
+        source_target_data <- source_target_data %>% select(-weight)
+
+    } else {
+
+        source_target_data <- source_target_data %>% select(-num_touch_points) %>% rename(num_touch_points = weight)
+    }
 
     rt_stopif(nrow(source_target_data) > 200)
     unique_nodes <- bind_rows(source_target_data %>%

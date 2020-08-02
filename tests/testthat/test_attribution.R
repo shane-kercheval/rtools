@@ -998,10 +998,10 @@ test_that("rt_plot_sankey", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_size'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
     # .global_path_values
@@ -1023,10 +1023,10 @@ test_that("rt_plot_sankey", {
 
     sankey_file_name <- 'rt_plot_sankey__global_colors'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
     # Same but order_by=optimize
@@ -1048,10 +1048,10 @@ test_that("rt_plot_sankey", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
     # randomize order of the data, ensure we get the same result
@@ -1074,10 +1074,10 @@ test_that("rt_plot_sankey", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize__random_order'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
     # .ensure_complete_funnel=FALSE,
@@ -1100,10 +1100,10 @@ test_that("rt_plot_sankey", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
     # depth threshold
@@ -1125,10 +1125,10 @@ test_that("rt_plot_sankey", {
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     ##########################################################################################################
     # depth threshold & .ensure_complete_funnel
@@ -1150,10 +1150,10 @@ test_that("rt_plot_sankey", {
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 })
 
 test_that("rt_plot_sankey_no_prior", {
@@ -1226,10 +1226,10 @@ test_that("rt_plot_sankey_no_prior", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_size__no_prior'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
@@ -1249,10 +1249,10 @@ test_that("rt_plot_sankey_no_prior", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize__no_prior'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
@@ -1272,10 +1272,10 @@ test_that("rt_plot_sankey_no_prior", {
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE__no_prior'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
@@ -1294,10 +1294,10 @@ test_that("rt_plot_sankey_no_prior", {
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1__no_prior'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
     sankey_plot <- rt_plot_sankey(.path_data,
                                   .id='my_id',
@@ -1316,12 +1316,109 @@ test_that("rt_plot_sankey_no_prior", {
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final__no_prior'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
-    #stopifnot(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
-    stopifnot(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
-    stopifnot(file.remove(paste0(sankey_file_name, '.html')))
-    stopifnot(file.remove(paste0(sankey_file_name, '.png')))
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 
 
+})
+
+test_that("rt_plot_sankey - weight", {
+
+    # use campaign data
+    # this dataset returns touch-points (e.g. A -> B -> C -> Converted) up until the first conversion
+    campaign_data <- readRDS('data/campaign_data__small.RDS') %>%
+        test_helper__campaign_add_conversions() %>%
+        rt__mock__attribution_to_clickstream() %>%
+        rt_campaign_add_path_id(.use_first_conversion=TRUE,
+                                .sort=TRUE)
+
+    # we're going to create a weight
+    # the weight will be based on a single id, and so (later) each touch-point will have that same weight
+    # we'll use the conversion_value for people who have a conversion, but let's give a weight of 1
+    # to anyone without a conversion
+    campaign_data_weights <- campaign_data %>%
+        group_by(id) %>%
+        summarise(weight = sum(conversion_value)) %>%
+        ungroup() %>%
+        mutate(weight = ifelse(weight == 0, 1, weight))
+
+    .ending_events <- campaign_data %>% filter(step_type == 'Conversion') %>% select(step_type, step) %>% distinct() %>% pull(step)
+
+    .path_data <- campaign_data %>%
+        # grab first record per touch-point per id
+        group_by(id, step) %>%
+        filter(row_number(timestamp) == 1) %>%
+        ungroup() %>%
+        group_by(id) %>%
+        mutate(touch_index = row_number(timestamp)) %>%
+        ungroup() %>%
+        # we're going to create a weight
+        # the weight will be based on a single id, and so each touch-point will have that same weight
+        # we'll use the conversion_value for people who have a conversion, but let's give a weight of 1
+        # to anyone without a conversion
+        add_count(id, wt=conversion_value, name='weight') %>%
+        mutate(weight = ifelse(weight == 0, 1, weight)) %>%
+        select(id, step, touch_index, weight) %>%
+        rename(my_id = id,
+               my_cat = step,
+               my_index = touch_index)
+
+
+    stopifnot(all.equal(sum(campaign_data_weights$weight),
+                        .path_data %>%
+                            group_by(my_id) %>%
+                            summarise(weight = min(weight)) %>%
+                            ungroup() %>%
+                            pull(weight) %>%
+                            sum()))
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .weight=NULL,
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .order_by=c('size'))
+
+    sankey_file_name <- 'rt_plot_sankey__weight__null'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .weight='weight',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .order_by=c('size'))
+
+    sankey_file_name <- 'rt_plot_sankey__weight'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 })
 
 test_that("TODO", {

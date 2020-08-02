@@ -9,6 +9,7 @@ rt_plot_sankey(
   .id = "entity_id",
   .path_column = "touch_category",
   .visit_index = "touch_index",
+  .weight = NULL,
   .valid_final_touch_points = NULL,
   .ensure_complete_funnel = TRUE,
   .bounced_fill_value = "Bounced",
@@ -26,6 +27,8 @@ rt_plot_sankey(
 \item{.path_column}{column of the path or touch-points}
 
 \item{.visit_index}{numeric index touch-points}
+
+\item{.weight}{column that gives a weight value, which should be the same for each touch-point for a given entity_id (basically the value of the entity)}
 
 \item{.valid_final_touch_points}{specify what is considered the ending events.}
 
@@ -50,14 +53,14 @@ don't show up in each graph}
 \item{.order_by}{determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot}
 }
 \description{
-entity_id | touch_category | touch_index
-    ========================================
-    personA   | Home Page      | 1
-    personA   | Pricing Page   | 2
-    personA   | Conversion     | 3
-    personB   | Home Page      | 1
-    personB   | Bounced        | 2
-    personC   | Pricing        | 1
+entity_id | touch_category | touch_index | weight (optional)
+    ============================================================
+    personA   | Home Page      | 1             0
+    personA   | Pricing Page   | 2             0
+    personA   | Conversion     | 3             0
+    personB   | Home Page      | 1             2
+    personB   | Bounced        | 2             2
+    personC   | Pricing        | 1             1
 }
 \details{
 where the column names are specified as parameters.
