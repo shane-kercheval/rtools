@@ -667,6 +667,7 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #'        don't show up in each graph
 #'
 #' @param .depth_threshold the number of leves at the beginning and end of the journey/path
+#' @param .show_percentages if TRUE, then show percentage in parentheses for each node which corresponds to percentage of all ids or percentage of all weights depending on if .weight field is populated
 #' @param .order_by determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot
 #'
 #' @importFrom magrittr "%>%"
@@ -692,11 +693,14 @@ rt_plot_sankey <- function(.path_data,
                            .global_path_values=NULL,
 
                            .depth_threshold=NULL,
+                           .show_percentages=FALSE,
                            .order_by=c('size', 'optimize', 'both')) {
 
     rt_stopif(is.null(.valid_final_touch_points))
 
     .path_data <- .path_data %>% arrange(!!sym(.id), !!sym(.visit_index))
+
+    number_of_unique_ids <- length(unique(.path_data[[.id]]))
 
     if(!is.null(.weight)) {
         # if weight is given, let's make sure the same weight value is used for each touch-point per id
@@ -709,6 +713,8 @@ rt_plot_sankey <- function(.path_data,
             group_by(!!sym(.id)) %>%
             summarise(weight = min(!!sym(.weight))) %>%
             ungroup()
+
+        total_weight <- sum(weight_per_id$weight)
     }
 
     # apparently there is a bug in networkD3 where colors seem to get messed up if touch-points have spaces in
@@ -818,8 +824,6 @@ rt_plot_sankey <- function(.path_data,
 
         stopifnot(setequal(source_target_data[[.id]], .path_data[[.id]]))
 
-        num_entities <- length(unique(.path_data[[.id]]))
-
         # create temp___weight so we ensure weight column exists so that we can use it in logic regardless
         if(is.null(.weight)) {
 
@@ -922,10 +926,12 @@ rt_plot_sankey <- function(.path_data,
     if(is.null(.weight)) {
 
         source_target_data <- source_target_data %>% select(-weight)
+        total_value <- number_of_unique_ids
 
     } else {
 
         source_target_data <- source_target_data %>% select(-num_touch_points) %>% rename(num_touch_points = weight)
+        total_value <- total_weight
     }
 
     rt_stopif(nrow(source_target_data) > 200)
@@ -941,16 +947,29 @@ rt_plot_sankey <- function(.path_data,
                                   rename(channel_name=channel_target)) %>%
         count(channel_name, wt=num_touch_points, name = 'num_touch_points') %>%
         arrange(desc(num_touch_points)) %>%
-        pull(channel_name)
+        mutate(perc_touch_points = rt_pretty_percent(num_touch_points / total_value)) %>%
+        mutate(channel_name_perc = paste0(channel_name, " (", perc_touch_points, ")")) %>%
+        select(channel_name, channel_name_perc)
 
-    source_indexes <- match(source_target_data$channel_source, unique_nodes) - 1
-    target_indexes <- match(source_target_data$channel_target, unique_nodes) - 1
+
+    source_indexes <- match(source_target_data$channel_source, unique_nodes$channel_name) - 1
+    target_indexes <- match(source_target_data$channel_target, unique_nodes$channel_name) - 1
 
     source_target_data$source <- source_indexes
     source_target_data$target <- target_indexes
 
-    unique_nodes <- str_remove(string=unique_nodes, pattern = "~~.*")
-    sankey_nodes_df <- data.frame(name=c(unique_nodes))
+    unique_nodes_perc <- str_remove(string=unique_nodes$channel_name_perc, pattern = "(~~)([^\\s]+)")
+    unique_nodes_names <- str_remove(string=unique_nodes$channel_name, pattern = "~~.*")
+    rm(unique_nodes)
+
+    if(.show_percentages) {
+
+        sankey_nodes_df <- data.frame(name=unique_nodes_perc)
+
+    } else {
+
+        sankey_nodes_df <- data.frame(name=unique_nodes)
+    }
 
     #stopifnot(all(unique_nodes %in% names(color_dictionary)))
     # color_dictionary <- c(color_dictionary,
@@ -973,7 +992,7 @@ rt_plot_sankey <- function(.path_data,
     rt_stopif(any(duplicated(names(color_dictionary))))
     #rt_stopif(any(duplicated(as.character(color_dictionary))))
 
-    selected_colors <- as.character(color_dictionary[unique_nodes])
+    selected_colors <- as.character(color_dictionary[unique_nodes_names])
     color_string <- rt_str_collapse(unique(selected_colors),.surround = '"', .separate = ", ")
     ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
     rt_stopif(nrow(source_target_data) > 200)
