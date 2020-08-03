@@ -16,6 +16,7 @@ rt_plot_sankey(
   .no_prior_data = "<No Prior Touch-Point>",
   .global_path_values = NULL,
   .depth_threshold = NULL,
+  .show_percentages = FALSE,
   .order_by = c("size", "optimize", "both")
 )
 }
@@ -49,6 +50,8 @@ ensures that the colors of graphs are consistent across multiple graphs even if 
 don't show up in each graph}
 
 \item{.depth_threshold}{the number of leves at the beginning and end of the journey/path}
+
+\item{.show_percentages}{if TRUE, then show percentage in parentheses for each node which corresponds to percentage of all ids or percentage of all weights depending on if .weight field is populated}
 
 \item{.order_by}{determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot}
 }
