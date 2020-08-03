@@ -46,4 +46,9 @@ test_helper__save_sankey_plot <- function(.sankey_plot, .file_name) {
     #webshot::install_phantomjs()
     #library(webshot)
     webshot::webshot(url = paste0(.file_name, ".html"), file=paste0(.file_name, ".png"))
+
+    #expect_true(file.copy(paste0(sankey_file_name, '.html'), paste0('data/', sankey_file_name, '.html'), overwrite = TRUE))
+    expect_true(file.copy(paste0(sankey_file_name, '.png'), paste0('data/', sankey_file_name, '.png'), overwrite = TRUE))
+    expect_true(file.remove(paste0(sankey_file_name, '.html')))
+    expect_true(file.remove(paste0(sankey_file_name, '.png')))
 }
