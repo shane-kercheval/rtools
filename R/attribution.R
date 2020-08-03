@@ -456,6 +456,7 @@ rt_get_channel_attribution <- function(.path_data,
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom dplyr mutate left_join
+#' @importFrom purrr map_chr
 #' @importFrom forcats fct_reorder
 #' @importFrom ggplot2 ggplot geom_col position_dodge scale_fill_manual theme_light theme labs geom_text aes facet_wrap
 #'
