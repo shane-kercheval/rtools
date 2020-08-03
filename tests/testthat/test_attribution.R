@@ -994,9 +994,29 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by=c('size', 'optimize', 'both'))
 
     sankey_file_name <- 'rt_plot_sankey__order_by_size'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by=c('size', 'optimize', 'both'))
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_size__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
 
@@ -1016,9 +1036,29 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=unique(.path_data$my_cat),
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by=c('size', 'optimize', 'both'))
 
     sankey_file_name <- 'rt_plot_sankey__global_colors'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=unique(.path_data$my_cat),
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by=c('size', 'optimize', 'both'))
+
+    sankey_file_name <- 'rt_plot_sankey__global_colors__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     ##########################################################################################################
@@ -1037,9 +1077,29 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .bounced_fill_value='Bounced',
+                                  .valid_final_touch_points=.ending_events,
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     ##########################################################################################################
@@ -1059,9 +1119,30 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize__random_order'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    set.seed(42)
+    sankey_plot <- rt_plot_sankey(.path_data[sample(nrow(.path_data), replace = FALSE),],
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .bounced_fill_value='Bounced',
+                                  .valid_final_touch_points=.ending_events,
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize__random_order__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     ##########################################################################################################
@@ -1081,9 +1162,30 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=FALSE,
+                                  #.bounced_fill_value='Bounced',
+                                  #.no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     ##########################################################################################################
@@ -1103,8 +1205,28 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=1,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=FALSE,
+                                  #.bounced_fill_value='Bounced',
+                                  #.no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=1,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     ##########################################################################################################
@@ -1124,8 +1246,28 @@ test_that("rt_plot_sankey", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=1,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=TRUE,
+                                  #.bounced_fill_value='Bounced',
+                                  #.no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=1,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 })
 
@@ -1178,6 +1320,7 @@ test_that("rt_plot_sankey_no_prior", {
                                 .global_path_values=NULL,
 
                                 .depth_threshold=4,
+                                .show_percentages=FALSE,
                                 .order_by=c('size', 'optimize', 'both')))
 
 
@@ -1195,6 +1338,7 @@ test_that("rt_plot_sankey_no_prior", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by=c('size', 'optimize', 'both'))
 
     sankey_file_name <- 'rt_plot_sankey__order_by_size__no_prior'
@@ -1214,9 +1358,50 @@ test_that("rt_plot_sankey_no_prior", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by=c('size', 'optimize', 'both'))
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_size__no_prior__percent'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize__no_prior'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize__no_prior__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     sankey_plot <- rt_plot_sankey(.path_data,
@@ -1233,6 +1418,7 @@ test_that("rt_plot_sankey_no_prior", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
 
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE__no_prior'
@@ -1251,9 +1437,49 @@ test_that("rt_plot_sankey_no_prior", {
 
                                   .global_path_values=NULL,
 
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_add_final_FALSE__no_prior__percent'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=FALSE,
+                                  #.bounced_fill_value='Bounced',
+                                  #.no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
                                   .depth_threshold=1,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1__no_prior'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=FALSE,
+                                  #.bounced_fill_value='Bounced',
+                                  #.no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=1,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1__no_prior__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     sankey_plot <- rt_plot_sankey(.path_data,
@@ -1270,11 +1496,29 @@ test_that("rt_plot_sankey_no_prior", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=1,
+                                  .show_percentages=FALSE,
                                   .order_by='optimize')
     sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final__no_prior'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
 
+                                  .valid_final_touch_points=.ending_events,
+
+                                  .ensure_complete_funnel=TRUE,
+                                  #.bounced_fill_value='Bounced',
+                                  #.no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=1,
+                                  .show_percentages=TRUE,
+                                  .order_by='optimize')
+    sankey_file_name <- 'rt_plot_sankey__order_by_optimize_depth_threshold_1_add_final__no_prior__percent'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 })
 
 test_that("rt_plot_sankey - weight", {
@@ -1353,9 +1597,30 @@ test_that("rt_plot_sankey - weight", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by=c('size'))
 
     sankey_file_name <- 'rt_plot_sankey__weight__null'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .weight=NULL,
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by=c('size'))
+
+    sankey_file_name <- 'rt_plot_sankey__weight__null__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     sankey_plot <- rt_plot_sankey(.path_data,
@@ -1372,9 +1637,30 @@ test_that("rt_plot_sankey - weight", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by=c('size'))
 
     sankey_file_name <- 'rt_plot_sankey__weight'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .weight='weight_one',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by=c('size'))
+
+    sankey_file_name <- 'rt_plot_sankey__weight__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 
     sankey_plot <- rt_plot_sankey(.path_data,
@@ -1391,9 +1677,30 @@ test_that("rt_plot_sankey - weight", {
                                   .global_path_values=NULL,
 
                                   .depth_threshold=NULL,
+                                  .show_percentages=FALSE,
                                   .order_by=c('size'))
 
     sankey_file_name <- 'rt_plot_sankey__weight_zero'
+    test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
+
+    sankey_plot <- rt_plot_sankey(.path_data,
+                                  .id='my_id',
+                                  .path_column='my_cat',
+                                  .visit_index='my_index',
+                                  .weight='weight_zero',
+
+                                  .ensure_complete_funnel=TRUE,
+                                  .valid_final_touch_points=.ending_events,
+                                  .bounced_fill_value='Bounced',
+                                  .no_prior_data='<No Prior Touch-Point>',
+
+                                  .global_path_values=NULL,
+
+                                  .depth_threshold=NULL,
+                                  .show_percentages=TRUE,
+                                  .order_by=c('size'))
+
+    sankey_file_name <- 'rt_plot_sankey__weight_zero__percent'
     test_helper__save_sankey_plot(.sankey_plot=sankey_plot, .file_name=sankey_file_name)
 })
 
