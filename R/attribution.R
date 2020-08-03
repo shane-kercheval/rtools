@@ -969,7 +969,7 @@ rt_plot_sankey <- function(.path_data,
 
     } else {
 
-        sankey_nodes_df <- data.frame(name=unique_nodes)
+        sankey_nodes_df <- data.frame(name=unique_nodes_names)
     }
 
     #stopifnot(all(unique_nodes %in% names(color_dictionary)))
