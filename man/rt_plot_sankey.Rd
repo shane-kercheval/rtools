@@ -17,7 +17,8 @@ rt_plot_sankey(
   .global_path_values = NULL,
   .depth_threshold = NULL,
   .show_percentages = FALSE,
-  .order_by = c("size", "optimize", "both")
+  .order_by = c("size", "optimize", "both"),
+  .connection_threshold = 200
 )
 }
 \arguments{
@@ -54,6 +55,8 @@ don't show up in each graph}
 \item{.show_percentages}{if TRUE, then show percentage in parentheses for each node which corresponds to percentage of all ids or percentage of all weights depending on if .weight field is populated}
 
 \item{.order_by}{determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot}
+
+\item{.connection_threshold}{used to limit the number of connections: too many and the function call to generate the diagram will just hang}
 }
 \description{
 entity_id | touch_category | touch_index | weight (optional)

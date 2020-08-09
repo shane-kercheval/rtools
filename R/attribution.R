@@ -670,6 +670,7 @@ rt_attribution_pivot_longer <- function(attribution_models) {
 #' @param .depth_threshold the number of leves at the beginning and end of the journey/path
 #' @param .show_percentages if TRUE, then show percentage in parentheses for each node which corresponds to percentage of all ids or percentage of all weights depending on if .weight field is populated
 #' @param .order_by determines the arrangement of the diagram; `both` returns a list of 2 items, each containing a plot
+#' @param .connection_threshold used to limit the number of connections: too many and the function call to generate the diagram will just hang
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom forcats fct_lump
@@ -695,7 +696,8 @@ rt_plot_sankey <- function(.path_data,
 
                            .depth_threshold=NULL,
                            .show_percentages=FALSE,
-                           .order_by=c('size', 'optimize', 'both')) {
+                           .order_by=c('size', 'optimize', 'both'),
+                           .connection_threshold=200) {
 
     rt_stopif(is.null(.valid_final_touch_points))
 
@@ -935,7 +937,7 @@ rt_plot_sankey <- function(.path_data,
         total_value <- total_weight
     }
 
-    rt_stopif(nrow(source_target_data) > 200)
+    rt_stopif(nrow(source_target_data) > .connection_threshold)
     unique_nodes <- bind_rows(source_target_data %>%
                                   count(channel_source, wt=num_touch_points, name = 'num_touch_points') %>%
                                   arrange(num_touch_points) %>%
@@ -996,7 +998,7 @@ rt_plot_sankey <- function(.path_data,
     selected_colors <- as.character(color_dictionary[unique_nodes_names])
     color_string <- rt_str_collapse(unique(selected_colors),.surround = '"', .separate = ", ")
     ColourScal <- paste0('d3.scaleOrdinal().range([', color_string,'])')
-    rt_stopif(nrow(source_target_data) > 200)
+    rt_stopif(nrow(source_target_data) > .connection_threshold)
 
     stopifnot(all(.order_by %in% c('size', 'optimize', 'both')))
     .order_by <- .order_by[1]
