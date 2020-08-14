@@ -938,6 +938,12 @@ rt_plot_sankey <- function(.path_data,
     }
 
     rt_stopif(nrow(source_target_data) > .connection_threshold)
+    # the intersecting channels will double-count the numbers because they will be counted once for the source
+    # and once for the target each time
+    # so if the channel_name is in this list, then we need to divide these groups by 2...
+    # This should work even for weights, because again, we are double-counting,
+    # i.e. multiplying each value by 2, so still divide by 2 to get the actual
+    intersecting_channels <- intersect(source_target_data$channel_source, source_target_data$channel_target)
     unique_nodes <- bind_rows(source_target_data %>%
                                   count(channel_source, wt=num_touch_points, name = 'num_touch_points') %>%
                                   arrange(num_touch_points) %>%
@@ -950,6 +956,9 @@ rt_plot_sankey <- function(.path_data,
                                   rename(channel_name=channel_target)) %>%
         count(channel_name, wt=num_touch_points, name = 'num_touch_points') %>%
         arrange(desc(num_touch_points)) %>%
+        mutate(num_touch_points = ifelse(channel_name %in% intersecting_channels,
+                                         num_touch_points / 2,
+                                         num_touch_points)) %>%
         mutate(perc_touch_points = rt_pretty_percent(num_touch_points / total_value)) %>%
         mutate(channel_name_perc = paste0(channel_name, " (", perc_touch_points, ")")) %>%
         select(channel_name, channel_name_perc)
