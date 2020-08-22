@@ -465,23 +465,16 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
 
     base_attribution_plot <- function(channel_plot, .show_values) {
 
-        if(channel_plot$labels$fill == 'attribution_name') {
+        custom_colors <- rt_colors()
 
-            fill_value <- "Attribution Model"
-            known_models <- c("First Touch", "Last Touch", "Linear Touch", "Markov", "Any Touch")
-            found_models <- unique(channel_plot$data$attribution_name)
-            custom_colors <- rt_colors()
-            if(all(found_models %in% known_models)) {
+        if(channel_plot$labels$fill == 'channel_name') {
 
-                custom_colors <- custom_colors[1:length(known_models)]
-                names(custom_colors) <- known_models
-                custom_colors <- custom_colors[found_models]
-            }
+            fill_label <- "Channel Name"
+
         } else {
-
+            #print(channel_plot$labels)
             stopifnot(channel_plot$labels$fill == 'category')
-            fill_value <- "Category"
-            custom_colors <- rt_colors()
+            fill_label <- "Channel Category"
         }
 
         channel_plot <- channel_plot +
@@ -492,8 +485,8 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
             theme_light() +
             theme(axis.text.x = element_text(angle=45, hjust=1)) +
             labs(y='Conversions',
-                 x='Channel Name',
-                 fill=fill_value)
+                 x="Attribution Model",
+                 fill=fill_label)
 
         if(.show_values) {
 
@@ -510,13 +503,17 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
         return (channel_plot)
     }
 
+    known_models <- c("First Touch", "Last Touch", "Linear Touch", "Markov", "Any Touch")
+    .channel_attribution <- .channel_attribution %>%
+        mutate(attribution_name = factor(attribution_name, levels=known_models))
+
     if(length(unique(.channel_attribution$attribution_type)) == 1) {
 
         if(is.null(.channel_categories)) {
 
             channel_plot <- .channel_attribution %>%
                 mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
-                ggplot(aes(x=channel_name, y=attribution_value, fill=attribution_name)) %>%
+                ggplot(aes(x=attribution_name, y=attribution_value, fill=channel_name)) %>%
                 base_attribution_plot(.show_values)
 
         } else {
@@ -532,13 +529,14 @@ rt_plot_channel_attribution <- function(.channel_attribution, .channel_categorie
                 mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
                 ggplot(aes(x=channel_name, y=attribution_value, fill=category)) %>%
                 base_attribution_plot(.show_values) +
-                facet_wrap( ~ attribution_name)
+                facet_wrap( ~ attribution_name) +
+                labs(x='Channel Name')
         }
     } else {
 
         channel_plot <- .channel_attribution %>%
             mutate(channel_name = fct_reorder(channel_name, attribution_value, .fun = max, .desc = TRUE)) %>%
-            ggplot(aes(x=channel_name, y=attribution_value, fill=attribution_name)) %>%
+            ggplot(aes(x=attribution_name, y=attribution_value, fill=channel_name)) %>%
             base_attribution_plot(.show_values) +
             facet_wrap(~ attribution_type, scales = 'free_y')
     }
