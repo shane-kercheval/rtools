@@ -277,7 +277,7 @@ test_that('rt_plot_regression_variance_explained', {
 
     data('mtcars')
     regression_results <- lm(mpg ~ cyl + hp + wt, data=mtcars)
-    summary(regression_results)
+    #summary(regression_results)
 
     test_save_plot(file_name='data/rt_plot_regression_variance_explained.png',
                    rt_plot_regression_variance_explained(regression_results))
