@@ -172,34 +172,49 @@ rt_difftime_numeric <- function(date_last, date_first, units='days') {
 #' date_floor: `year` gives `YYYY`
 #'
 #' @param date_vector the date vector
-#' @param date_floor `week`, `month`, `quarter`, `year`
+#' @param date_floor `week`, `month`, `quarter`, `fiscal quarter`, `year`, 'fiscal year'
 #' @param week_start same values of floor_date, defaults to `1` which starts the week on Monday
+#' @param fiscal_start the month of the start of the fiscal year
 #'
 #' @importFrom magrittr "%>%"
 #' @importFrom lubridate floor_date
-#' @importFrom stringr str_replace
+#' @importFrom stringr str_replace, str_split
+#' @importFrom purrr map_chr
 #'
 #' @export
-rt_floor_date_factor <- function(date_vector, date_floor='week', week_start=1) {
+rt_floor_date_factor <- function(date_vector, date_floor='week', week_start=1, fiscal_start=1) {
 
-    date_vector <- as.character(floor_date(x=date_vector, unit=date_floor, week_start=week_start))
+    if(date_floor == 'fiscal quarter' || date_floor == 'fiscal year') {
+        date_vector <- lubridate::quarter(date_vector, fiscal_start = fiscal_start, type = 'year.quarter')
 
-    if(date_floor == 'month') {
+        if (date_floor == 'fiscal quarter') {
+            date_parts <- str_split(date_vector, '\\.')
+            date_vector <- map_chr(date_parts, ~ {
+                paste0('FY', .[1], '-Q', .[2])
+            })
 
-        date_vector <- substr(date_vector, 1, 7)
+        } else {
+            date_vector <- map_chr(date_vector, ~ paste0('FY', floor(.)))
+        }
+    } else {
+        date_vector <- as.character(floor_date(x=date_vector, unit=date_floor, week_start=week_start))
 
-    } else if (date_floor == 'quarter') {
+        if(date_floor == 'month') {
 
-        date_vector <- date_vector %>%
-            str_replace('-01-01', '-Q1') %>%
-            str_replace('-04-01', '-Q2') %>%
-            str_replace('-07-01', '-Q3') %>%
-            str_replace('-10-01', '-Q4')
+            date_vector <- substr(date_vector, 1, 7)
 
-    } else if(date_floor == 'year') {
+        } else if (date_floor == 'quarter') {
 
-        date_vector <- substr(date_vector, 1, 4)
+            date_vector <- date_vector %>%
+                str_replace('-01-01', '-Q1') %>%
+                str_replace('-04-01', '-Q2') %>%
+                str_replace('-07-01', '-Q3') %>%
+                str_replace('-10-01', '-Q4')
 
+        } else if(date_floor == 'year') {
+
+            date_vector <- substr(date_vector, 1, 4)
+        }
     }
 
     date_vector <- factor(date_vector, levels = sort(unique(date_vector)), ordered = TRUE)

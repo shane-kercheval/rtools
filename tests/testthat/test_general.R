@@ -2,6 +2,8 @@ context('General')
 library(testthat)
 library(lubridate)
 library(dplyr)
+library(stringr)
+library(purrr)
 options(dplyr.summarise.inform=F)
 
 test_that("rt_get_date_fields_lubridate", {
@@ -435,6 +437,42 @@ test_that("rt_floor_date_factor", {
     expect_identical(levels(freq_df$year_vector), c('2019', '2020'))
     expect_true(all(freq_df$Freq == c(365, 2)))
 })
+
+test_that("rt_floor_date_factor__fiscal_quarter", {
+    start_date <- ymd_hms("2019-01-01 23:59:59")
+    all_dates <- start_date + days(0:366)
+    date_vector <- rt_floor_date_factor(
+        date_vector=all_dates,
+        date_floor='fiscal quarter',
+        fiscal_start=2
+    )
+    expect_true(is.factor(date_vector))
+    expect_true(is.ordered(date_vector))
+    results = data.frame(dates=all_dates, floor=date_vector)
+    # write.csv(results, 'data/rt_floor_date_factor__fiscal_quarter.csv')
+    expect_true(rt_are_dataframes_equal(
+        results,
+        read.csv(file = 'data/rt_floor_date_factor__fiscal_quarter.csv') %>% select(-X)
+    ))    
+}
+
+test_that("rt_floor_date_factor__fiscal_year", {
+    start_date <- ymd_hms("2019-01-01 23:59:59")
+    all_dates <- start_date + days(0:366)
+    date_vector <- rt_floor_date_factor(
+        date_vector=all_dates,
+        date_floor='fiscal year',
+        fiscal_start=2
+    )
+    expect_true(is.factor(date_vector))
+    expect_true(is.ordered(date_vector))
+    results = data.frame(dates=all_dates, floor=date_vector)
+    # write.csv(results, 'tests/testthat/data/rt_floor_date_factor__fiscal_year.csv')
+    expect_true(rt_are_dataframes_equal(
+        results,
+        read.csv(file = 'data/rt_floor_date_factor__fiscal_year.csv') %>% select(-X)
+    ))    
+}
 
 test_that("rt_are_numerics_equal", {
 
