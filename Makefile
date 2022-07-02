@@ -8,7 +8,12 @@ docker_compose:
 docker_run: zsh
 
 zsh:
-	docker exec -it r-bash-1 /bin/zsh
+	docker exec -it rtools-bash-1 /bin/zsh
 
-tests:
-	R --quiet -e "testthat::test_dir('/code/tests')"
+r_build:
+	R -e "library(devtools); devtools::build('.')"
+
+r_tests:
+	R -e "library(devtools); devtools::test()"
+	
+.PHONY: tests
