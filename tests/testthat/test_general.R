@@ -454,7 +454,7 @@ test_that("rt_floor_date_factor__fiscal_quarter", {
         results,
         read.csv(file = 'data/rt_floor_date_factor__fiscal_quarter.csv') %>% select(-X)
     ))    
-}
+})
 
 test_that("rt_floor_date_factor__fiscal_year", {
     start_date <- ymd_hms("2019-01-01 23:59:59")
@@ -472,7 +472,7 @@ test_that("rt_floor_date_factor__fiscal_year", {
         results,
         read.csv(file = 'data/rt_floor_date_factor__fiscal_year.csv') %>% select(-X)
     ))    
-}
+})
 
 test_that("rt_are_numerics_equal", {
 

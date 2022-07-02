@@ -15,5 +15,7 @@ r_build:
 
 r_tests:
 	R -e "library(devtools); devtools::test()"
-	
+
+tests: r_build r_tests
+
 .PHONY: tests
